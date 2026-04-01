@@ -40,14 +40,28 @@ export default function Certificate({ certificateData, onClose }) {
       await new Promise(r => setTimeout(r, 100));
 
       const canvas = await html2canvas(el, {
-        scale: 2,
+        scale: 3,
         useCORS: true,
         logging: false,
         backgroundColor: '#ffffff',
         width: 1122,
         height: 794,
         windowWidth: 1122,
-        windowHeight: 794
+        windowHeight: 794,
+        scrollX: 0,
+        scrollY: 0,
+        x: 0,
+        y: 0,
+        onclone: (clonedDoc, clonedEl) => {
+          clonedEl.style.width = '1122px';
+          clonedEl.style.height = '794px';
+          clonedEl.style.position = 'fixed';
+          clonedEl.style.top = '0';
+          clonedEl.style.left = '0';
+          clonedEl.style.transform = 'none';
+          clonedEl.style.margin = '0';
+          clonedEl.style.overflow = 'hidden';
+        }
       });
 
       // Restore original scale

@@ -48,7 +48,7 @@ export function generateBulkCertificateIds(count, existingIds = []) {
  */
 export async function generatePDFFromElement(element, fileName = 'certificate') {
   const canvas = await html2canvas(element, {
-    scale: 2,
+    scale: 3,
     useCORS: true,
     allowTaint: true,
     backgroundColor: '#ffffff',
@@ -56,6 +56,22 @@ export async function generatePDFFromElement(element, fileName = 'certificate') 
     height: 794,
     windowWidth: 1122,
     windowHeight: 794,
+    scrollX: 0,
+    scrollY: 0,
+    x: 0,
+    y: 0,
+    onclone: (clonedDoc, clonedEl) => {
+      // Force the cloned element to render at exact template dimensions
+      clonedEl.style.width = '1122px';
+      clonedEl.style.height = '794px';
+      clonedEl.style.position = 'fixed';
+      clonedEl.style.top = '0';
+      clonedEl.style.left = '0';
+      clonedEl.style.transform = 'none';
+      clonedEl.style.margin = '0';
+      clonedEl.style.padding = '0';
+      clonedEl.style.overflow = 'hidden';
+    }
   });
 
   const imgData = canvas.toDataURL('image/png');
