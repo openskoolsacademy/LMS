@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { FiPlus, FiEdit2, FiTrash2, FiServer, FiCheckCircle, FiXCircle, FiBarChart2, FiEye, FiMousePointer, FiPercent } from 'react-icons/fi';
 import { supabase } from '../../lib/supabase';
 import { useAlert } from '../../context/AlertContext';
-import { getBannerAnalytics } from '../ui/GlobalBanner';
 import Modal from '../ui/Modal';
 
 export default function MarketingBanners() {
@@ -11,7 +10,6 @@ export default function MarketingBanners() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingBanner, setEditingBanner] = useState(null);
   const [showReport, setShowReport] = useState(false);
-  const [analytics, setAnalytics] = useState({});
   const { showAlert } = useAlert();
 
   const LOCATIONS = ['Home', 'Dashboard', 'Careers', 'Blog'];
@@ -31,7 +29,6 @@ export default function MarketingBanners() {
 
   useEffect(() => {
     fetchBanners();
-    setAnalytics(getBannerAnalytics());
   }, []);
 
   const fetchBanners = async () => {
@@ -52,7 +49,7 @@ export default function MarketingBanners() {
   };
 
   const refreshAnalytics = () => {
-    setAnalytics(getBannerAnalytics());
+    fetchBanners(); // Re-fetch from Supabase to get latest counts
   };
 
   const handleOpenModal = (banner = null) => {
@@ -144,9 +141,9 @@ export default function MarketingBanners() {
     }
   };
 
-  // Calculate total analytics
-  const totalImpressions = Object.values(analytics).reduce((sum, a) => sum + (a.impressions || 0), 0);
-  const totalClicks = Object.values(analytics).reduce((sum, a) => sum + (a.clicks || 0), 0);
+  // Calculate total analytics from banner data (Supabase)
+  const totalImpressions = banners.reduce((sum, b) => sum + (b.impressions || 0), 0);
+  const totalClicks = banners.reduce((sum, b) => sum + (b.clicks || 0), 0);
   const overallCTR = totalImpressions > 0 ? ((totalClicks / totalImpressions) * 100).toFixed(1) : '0.0';
 
   return (
@@ -221,9 +218,9 @@ export default function MarketingBanners() {
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                   {banners.map(b => {
-                    const stats = analytics[b.id] || { impressions: 0, clicks: 0 };
+                    const stats = { impressions: b.impressions || 0, clicks: b.clicks || 0 };
                     const ctr = stats.impressions > 0 ? ((stats.clicks / stats.impressions) * 100).toFixed(1) : '0.0';
-                    const maxImpressions = Math.max(...banners.map(bb => (analytics[bb.id]?.impressions || 0)), 1);
+                    const maxImpressions = Math.max(...banners.map(bb => (bb.impressions || 0)), 1);
                     const barWidth = (stats.impressions / maxImpressions) * 100;
                     
                     return (

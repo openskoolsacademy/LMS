@@ -4,25 +4,33 @@ import { FiArrowRight } from 'react-icons/fi';
 import { supabase } from '../../lib/supabase';
 import './GlobalBanner.css';
 
-// Helper to track banner analytics in localStorage
-function trackBannerEvent(bannerId, eventType) {
-  const key = `banner_analytics_${bannerId}`;
-  const data = JSON.parse(localStorage.getItem(key) || '{"impressions":0,"clicks":0}');
-  data[eventType] = (data[eventType] || 0) + 1;
-  data.lastSeen = new Date().toISOString();
-  localStorage.setItem(key, JSON.stringify(data));
-  
-  // Also update a global analytics summary
-  const summaryKey = 'banner_analytics_summary';
-  const summary = JSON.parse(localStorage.getItem(summaryKey) || '{}');
-  if (!summary[bannerId]) summary[bannerId] = { impressions: 0, clicks: 0 };
-  summary[bannerId][eventType] = (summary[bannerId][eventType] || 0) + 1;
-  summary[bannerId].lastSeen = new Date().toISOString();
-  localStorage.setItem(summaryKey, JSON.stringify(summary));
+// Track banner analytics directly in Supabase
+async function trackBannerEvent(bannerId, eventType) {
+  try {
+    // Increment the column directly in the marketing_banners table
+    const column = eventType === 'clicks' ? 'clicks' : 'impressions';
+    
+    // Fetch current value and increment
+    const { data } = await supabase
+      .from('marketing_banners')
+      .select(column)
+      .eq('id', bannerId)
+      .single();
+    
+    if (data) {
+      await supabase
+        .from('marketing_banners')
+        .update({ [column]: (data[column] || 0) + 1 })
+        .eq('id', bannerId);
+    }
+  } catch (err) {
+    console.error('Error tracking banner event:', err);
+  }
 }
 
+// Legacy export for backward compatibility
 export function getBannerAnalytics() {
-  return JSON.parse(localStorage.getItem('banner_analytics_summary') || '{}');
+  return {};
 }
 
 export default function GlobalBanner({ location }) {
