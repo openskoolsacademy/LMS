@@ -1,0 +1,95 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+.cert-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 2000;
+  backdrop-filter: blur(8px);
+  animation: certFadeIn 0.3s ease;
+}
+
+.cert-modal-content {
+  background: #ffffff; /* pure white background */
+  border-radius: 20px;
+  padding: 0; /* remove default padding */
+  max-width: 1250px;
+  width: 95%;
+  max-height: 95vh;
+  position: relative;
+  box-shadow: 0 30px 100px -12px rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.cert-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  padding: 30px 40px 10px 40px; /* adjusted padding */
+  background: #ffffff; /* match modal body */
+  flex-shrink: 0;
+}
+
+/* Container for the 1122x794 template (A4 Landscape) */
+.cert-viewer-zoom {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  overflow: auto;
+  padding: 20px 40px 50px 40px;
+  background: #ffffff;
+  --cert-scale: 1;
+}
+
+.cert-template-scaler {
+  width: calc(1122px * var(--cert-scale));
+  height: calc(794px * var(--cert-scale));
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  border: 1px solid var(--gray-200);
+}
+
+.cert-template-scaler .cert-template-v3 {
+  transform: scale(var(--cert-scale));
+  transform-origin: top left;
+  position: absolute;
+  top: 0;
+  left: 0;
+  margin: 0 !important;
+}
+
+/* Scaling logic for responsive view */
+@media (max-width: 1250px) { .cert-viewer-zoom { --cert-scale: 0.85; } }
+@media (max-width: 992px) { .cert-viewer-zoom { --cert-scale: 0.65; } }
+@media (max-width: 768px) { 
+  .cert-viewer-zoom { --cert-scale: 0.55; padding: 20px; } 
+  .cert-actions { padding: 20px; justify-content: center; gap: 12px; } 
+}
+@media (max-width: 480px) {
+  .cert-modal-content {
+    width: 100%;
+    margin: 10px;
+    border-radius: 12px;
+  }
+  .cert-viewer-zoom { --cert-scale: 0.28; padding: 10px 10px 30px 10px; }
+  .cert-actions { padding: 16px 12px; }
+}
+
+@keyframes certFadeIn {
+  from { opacity: 0; transform: scale(0.98); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Ensure the master template itself remains 1122x794 for html2canvas */
+.cert-template-v3 {
+  flex-shrink: 0;
+  user-select: none;
+}

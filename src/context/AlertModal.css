@@ -1,0 +1,200 @@
+.pro-alert-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(4px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.pro-alert-overlay.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.pro-alert-modal {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  width: 90%;
+  max-width: 420px;
+  box-shadow: var(--shadow-xl);
+  padding: 32px;
+  position: relative;
+  transform: scale(0.95) translateY(10px);
+  opacity: 0;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+  overflow: hidden;
+}
+
+.pro-alert-modal.show {
+  transform: scale(1) translateY(0);
+  opacity: 1;
+}
+
+/* Celebration glow effect */
+.pro-alert-modal.celebrate {
+  box-shadow: 
+    var(--shadow-xl),
+    0 0 40px rgba(0, 138, 209, 0.15),
+    0 0 80px rgba(139, 92, 246, 0.1);
+  border: 2px solid rgba(16, 185, 129, 0.3);
+}
+
+.pro-alert-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  color: var(--gray-400);
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  transition: var(--transition);
+  z-index: 10;
+}
+
+.pro-alert-close:hover {
+  background: var(--gray-100);
+  color: var(--dark);
+}
+
+.pro-alert-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 16px;
+  margin-bottom: 16px;
+  position: relative;
+  z-index: 2;
+}
+
+.pro-alert-header .icon {
+  font-size: 3rem;
+  padding: 16px;
+  border-radius: 50%;
+  background: var(--gray-50);
+}
+
+.pro-alert-header .icon.success { color: var(--success); background: #f0fdf4; }
+.pro-alert-header .icon.error { color: var(--danger); background: #fef2f2; }
+.pro-alert-header .icon.warning { color: #f59e0b; background: #fffbeb; }
+.pro-alert-header .icon.info { color: var(--primary); background: var(--primary-50); }
+
+/* Celebrate icon pulse */
+.celebrate .pro-alert-header .icon.success {
+  animation: celebratePulse 0.6s ease-out;
+}
+
+@keyframes celebratePulse {
+  0% { transform: scale(0.5); opacity: 0; }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.pro-alert-header h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--dark);
+  margin: 0;
+}
+
+.pro-alert-body {
+  text-align: center;
+  color: var(--gray-600);
+  font-size: 0.938rem;
+  line-height: 1.5;
+  margin-bottom: 28px;
+  position: relative;
+  z-index: 2;
+}
+
+.pro-alert-body p {
+  margin: 0;
+}
+
+.pro-alert-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  position: relative;
+  z-index: 2;
+}
+
+.pro-alert-footer button {
+  min-width: 100px;
+  max-width: 180px;
+  font-weight: 600;
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  line-height: normal;
+  height: auto;
+}
+
+.pro-alert-footer .danger-btn {
+  background: var(--danger);
+}
+.pro-alert-footer .danger-btn:hover {
+  background: #b91c1c;
+}
+
+/* ===== Confetti Animation ===== */
+.confetti-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.confetti-particle {
+  position: absolute;
+  top: 50%;
+  left: var(--confetti-left);
+  width: var(--confetti-size);
+  height: var(--confetti-size);
+  background: var(--confetti-color);
+  border-radius: 2px;
+  opacity: 0;
+  animation: confettiFall var(--confetti-duration) ease-out var(--confetti-delay) forwards;
+  transform: rotate(var(--confetti-rotation));
+}
+
+/* Alternate shapes: every 3rd is circular, every 5th is a strip */
+.confetti-particle:nth-child(3n) {
+  border-radius: 50%;
+}
+.confetti-particle:nth-child(5n) {
+  border-radius: 1px;
+  height: calc(var(--confetti-size) * 0.4);
+}
+
+@keyframes confettiFall {
+  0% {
+    opacity: 1;
+    transform: translateY(0) translateX(0) rotate(0deg) scale(0.5);
+  }
+  20% {
+    opacity: 1;
+    transform: translateY(-80px) translateX(var(--confetti-x-drift)) rotate(180deg) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(120px) translateX(calc(var(--confetti-x-drift) * 0.5)) rotate(720deg) scale(0.3);
+  }
+}

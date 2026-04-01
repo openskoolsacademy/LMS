@@ -1,0 +1,111 @@
+.course-card {
+  background: var(--white);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: var(--transition-slow);
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+}
+.course-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.course-card__img {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 16/9;
+}
+.course-card__img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform .4s ease;
+}
+.course-card:hover .course-card__img img { transform: scale(1.05); }
+
+.course-card__badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: var(--warning);
+  color: #fff;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-size: .688rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+
+.course-card__discount {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: var(--danger);
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  font-size: .688rem;
+  font-weight: 700;
+}
+
+.course-card__body {
+  padding: 16px 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.course-card__category {
+  color: var(--primary);
+  font-size: .75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+
+.course-card__title {
+  font-size: 0.938rem;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--dark);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: calc(0.938rem * 1.4 * 2); /* Forces 2-line height for uniform card spacing */
+  margin: 2px 0;
+}
+
+.course-card__instructor {
+  font-size: .813rem;
+  color: var(--gray-500);
+  transition: color .2s;
+  cursor: pointer;
+}
+.course-card__instructor:hover { color: var(--primary); text-decoration: underline; }
+
+.course-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: .813rem;
+  color: var(--gray-600);
+  margin-top: 6px;
+  font-weight: 500;
+}
+.course-card__meta span { display: flex; align-items: center; gap: 4px; }
+
+.course-card__footer {
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid var(--gray-100);
+}
+.course-card__price { display: flex; align-items: center; gap: 10px; }
+.price-current { font-size: 1.25rem; font-weight: 800; color: var(--dark); }
+.price-original { font-size: 1rem; color: var(--gray-400); text-decoration: line-through; }

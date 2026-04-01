@@ -1,0 +1,453 @@
+/* ================================= */
+/* JOB DETAIL PAGE - PREMIUM DESIGN  */
+/* ================================= */
+
+/* Hero Section */
+.jd-hero {
+  position: relative;
+  background: #ffffff;
+  padding: 60px 0 100px;
+  overflow: hidden;
+  border-bottom: 1px solid var(--gray-100);
+}
+
+.jd-mesh-bg {
+  position: absolute;
+  inset: 0;
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(0, 138, 209, 0.05) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(59, 130, 246, 0.05) 0px, transparent 50%);
+  z-index: 0;
+}
+
+.jd-mesh-bg::after {
+  content: '';
+  position: absolute; inset: 0;
+  background-image: radial-gradient(rgba(0, 0, 0, 0.02) 1px, transparent 1px);
+  background-size: 30px 30px;
+  mask-image: linear-gradient(to bottom, black, transparent);
+  pointer-events: none;
+}
+
+.jd-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.813rem;
+  font-weight: 600;
+  color: var(--gray-400);
+  margin-bottom: 32px;
+  position: relative;
+  z-index: 1;
+}
+
+.jd-breadcrumb a {
+  color: var(--gray-500);
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+.jd-breadcrumb a:hover {
+  color: var(--primary);
+}
+
+.jd-breadcrumb svg {
+  font-size: 0.75rem;
+}
+
+.jd-breadcrumb .current {
+  color: var(--dark);
+  font-weight: 700;
+}
+
+.jd-hero-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  position: relative;
+  z-index: 1;
+}
+
+.jd-hero-main {
+  flex: 1;
+  max-width: 800px;
+}
+
+.jd-badges-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.badge-category {
+  background: var(--primary-50);
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.jd-title {
+  font-size: 3.5rem;
+  font-weight: 900;
+  color: var(--dark-800);
+  margin-bottom: 24px;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.jd-meta-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+
+.jd-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--gray-600);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.jd-meta-item svg {
+  color: var(--primary);
+  font-size: 1.125rem;
+}
+
+.jd-hero-side-action {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .jd-hero-side-action {
+    display: block;
+  }
+}
+
+.jd-trust-badge {
+  background: #f8fafc;
+  border: 1px solid var(--gray-100);
+  padding: 12px 24px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: var(--shadow-sm);
+}
+
+.jd-trust-badge svg {
+  color: #fbbf24;
+  font-size: 1.25rem;
+}
+
+.jd-trust-badge span {
+  font-size: 0.813rem;
+  font-weight: 700;
+  color: var(--gray-600);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Content Layout */
+.jd-content-wrapper {
+  background: #ffffff;
+}
+
+.jd-layout-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 40px;
+}
+
+@media (min-width: 1024px) {
+  .jd-layout-grid {
+    grid-template-columns: 1fr 360px;
+    gap: 60px;
+  }
+}
+
+.jd-main-section {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+/* Quick Stats */
+.jd-quick-stats {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 16px;
+}
+
+@media (min-width: 640px) {
+  .jd-quick-stats {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.stat-card {
+  background: #f8fafc;
+  border: 1px solid var(--gray-100);
+  padding: 20px;
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  transition: var(--transition);
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--primary-100);
+  background: #ffffff;
+  box-shadow: var(--shadow-md);
+}
+
+.stat-card svg {
+  font-size: 1.5rem;
+  color: var(--primary);
+  opacity: 0.8;
+}
+
+.stat-card label {
+  display: block;
+  font-size: 0.688rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--gray-400);
+  margin-bottom: 2px;
+}
+
+.stat-card strong {
+  font-size: 0.938rem;
+  font-weight: 700;
+  color: var(--dark);
+}
+
+.stat-card.urgent {
+  background: #fff7ed;
+  border-color: #fed7aa;
+}
+
+.stat-card.urgent svg { color: #f97316; }
+
+.stat-card.expired {
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+.stat-card.expired svg { color: #ef4444; }
+
+/* Article Content */
+.jd-article {
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+}
+
+.jd-article-section h3 {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--dark);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.jd-article-section h3 svg {
+  color: var(--primary);
+}
+
+.jd-text-content {
+  font-size: 1.063rem;
+  line-height: 1.8;
+  color: var(--dark-600);
+  white-space: pre-wrap;
+}
+
+/* Sidebar Navigation */
+.jd-sidebar-nav {
+  position: relative;
+}
+
+.jd-sidebar-card {
+  background: #ffffff;
+  border: 1px solid var(--gray-100);
+  border-radius: var(--radius-xl);
+  padding: 32px;
+  box-shadow: var(--shadow-lg);
+}
+
+@media (min-width: 1024px) {
+  .sticky-sidebar {
+    position: sticky;
+    top: 100px;
+  }
+}
+
+.sidebar-title {
+  font-size: 1.125rem;
+  font-weight: 800;
+  margin-bottom: 12px;
+}
+
+.sidebar-text {
+  font-size: 0.875rem;
+  color: var(--gray-500);
+  margin-bottom: 24px;
+}
+
+.jd-action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.full-btn {
+  width: 100%;
+}
+
+.btn-whatsapp-outline {
+  background: #f0fdf4;
+  border: 1.5px solid #bbf7d0;
+  color: #166534;
+}
+
+.btn-whatsapp-outline:hover {
+  background: #dcfce7;
+  border-color: #22c55e;
+}
+
+.btn-save-outline {
+  background: #ffffff;
+  border: 1.5px solid var(--gray-200);
+  color: var(--gray-600);
+}
+
+.btn-save-outline:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.btn-save-outline.saved {
+  background: var(--primary-50);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.jd-footer-meta {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--gray-50);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.meta-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.813rem;
+  font-weight: 600;
+  color: var(--gray-500);
+}
+
+.meta-info svg {
+  color: var(--primary);
+  opacity: 0.6;
+}
+
+/* Recommended Courses */
+.section-bg {
+  background: #f8fafc;
+  border-top: 1px solid var(--gray-100);
+}
+
+.jd-courses-grid-wrapper {
+  margin-top: 40px;
+}
+
+/* Responsive Overrides */
+@media (max-width: 768px) {
+  .jd-hero { padding: 40px 0 60px; }
+  .jd-title { font-size: 2.25rem; }
+  .jd-meta-grid { gap: 16px; }
+  .jd-meta-item { font-size: 0.875rem; }
+  .jd-layout-grid { gap: 32px; }
+  .jd-sidebar-card { padding: 24px; }
+}
+
+@media (max-width: 480px) {
+  .jd-title { font-size: 1.75rem; }
+}
+
+/* Animation */
+.animate-fade-in-up {
+  animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Walk-in Info Card */
+.walkin-info-card {
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.walkin-info-card h5 {
+  font-size: 0.938rem;
+  font-weight: 800;
+  margin-bottom: 16px;
+  color: #065f46;
+}
+
+.walkin-detail {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #047857;
+  margin-bottom: 10px;
+}
+
+.walkin-detail:last-child {
+  margin-bottom: 0;
+}
+
+.walkin-detail svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.walkin-only-notice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 18px;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: var(--radius);
+  font-size: 0.813rem;
+  font-weight: 600;
+  color: #92400e;
+  line-height: 1.5;
+}
+
+.walkin-only-notice svg {
+  flex-shrink: 0;
+  color: #d97706;
+}
+
+/* Job Mode Badges */
+.job-badge--walkin { background: #ecfdf5; color: #065f46; }
+.job-badge--apply { background: #eff6ff; color: #1e40af; }
+.job-badge--both { background: #f5f3ff; color: #5b21b6; }
