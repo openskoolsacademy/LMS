@@ -165,3 +165,49 @@
 @media (min-width: 1280px) {
   .cl-grid { grid-template-columns: repeat(3, 1fr); gap: 32px; }
 }
+
+/* Active filter tags */
+.active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.filter-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: var(--primary-50);
+  color: var(--primary);
+  font-size: 0.813rem;
+  font-weight: 600;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid rgba(0, 138, 209, 0.15);
+}
+
+.filter-tag:hover {
+  background: var(--primary);
+  color: #fff;
+}
+
+.clear-filters {
+  background: none;
+  border: none;
+  color: var(--gray-500);
+  font-size: 0.813rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 20px;
+  transition: all 0.2s;
+}
+
+.clear-filters:hover {
+  color: var(--danger, #ef4444);
+  background: rgba(239, 68, 68, 0.08);
+}
