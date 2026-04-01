@@ -235,25 +235,28 @@ export default function CertificateGenerator() {
     const { createRoot } = await import('react-dom/client');
     const root = createRoot(container);
 
+    let templateEl = null;
     await new Promise((resolve) => {
       root.render(
         <CertificatePreview
           data={cert}
           innerRef={(el) => {
-            if (el) setTimeout(resolve, 300);
+            if (el) {
+              templateEl = el;
+              setTimeout(resolve, 500);
+            }
           }}
         />
       );
     });
 
-    // Wait for all fonts to be fully loaded
+    // Wait for all fonts and images to be fully loaded
     await document.fonts.ready;
-    // Extra frame to ensure layout is settled
+    // Extra frames to ensure layout is completely settled
     await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
 
-    const el = container.querySelector('.cert-template') || container.querySelector('.cert-template-v3');
-    if (el) {
-      await downloadCertificatePDF(el, `Certificate_${cert.certificate_id}`);
+    if (templateEl) {
+      await downloadCertificatePDF(templateEl, `Certificate_${cert.certificate_id}`);
     }
     root.unmount();
     document.body.removeChild(container);
@@ -273,9 +276,11 @@ export default function CertificateGenerator() {
     try {
       const container = document.createElement('div');
       container.style.position = 'fixed';
-      container.style.left = '-9999px';
       container.style.top = '0';
-      container.style.zIndex = '-1';
+      container.style.left = '0';
+      container.style.opacity = '0';
+      container.style.pointerEvents = 'none';
+      container.style.zIndex = '-9999';
       document.body.appendChild(container);
 
       const { createRoot } = await import('react-dom/client');
@@ -291,23 +296,34 @@ export default function CertificateGenerator() {
 
         // Render certificate
         const wrapper = document.createElement('div');
+        wrapper.style.width = '1122px';
+        wrapper.style.height = '794px';
         container.appendChild(wrapper);
         const root = createRoot(wrapper);
 
+        let templateEl = null;
         await new Promise((resolve) => {
           root.render(
             <CertificatePreview
               data={cert}
-              innerRef={(el) => { if (el) setTimeout(resolve, 300); }}
+              innerRef={(el) => {
+                if (el) {
+                  templateEl = el;
+                  setTimeout(resolve, 500);
+                }
+              }}
             />
           );
         });
 
-        const el = wrapper.querySelector('.cert-template') || wrapper.querySelector('.cert-template-v3');
-        if (el) {
-          const canvas = await html2canvas(el, {
-            scale: 2, useCORS: true, allowTaint: true, backgroundColor: '#ffffff',
+        await document.fonts.ready;
+
+        if (templateEl) {
+          const canvas = await html2canvas(templateEl, {
+            scale: 3, useCORS: true, allowTaint: true, backgroundColor: '#ffffff',
             width: 1122, height: 794,
+            scrollX: -window.scrollX,
+            scrollY: -window.scrollY,
           });
           const imgData = canvas.toDataURL('image/png');
           const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });

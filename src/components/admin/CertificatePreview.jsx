@@ -30,68 +30,256 @@ export default function CertificatePreview({ data, innerRef }) {
     );
   }
 
+  // All styles defined inline for pixel-perfect html2canvas rendering
+  const S = {
+    template: {
+      width: '1122px',
+      height: '794px',
+      background: '#ffffff',
+      position: 'relative',
+      overflow: 'hidden',
+      fontFamily: "'Open Sans', 'Inter', sans-serif",
+      boxShadow: '0 25px 50px rgba(0, 0, 0, 0.15)',
+      color: '#000',
+    },
+    bgMap: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100%',
+      backgroundImage: "url('/world-map.svg')",
+      backgroundSize: 'cover',
+      backgroundRepeat: 'no-repeat',
+      backgroundPosition: 'center',
+      opacity: 0.04,
+      pointerEvents: 'none',
+    },
+    stripe: {
+      position: 'absolute',
+      top: 0,
+      bottom: 0,
+      right: '120px',
+      width: '50px',
+      backgroundColor: '#008ad1',
+      zIndex: 2,
+      overflow: 'hidden',
+    },
+    stripeText: {
+      position: 'absolute',
+      right: '-55px',
+      top: '50%',
+      transform: 'translateY(-50%) rotate(-90deg)',
+      transformOrigin: 'center',
+      fontSize: '14px',
+      letterSpacing: '2px',
+      color: '#000',
+      zIndex: 2,
+      whiteSpace: 'nowrap',
+    },
+    logo: {
+      position: 'absolute',
+      top: '60px',
+      left: '80px',
+      height: '55px',
+      zIndex: 3,
+    },
+    iso: {
+      position: 'absolute',
+      top: '130px',
+      right: '80px',
+      width: '130px',
+      height: '130px',
+      zIndex: 4,
+    },
+    content: {
+      position: 'absolute',
+      top: '180px',
+      left: '80px',
+      right: '200px',
+      zIndex: 3,
+      textAlign: 'left',
+    },
+    title: {
+      fontFamily: "'Times New Roman', serif",
+      fontSize: '3rem',
+      fontWeight: 'normal',
+      color: '#000',
+      margin: '0 0 16px 0',
+      letterSpacing: '1px',
+    },
+    subtitle: {
+      fontSize: '1.125rem',
+      color: '#333',
+      margin: 0,
+    },
+    nameWrapper: {
+      marginTop: '24px',
+      marginBottom: '24px',
+    },
+    studentName: {
+      fontFamily: "'Arial', sans-serif",
+      fontSize: '3.5rem',
+      fontWeight: 'normal',
+      color: '#000',
+      margin: '0 0 10px 0',
+    },
+    line: {
+      height: '2px',
+      width: '600px',
+      backgroundColor: '#008ad1',
+    },
+    courseInfo: {
+      fontSize: '1.25rem',
+      color: '#000',
+      lineHeight: 1.6,
+    },
+    footer: {
+      position: 'absolute',
+      bottom: '60px',
+      left: '80px',
+      right: '200px',
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'flex-end',
+      zIndex: 3,
+    },
+    founderBlock: {
+      display: 'flex',
+      flexDirection: 'column',
+      width: '250px',
+    },
+    founderSig: {
+      height: '120px',
+      objectFit: 'contain',
+      alignSelf: 'flex-start',
+      marginTop: '50px',
+      marginBottom: '-35px',
+    },
+    sigLine: {
+      height: '1px',
+      width: '100%',
+      backgroundColor: '#000',
+      marginBottom: '8px',
+    },
+    founderName: {
+      fontSize: '1.125rem',
+      fontWeight: 'bold',
+      color: '#000',
+    },
+    founderTitle: {
+      fontSize: '0.938rem',
+      fontWeight: 'bold',
+      color: '#000',
+    },
+    qrSection: {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'flex-end',
+      gap: '8px',
+      marginRight: '-25px',
+    },
+    qrWrap: {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+    },
+    qrLabel: {
+      fontSize: '0.8rem',
+      color: '#000',
+      marginBottom: '4px',
+    },
+    certDetails: {
+      textAlign: 'right',
+      fontSize: '0.875rem',
+      color: '#000',
+      lineHeight: 1.4,
+      marginBottom: '5px',
+    },
+    // Circuit decorations
+    circuitLine: (left, top, bottom, width = '1px', opacity = 0.4) => ({
+      position: 'absolute',
+      left,
+      top,
+      bottom,
+      width,
+      background: 'rgba(255, 255, 255, 0.4)',
+      opacity,
+    }),
+    circuitNode: (left, top) => ({
+      position: 'absolute',
+      width: '4px',
+      height: '4px',
+      borderRadius: '50%',
+      background: '#fff',
+      boxShadow: '0 0 8px rgba(255, 255, 255, 0.8)',
+      left,
+      top,
+    }),
+  };
+
   return (
-    <div className="cert-template-v3" ref={innerRef}>
+    <div style={S.template} ref={innerRef}>
       {/* Background Map */}
-      <div className="cert-bg-map" />
+      <div style={S.bgMap} />
 
       {/* Right side blue vertical stripe */}
-      <div className="cert-v3-stripe">
-        <div className="cert-circuit-line line-1" />
-        <div className="cert-circuit-line line-2" />
-        <div className="cert-circuit-line line-3" />
-        <div className="cert-circuit-line line-4" />
-        <div className="cert-circuit-line line-5" />
-        <div className="cert-circuit-line line-6" />
-        <div className="cert-circuit-node node-1" />
-        <div className="cert-circuit-node node-2" />
-        <div className="cert-circuit-node node-3" />
-        <div className="cert-circuit-node node-4" />
-        <div className="cert-circuit-node node-5" />
-        <div className="cert-circuit-node node-6" />
-        <div className="cert-circuit-node node-7" />
-        <div className="cert-circuit-node node-8" />
-        <div className="cert-circuit-node node-9" />
-        <div className="cert-circuit-node node-10" />
+      <div style={S.stripe}>
+        <div style={S.circuitLine('10px', '0', '0', '2px', 0.6)} />
+        <div style={S.circuitLine('20px', '0', '40%', '1px', 0.4)} />
+        <div style={S.circuitLine('30px', '20%', '0', '1px', 0.3)} />
+        <div style={S.circuitLine('40px', '10%', '60%', '2px', 0.5)} />
+        <div style={S.circuitLine('15px', '50%', '10%', '1px', 0.4)} />
+        <div style={S.circuitLine('35px', '30%', '0', '1.5px', 0.2)} />
+        <div style={S.circuitNode('8px', '120px')} />
+        <div style={S.circuitNode('18px', '60%')} />
+        <div style={S.circuitNode('38px', '35%')} />
+        <div style={S.circuitNode('28px', '480px')} />
+        <div style={S.circuitNode('18px', '15%')} />
+        <div style={S.circuitNode('33px', '85%')} />
+        <div style={S.circuitNode('13px', '280px')} />
+        <div style={S.circuitNode('38px', '200px')} />
+        <div style={S.circuitNode('23px', '72%')} />
+        <div style={S.circuitNode('10px', '92%')} />
       </div>
 
       {/* Vertical rotated text */}
-      <div className="cert-v3-stripe-text">www.openskools.com</div>
+      <div style={S.stripeText}>www.openskools.com</div>
 
       {/* Header elements */}
-      <img src="/logo.svg" alt="Open Skools" className="cert-v3-logo" />
-      <img src="/Gold-ISO-Seal.png" alt="ISO Certified" className="cert-v3-iso" />
+      <img src="/logo.svg" alt="Open Skools" style={S.logo} crossOrigin="anonymous" />
+      <img src="/Gold-ISO-Seal.png" alt="ISO Certified" style={S.iso} crossOrigin="anonymous" />
 
       {/* Main Content Area */}
-      <div className="cert-v3-content">
-        <h1 className="cert-v3-title">CERTIFICATE OF COMPLETION</h1>
-        <p className="cert-v3-subtitle">This certificate is proudly presented to</p>
+      <div style={S.content}>
+        <h1 style={S.title}>CERTIFICATE OF COMPLETION</h1>
+        <p style={S.subtitle}>This certificate is proudly presented to</p>
         
-        <div className="cert-v3-name-wrapper">
-          <h2 className="cert-v3-student-name">{student_name}</h2>
-          <div className="cert-v3-line" />
+        <div style={S.nameWrapper}>
+          <h2 style={S.studentName}>{student_name}</h2>
+          <div style={S.line} />
         </div>
 
-        <div className="cert-v3-course-info">
+        <div style={S.courseInfo}>
           for successfully completing <strong>{course_name}</strong><br />
           {dateText}
         </div>
       </div>
 
       {/* Footer Area */}
-      <div className="cert-v3-footer">
+      <div style={S.footer}>
         {/* Left: Founder Signature */}
-        <div className="cert-v3-founder-block">
-          <img src="/Founder-sign.png" alt="Founder Signature" className="cert-v3-founder-sig" />
-          <div className="cert-v3-sig-line" />
-          <div className="cert-v3-founder-name">Karthik Selva Siva</div>
-          <div className="cert-v3-founder-title">Founder & Managing Director</div>
+        <div style={S.founderBlock}>
+          <img src="/Founder-sign.png" alt="Founder Signature" style={S.founderSig} crossOrigin="anonymous" />
+          <div style={S.sigLine} />
+          <div style={S.founderName}>Karthik Selva Siva</div>
+          <div style={S.founderTitle}>Founder & Managing Director</div>
         </div>
 
         {/* Right: QR Code and Cert Details */}
-        <div className="cert-v3-qr-section">
-          <div className="cert-v3-qr-wrap">
-            <div className="cert-v3-qr-label">Scan To Verify</div>
+        <div style={S.qrSection}>
+          <div style={S.qrWrap}>
+            <div style={S.qrLabel}>Scan To Verify</div>
             <QRCodeCanvas
               value={verifyUrl}
               size={85}
@@ -101,7 +289,7 @@ export default function CertificatePreview({ data, innerRef }) {
               includeMargin={false}
             />
           </div>
-          <div className="cert-v3-cert-details">
+          <div style={S.certDetails}>
             CERTIFICATE CODE: {certificate_id}<br />
             {getCertTypeLabel(certificate_type)}
           </div>
