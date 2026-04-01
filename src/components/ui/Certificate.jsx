@@ -39,6 +39,9 @@ export default function Certificate({ certificateData, onClose }) {
       // Force layout recalculation at 1:1
       await new Promise(r => setTimeout(r, 100));
 
+      // Wait for fonts to be fully loaded
+      await document.fonts.ready;
+
       const canvas = await html2canvas(el, {
         scale: 3,
         useCORS: true,
@@ -46,22 +49,8 @@ export default function Certificate({ certificateData, onClose }) {
         backgroundColor: '#ffffff',
         width: 1122,
         height: 794,
-        windowWidth: 1122,
-        windowHeight: 794,
-        scrollX: 0,
-        scrollY: 0,
-        x: 0,
-        y: 0,
-        onclone: (clonedDoc, clonedEl) => {
-          clonedEl.style.width = '1122px';
-          clonedEl.style.height = '794px';
-          clonedEl.style.position = 'fixed';
-          clonedEl.style.top = '0';
-          clonedEl.style.left = '0';
-          clonedEl.style.transform = 'none';
-          clonedEl.style.margin = '0';
-          clonedEl.style.overflow = 'hidden';
-        }
+        scrollX: -window.scrollX,
+        scrollY: -window.scrollY,
       });
 
       // Restore original scale

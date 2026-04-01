@@ -218,15 +218,17 @@ export default function CertificateGenerator() {
 
   // Download single PDF
   const handleDownloadPDF = async (cert) => {
-    // Create a temporary container at exact certificate dimensions
+    // Create a container that is ON-SCREEN but invisible (behind everything)
+    // This ensures the browser renders fonts identically to the visible preview
     const container = document.createElement('div');
     container.style.position = 'fixed';
-    container.style.left = '-9999px';
     container.style.top = '0';
+    container.style.left = '0';
     container.style.width = '1122px';
     container.style.height = '794px';
-    container.style.overflow = 'hidden';
-    container.style.zIndex = '-1';
+    container.style.opacity = '0';
+    container.style.pointerEvents = 'none';
+    container.style.zIndex = '-9999';
     document.body.appendChild(container);
 
     // Render using React
@@ -234,17 +236,20 @@ export default function CertificateGenerator() {
     const root = createRoot(container);
 
     await new Promise((resolve) => {
-      const ref = { current: null };
       root.render(
         <CertificatePreview
           data={cert}
           innerRef={(el) => {
-            ref.current = el;
-            if (el) setTimeout(resolve, 500);
+            if (el) setTimeout(resolve, 300);
           }}
         />
       );
     });
+
+    // Wait for all fonts to be fully loaded
+    await document.fonts.ready;
+    // Extra frame to ensure layout is settled
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
 
     const el = container.querySelector('.cert-template') || container.querySelector('.cert-template-v3');
     if (el) {
