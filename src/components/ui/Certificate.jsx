@@ -40,12 +40,14 @@ export default function Certificate({ certificateData, onClose }) {
       await new Promise(r => setTimeout(r, 100));
 
       const canvas = await html2canvas(el, {
-        scale: 2, // Standard high resolution
+        scale: 2,
         useCORS: true,
         logging: false,
         backgroundColor: '#ffffff',
-        width: 1122, // Fixed A4 Landscape width
-        height: 794 // Fixed A4 Landscape height
+        width: 1122,
+        height: 794,
+        windowWidth: 1122,
+        windowHeight: 794
       });
 
       // Restore original scale

@@ -218,11 +218,14 @@ export default function CertificateGenerator() {
 
   // Download single PDF
   const handleDownloadPDF = async (cert) => {
-    // Create a temporary hidden container for rendering
+    // Create a temporary container at exact certificate dimensions
     const container = document.createElement('div');
     container.style.position = 'fixed';
     container.style.left = '-9999px';
     container.style.top = '0';
+    container.style.width = '1122px';
+    container.style.height = '794px';
+    container.style.overflow = 'hidden';
     container.style.zIndex = '-1';
     document.body.appendChild(container);
 

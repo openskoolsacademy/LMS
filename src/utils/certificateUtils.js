@@ -52,8 +52,10 @@ export async function generatePDFFromElement(element, fileName = 'certificate') 
     useCORS: true,
     allowTaint: true,
     backgroundColor: '#ffffff',
-    width: 1122,   // A4 landscape at 96dpi ~11.69in
-    height: 794,   // A4 landscape at 96dpi ~8.27in
+    width: 1122,
+    height: 794,
+    windowWidth: 1122,
+    windowHeight: 794,
   });
 
   const imgData = canvas.toDataURL('image/png');
