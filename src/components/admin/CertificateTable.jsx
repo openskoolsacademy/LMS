@@ -172,8 +172,8 @@ export default function CertificateTable({
                       {c.status === 'active' ? '✓ Active' : '✗ Revoked'}
                     </span>
                   </td>
-                  <td>
-                    <div style={{ display: 'flex', gap: 6 }}>
+                  <td style={{ minWidth: 180 }}>
+                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                       <button className="btn btn-outline btn-sm" onClick={() => setPreviewCert(c)} title="Preview">
                         <FiEye />
                       </button>

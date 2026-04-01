@@ -27,8 +27,17 @@ export default function Certificate({ certificateData, onClose }) {
     if (!certRef.current) return;
     
     try {
-      const el = certRef.current.querySelector('.cert-template-v3');
+      const scaler = certRef.current;
+      const el = scaler.querySelector('.cert-template-v3');
       if (!el) throw new Error("Template element not found");
+
+      // Temporarily override the scaler to render at full 1:1 size for accurate capture
+      const viewerZoom = scaler.closest('.cert-viewer-zoom');
+      const origScale = viewerZoom ? getComputedStyle(viewerZoom).getPropertyValue('--cert-scale') : '1';
+      if (viewerZoom) viewerZoom.style.setProperty('--cert-scale', '1');
+      
+      // Force layout recalculation at 1:1
+      await new Promise(r => setTimeout(r, 100));
 
       const canvas = await html2canvas(el, {
         scale: 2, // Standard high resolution
@@ -38,6 +47,9 @@ export default function Certificate({ certificateData, onClose }) {
         width: 1122, // Fixed A4 Landscape width
         height: 794 // Fixed A4 Landscape height
       });
+
+      // Restore original scale
+      if (viewerZoom) viewerZoom.style.setProperty('--cert-scale', origScale);
       
       const imgData = canvas.toDataURL('image/png', 1.0);
       const pdf = new jsPDF({

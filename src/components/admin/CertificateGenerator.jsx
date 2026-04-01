@@ -147,12 +147,14 @@ export default function CertificateGenerator() {
             await logCertificateAction({
               certificate_id: rec.certificate_id,
               student_name: rec.student_name,
-              student_email: rec.student_email || 'N/A', // Assuming email might be missing in bulk
+              student_email: rec.student_email || 'N/A',
               course_name: rec.course_name,
               certificate_type: rec.certificate_type,
               issued_by: 'Admin',
               user_id: rec.user_id || null,
-              course_id: rec.course_id || null
+              course_id: rec.course_id || null,
+              start_date: rec.start_date || null,
+              end_date: rec.end_date || null
             });
           }
         }

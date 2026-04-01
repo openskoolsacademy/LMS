@@ -73,6 +73,8 @@ export async function logCertificateAction(data) {
       status: 'active',
       user_id: data.user_id || null,
       course_id: data.course_id || null,
+      start_date: data.start_date || null,
+      end_date: data.end_date || null,
       issued_at: new Date().toISOString()
     });
     
