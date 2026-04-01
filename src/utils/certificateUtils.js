@@ -41,13 +41,160 @@ export function generateBulkCertificateIds(count, existingIds = []) {
 }
 
 /**
- * Generate a PDF from a DOM element
- * @param {HTMLElement} element - The DOM element to capture
- * @param {string} fileName - Output file name
- * @returns {Promise<Blob>} PDF blob
+ * Print a certificate as PDF using the browser's native print engine.
+ * Opens a popup window with the certificate at full size and triggers window.print().
+ * This guarantees pixel-perfect output identical to the preview.
+ * 
+ * @param {HTMLElement} element - The rendered certificate DOM element
+ * @param {string} fileName - Used for the page title
+ */
+export function printCertificateAsPDF(element, fileName = 'Certificate') {
+  // Clone the element to avoid modifying the original
+  const clone = element.cloneNode(true);
+
+  // Convert any <canvas> elements (QR codes) to <img> with data URLs
+  const originalCanvases = element.querySelectorAll('canvas');
+  const clonedCanvases = clone.querySelectorAll('canvas');
+  originalCanvases.forEach((canvas, i) => {
+    try {
+      const img = document.createElement('img');
+      img.src = canvas.toDataURL('image/png');
+      img.width = canvas.width;
+      img.height = canvas.height;
+      img.style.width = canvas.style.width || canvas.width + 'px';
+      img.style.height = canvas.style.height || canvas.height + 'px';
+      if (clonedCanvases[i] && clonedCanvases[i].parentNode) {
+        clonedCanvases[i].parentNode.replaceChild(img, clonedCanvases[i]);
+      }
+    } catch (e) {
+      console.warn('Could not convert canvas to image:', e);
+    }
+  });
+
+  // Remove box-shadow from the template (not needed in print)
+  clone.style.boxShadow = 'none';
+
+  // Convert relative image paths to absolute URLs
+  const origin = window.location.origin;
+  clone.querySelectorAll('img').forEach(img => {
+    if (img.src && img.src.startsWith('/')) {
+      img.src = origin + img.src;
+    }
+  });
+
+  const certHTML = clone.outerHTML;
+
+  // Open a popup window for printing
+  const printWindow = window.open('', '_blank', `width=1200,height=850,scrollbars=no,resizable=no`);
+  if (!printWindow) {
+    alert('Please allow popups for this site to download certificates.');
+    return;
+  }
+
+  printWindow.document.write(`<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>${fileName}</title>
+  <style>
+    @page {
+      size: A4 landscape;
+      margin: 0;
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    html, body {
+      width: 297mm;
+      height: 210mm;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: #fff;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+      color-adjust: exact !important;
+    }
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    /* Scale the 1122x794 template to fit A4 landscape (297mm x 210mm) */
+    .cert-print-container {
+      width: 297mm;
+      height: 210mm;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .cert-print-container > div {
+      transform-origin: top left;
+      /* 297mm ≈ 1122px at 96dpi, 210mm ≈ 794px at 96dpi — exact match */
+    }
+    @media print {
+      html, body {
+        width: 297mm;
+        height: 210mm;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+    }
+    @media screen {
+      body {
+        background: #f0f0f0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="cert-print-container">
+    ${certHTML}
+  </div>
+  <script>
+    // Wait for all images to load, then auto-print
+    function waitAndPrint() {
+      var images = document.querySelectorAll('img');
+      var loaded = 0;
+      var total = images.length;
+      
+      if (total === 0) {
+        setTimeout(function() { window.print(); }, 300);
+        return;
+      }
+      
+      images.forEach(function(img) {
+        if (img.complete) {
+          loaded++;
+          if (loaded >= total) setTimeout(function() { window.print(); }, 300);
+        } else {
+          img.onload = img.onerror = function() {
+            loaded++;
+            if (loaded >= total) setTimeout(function() { window.print(); }, 300);
+          };
+        }
+      });
+    }
+    
+    // Start after DOM is ready
+    if (document.readyState === 'complete') {
+      waitAndPrint();
+    } else {
+      window.addEventListener('load', waitAndPrint);
+    }
+  </script>
+</body>
+</html>`);
+  printWindow.document.close();
+}
+
+/**
+ * Legacy: Generate PDF from element using html2canvas (kept for bulk download)
  */
 export async function generatePDFFromElement(element, fileName = 'certificate') {
-  // Ensure fonts are fully loaded before capture
   await document.fonts.ready;
 
   const canvas = await html2canvas(element, {
@@ -76,7 +223,7 @@ export async function generatePDFFromElement(element, fileName = 'certificate') 
 }
 
 /**
- * Download a single certificate as PDF
+ * Legacy: Download a single certificate as PDF using html2canvas (kept for backward compat)
  */
 export async function downloadCertificatePDF(element, fileName = 'certificate') {
   const pdf = await generatePDFFromElement(element, fileName);

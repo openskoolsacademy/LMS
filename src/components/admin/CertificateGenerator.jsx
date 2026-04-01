@@ -10,6 +10,7 @@ import {
 import {
   generateCertificateId,
   generateBulkCertificateIds,
+  printCertificateAsPDF,
   downloadCertificatePDF,
   downloadCertificatesAsZip,
   getCertTypeLabel,
@@ -216,10 +217,9 @@ export default function CertificateGenerator() {
     }
   };
 
-  // Download single PDF
+  // Download single PDF using browser's native print engine (pixel-perfect)
   const handleDownloadPDF = async (cert) => {
-    // Create a container that is ON-SCREEN but invisible (behind everything)
-    // This ensures the browser renders fonts identically to the visible preview
+    // Create a temporary on-screen container to render the certificate
     const container = document.createElement('div');
     container.style.position = 'fixed';
     container.style.top = '0';
@@ -231,7 +231,6 @@ export default function CertificateGenerator() {
     container.style.zIndex = '-9999';
     document.body.appendChild(container);
 
-    // Render using React
     const { createRoot } = await import('react-dom/client');
     const root = createRoot(container);
 
@@ -250,13 +249,10 @@ export default function CertificateGenerator() {
       );
     });
 
-    // Wait for all fonts and images to be fully loaded
     await document.fonts.ready;
-    // Extra frames to ensure layout is completely settled
-    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
 
     if (templateEl) {
-      await downloadCertificatePDF(templateEl, `Certificate_${cert.certificate_id}`);
+      printCertificateAsPDF(templateEl, `Certificate_${cert.certificate_id}`);
     }
     root.unmount();
     document.body.removeChild(container);

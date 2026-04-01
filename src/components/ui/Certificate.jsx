@@ -1,9 +1,7 @@
 import { useRef } from 'react';
-import html2canvas from 'html2canvas';
-import { jsPDF } from 'jspdf';
 import { useAlert } from '../../context/AlertContext';
+import { printCertificateAsPDF } from '../../utils/certificateUtils';
 import CertificatePreview from '../admin/CertificatePreview';
-import '../admin/CertificateGenerator.css'; // Master template styles
 import './Certificate.css'; // Modal layout styles
 
 /**
@@ -23,50 +21,14 @@ export default function Certificate({ certificateData, onClose }) {
     date_of_completion: certificateData.issuedAt || new Date().toISOString()
   };
 
-  const downloadCertificate = async () => {
+  const downloadCertificate = () => {
     if (!certRef.current) return;
     
     try {
-      const scaler = certRef.current;
-      const el = scaler.querySelector('.cert-template-v3');
-      if (!el) throw new Error("Template element not found");
-
-      // Temporarily override the scaler to render at full 1:1 size for accurate capture
-      const viewerZoom = scaler.closest('.cert-viewer-zoom');
-      const origScale = viewerZoom ? getComputedStyle(viewerZoom).getPropertyValue('--cert-scale') : '1';
-      if (viewerZoom) viewerZoom.style.setProperty('--cert-scale', '1');
-      
-      // Force layout recalculation at 1:1
-      await new Promise(r => setTimeout(r, 100));
-
-      // Wait for fonts to be fully loaded
-      await document.fonts.ready;
-
-      const canvas = await html2canvas(el, {
-        scale: 3,
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff',
-        width: 1122,
-        height: 794,
-        scrollX: -window.scrollX,
-        scrollY: -window.scrollY,
-      });
-
-      // Restore original scale
-      if (viewerZoom) viewerZoom.style.setProperty('--cert-scale', origScale);
-      
-      const imgData = canvas.toDataURL('image/png', 1.0);
-      const pdf = new jsPDF({
-        orientation: 'landscape',
-        unit: 'mm',
-        format: 'a4'
-      });
-      
-      const pdfW = pdf.internal.pageSize.getWidth();
-      const pdfH = pdf.internal.pageSize.getHeight();
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfW, pdfH);
-      pdf.save(`OpenSkools_Certificate_${certificateData.id.slice(0, 8).toUpperCase()}.pdf`);
+      printCertificateAsPDF(
+        certRef.current,
+        `OpenSkools_Certificate_${certificateData.id.slice(0, 8).toUpperCase()}`
+      );
     } catch (err) {
       console.error("Error generating PDF:", err);
       showAlert("Failed to generate PDF", "Export Error", "error");
@@ -83,8 +45,8 @@ export default function Certificate({ certificateData, onClose }) {
         
         {/* Render the Master Template as a READ-ONLY reference */}
         <div className="cert-viewer-zoom">
-          <div className="cert-template-scaler" ref={certRef}>
-            <CertificatePreview data={masterData} />
+          <div className="cert-template-scaler">
+            <CertificatePreview data={masterData} innerRef={certRef} />
           </div>
         </div>
       </div>
