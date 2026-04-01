@@ -219,7 +219,7 @@ export default function CertificatePreview({ data, innerRef }) {
   };
 
   return (
-    <div style={S.template} ref={innerRef}>
+    <div className="cert-template-v3" style={S.template} ref={innerRef}>
       {/* Background Map */}
       <div style={S.bgMap} />
 

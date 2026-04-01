@@ -14,9 +14,9 @@
 }
 
 .cert-modal-content {
-  background: #ffffff; /* pure white background */
+  background: #ffffff;
   border-radius: 20px;
-  padding: 0; /* remove default padding */
+  padding: 0;
   max-width: 1250px;
   width: 95%;
   max-height: 95vh;
@@ -31,8 +31,8 @@
   display: flex;
   justify-content: flex-end;
   gap: 16px;
-  padding: 30px 40px 10px 40px; /* adjusted padding */
-  background: #ffffff; /* match modal body */
+  padding: 24px 40px 10px 40px;
+  background: #ffffff;
   flex-shrink: 0;
 }
 
@@ -41,55 +41,138 @@
   flex: 1;
   display: flex;
   justify-content: center;
-  align-items: flex-start;
+  align-items: center;
   overflow: auto;
-  padding: 20px 40px 50px 40px;
+  padding: 20px 40px 40px 40px;
   background: #ffffff;
-  --cert-scale: 1;
+  min-height: 0; /* Allow flex shrinking */
 }
 
+/* The scaler wraps the certificate and applies CSS transform scaling */
 .cert-template-scaler {
-  width: calc(1122px * var(--cert-scale));
-  height: calc(794px * var(--cert-scale));
+  flex-shrink: 0;
   position: relative;
-  overflow: hidden;
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   border: 1px solid var(--gray-200);
+  /* Use transform-based scaling that doesn't affect the inner element's layout */
 }
 
-.cert-template-scaler .cert-template-v3 {
-  transform: scale(var(--cert-scale));
-  transform-origin: top left;
-  position: absolute;
-  top: 0;
-  left: 0;
-  margin: 0 !important;
+/* Ensure the master template itself remains fixed at 1122x794 */
+.cert-template-v3 {
+  flex-shrink: 0;
+  user-select: none;
 }
 
-/* Scaling logic for responsive view */
-@media (max-width: 1250px) { .cert-viewer-zoom { --cert-scale: 0.85; } }
-@media (max-width: 992px) { .cert-viewer-zoom { --cert-scale: 0.65; } }
-@media (max-width: 768px) { 
-  .cert-viewer-zoom { --cert-scale: 0.55; padding: 20px; } 
-  .cert-actions { padding: 20px; justify-content: center; gap: 12px; } 
+/* Desktop: Full size with slight padding */
+@media (min-width: 1251px) {
+  .cert-template-scaler {
+    transform: scale(0.85);
+    transform-origin: center center;
+    width: 1122px;
+    height: 794px;
+  }
 }
+
+/* Tablet landscape */
+@media (max-width: 1250px) and (min-width: 993px) {
+  .cert-template-scaler {
+    transform: scale(0.7);
+    transform-origin: center center;
+    width: 1122px;
+    height: 794px;
+  }
+}
+
+/* Tablet portrait */
+@media (max-width: 992px) and (min-width: 769px) {
+  .cert-template-scaler {
+    transform: scale(0.55);
+    transform-origin: center center;
+    width: 1122px;
+    height: 794px;
+  }
+  .cert-viewer-zoom {
+    padding: 20px;
+    /* Fixed height for scaled certificate to prevent cropping */
+    min-height: calc(794px * 0.55 + 40px);
+  }
+}
+
+/* Mobile landscape & small tablets */
+@media (max-width: 768px) and (min-width: 481px) {
+  .cert-modal-content {
+    width: 98%;
+    border-radius: 14px;
+  }
+  .cert-template-scaler {
+    transform: scale(0.45);
+    transform-origin: top center;
+    width: 1122px;
+    height: 794px;
+  }
+  .cert-viewer-zoom {
+    padding: 16px;
+    align-items: flex-start;
+    /* Set a fixed height for the scaled content */
+    min-height: calc(794px * 0.45 + 32px);
+    max-height: calc(794px * 0.45 + 32px);
+  }
+  .cert-actions {
+    padding: 16px 20px;
+    justify-content: center;
+    gap: 12px;
+  }
+}
+
+/* Mobile portrait */
 @media (max-width: 480px) {
+  .cert-modal-overlay {
+    padding: 8px;
+  }
   .cert-modal-content {
     width: 100%;
-    margin: 10px;
     border-radius: 12px;
+    max-height: 90vh;
   }
-  .cert-viewer-zoom { --cert-scale: 0.28; padding: 10px 10px 30px 10px; }
-  .cert-actions { padding: 16px 12px; }
+  .cert-template-scaler {
+    transform: scale(0.3);
+    transform-origin: top center;
+    width: 1122px;
+    height: 794px;
+  }
+  .cert-viewer-zoom {
+    padding: 12px;
+    align-items: flex-start;
+    overflow-y: auto;
+    /* Set a fixed height matching the scaled certificate */
+    min-height: calc(794px * 0.3 + 24px);
+    max-height: calc(794px * 0.3 + 24px);
+  }
+  .cert-actions {
+    padding: 14px 12px;
+    justify-content: center;
+    gap: 10px;
+  }
+  .cert-actions .btn {
+    font-size: 0.813rem;
+    padding: 8px 16px;
+  }
+}
+
+/* Ultra-small screens (iPhone SE, etc.) */
+@media (max-width: 375px) {
+  .cert-template-scaler {
+    transform: scale(0.25);
+    transform-origin: top center;
+  }
+  .cert-viewer-zoom {
+    min-height: calc(794px * 0.25 + 20px);
+    max-height: calc(794px * 0.25 + 20px);
+    padding: 10px;
+  }
 }
 
 @keyframes certFadeIn {
   from { opacity: 0; transform: scale(0.98); }
   to { opacity: 1; transform: scale(1); }
-}
-
-/* Ensure the master template itself remains 1122x794 for html2canvas */
-.cert-template-v3 {
-  flex-shrink: 0;
-  user-select: none;
 }

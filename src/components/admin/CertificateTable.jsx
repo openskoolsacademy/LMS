@@ -4,6 +4,7 @@ import { getCertTypeLabel, getCertTypeColor, CERTIFICATE_TYPES } from '../../uti
 import { exportToExcel } from '../../utils/excelExport';
 import CertificatePreview from './CertificatePreview';
 import Modal from '../ui/Modal';
+import '../ui/Certificate.css';
 
 /**
  * CertificateTable — Displays all generated certificates with filters, search, actions.
@@ -229,8 +230,8 @@ export default function CertificateTable({
       <Modal isOpen={!!previewCert} onClose={() => setPreviewCert(null)} title="Certificate Preview" size="lg">
         {previewCert && (
           <div className="cert-preview-modal">
-            <div className="cert-preview-wrapper">
-              <div style={{ transform: 'scale(0.6)', transformOrigin: 'top center' }}>
+            <div className="cert-preview-wrapper" style={{ display: 'flex', justifyContent: 'center', overflow: 'auto', padding: '20px' }}>
+              <div className="cert-template-scaler">
                 <CertificatePreview data={previewCert} innerRef={printRef} />
               </div>
             </div>
