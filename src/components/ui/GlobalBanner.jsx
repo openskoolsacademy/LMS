@@ -4,25 +4,14 @@ import { FiArrowRight } from 'react-icons/fi';
 import { supabase } from '../../lib/supabase';
 import './GlobalBanner.css';
 
-// Track banner analytics directly in Supabase
+// Track banner analytics directly in Supabase using atomic RPC
 async function trackBannerEvent(bannerId, eventType) {
   try {
-    // Increment the column directly in the marketing_banners table
-    const column = eventType === 'clicks' ? 'clicks' : 'impressions';
+    const rpcName = eventType === 'clicks' 
+      ? 'increment_banner_clicks' 
+      : 'increment_banner_impressions';
     
-    // Fetch current value and increment
-    const { data } = await supabase
-      .from('marketing_banners')
-      .select(column)
-      .eq('id', bannerId)
-      .single();
-    
-    if (data) {
-      await supabase
-        .from('marketing_banners')
-        .update({ [column]: (data[column] || 0) + 1 })
-        .eq('id', bannerId);
-    }
+    await supabase.rpc(rpcName, { banner_id: bannerId });
   } catch (err) {
     console.error('Error tracking banner event:', err);
   }
