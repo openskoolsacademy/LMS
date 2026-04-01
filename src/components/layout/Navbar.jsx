@@ -30,6 +30,10 @@ export default function Navbar() {
   return (
     <header className="navbar">
       <div className="container navbar__inner">
+        <button className={`navbar__hamburger ${mobileOpen ? 'is-active' : ''}`} onClick={toggleMobile} aria-label="Menu">
+          {mobileOpen ? <FiX /> : <FiMenu />}
+        </button>
+
         <Link to="/" className="navbar__logo" onClick={closeMobile}>
           <img src="/logo.svg" alt="Open Skools Academy Logo" className="brand-logo" />
         </Link>
@@ -70,9 +74,6 @@ export default function Navbar() {
               <ProfileDropdown />
             </div>
           )}
-          <button className={`navbar__hamburger ${mobileOpen ? 'is-active' : ''}`} onClick={toggleMobile} aria-label="Menu">
-            {mobileOpen ? <FiX /> : <FiMenu />}
-          </button>
         </div>
       </div>
     </header>
