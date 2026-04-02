@@ -102,16 +102,18 @@ export default function CertificatePreview({ data, innerRef }) {
     },
     title: {
       fontFamily: "'Times New Roman', serif",
-      fontSize: '3rem',
+      fontSize: '48px',
       fontWeight: 'normal',
       color: '#000',
       margin: '0 0 16px 0',
       letterSpacing: '1px',
+      lineHeight: '1.1',
     },
     subtitle: {
-      fontSize: '1.125rem',
+      fontSize: '18px',
       color: '#333',
       margin: 0,
+      lineHeight: '1.4',
     },
     nameWrapper: {
       marginTop: '24px',
@@ -119,10 +121,11 @@ export default function CertificatePreview({ data, innerRef }) {
     },
     studentName: {
       fontFamily: "'Arial', sans-serif",
-      fontSize: '3.5rem',
+      fontSize: '56px',
       fontWeight: 'normal',
       color: '#000',
       margin: '0 0 10px 0',
+      lineHeight: '1.2',
     },
     line: {
       height: '2px',
@@ -130,9 +133,9 @@ export default function CertificatePreview({ data, innerRef }) {
       backgroundColor: '#008ad1',
     },
     courseInfo: {
-      fontSize: '1.25rem',
+      fontSize: '20px',
       color: '#000',
-      lineHeight: 1.6,
+      lineHeight: '1.6',
     },
     footer: {
       position: 'absolute',
@@ -163,14 +166,16 @@ export default function CertificatePreview({ data, innerRef }) {
       marginBottom: '8px',
     },
     founderName: {
-      fontSize: '1.125rem',
+      fontSize: '18px',
       fontWeight: 'bold',
       color: '#000',
+      lineHeight: '1.4',
     },
     founderTitle: {
-      fontSize: '0.938rem',
+      fontSize: '15px',
       fontWeight: 'bold',
       color: '#000',
+      lineHeight: '1.4',
     },
     qrSection: {
       display: 'flex',
@@ -185,15 +190,16 @@ export default function CertificatePreview({ data, innerRef }) {
       alignItems: 'center',
     },
     qrLabel: {
-      fontSize: '0.8rem',
+      fontSize: '13px',
       color: '#000',
       marginBottom: '4px',
+      lineHeight: '1.3',
     },
     certDetails: {
       textAlign: 'right',
-      fontSize: '0.875rem',
+      fontSize: '14px',
       color: '#000',
-      lineHeight: 1.4,
+      lineHeight: '1.4',
       marginBottom: '5px',
     },
     // Circuit decorations

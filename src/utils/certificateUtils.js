@@ -108,6 +108,9 @@ function prepareOffscreenClone(element) {
     opacity: 0;
     pointer-events: none;
     z-index: -9999;
+    font-size: 16px;
+    font-family: 'Open Sans', 'Inter', sans-serif;
+    line-height: normal;
   `;
   container.appendChild(clone);
   document.body.appendChild(container);
