@@ -227,15 +227,15 @@ export default function CertificateTable({
       )}
 
       {/* Preview Modal */}
-      <Modal isOpen={!!previewCert} onClose={() => setPreviewCert(null)} title="Certificate Preview" size="lg">
+      <Modal isOpen={!!previewCert} onClose={() => setPreviewCert(null)} title="Certificate Preview" size="xl">
         {previewCert && (
           <div className="cert-preview-modal">
-            <div className="cert-preview-wrapper" style={{ display: 'flex', justifyContent: 'center', overflow: 'auto', padding: '20px' }}>
+            <div className="cert-viewer-zoom" style={{ padding: '0', minHeight: '600px', overflow: 'hidden', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
               <div className="cert-template-scaler">
                 <CertificatePreview data={previewCert} innerRef={printRef} />
               </div>
             </div>
-            <div className="cert-preview-modal-actions">
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '20px' }}>
               <button className="btn btn-outline" onClick={() => setPreviewCert(null)}>Close</button>
               <button className="btn btn-primary" onClick={() => { onDownloadPDF(previewCert); }}>
                 <FiDownload style={{ marginRight: 6 }} /> Download PDF
