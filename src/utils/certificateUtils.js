@@ -41,15 +41,26 @@ export function generateBulkCertificateIds(count, existingIds = []) {
 }
 
 /**
- * Print a certificate as PDF using the browser's native print engine.
- * Opens a popup window with the certificate at full size and triggers window.print().
- * This guarantees pixel-perfect output identical to the preview.
- * 
- * @param {HTMLElement} element - The rendered certificate DOM element
- * @param {string} fileName - Used for the page title
+ * A4 Landscape dimensions in mm
  */
-export function printCertificateAsPDF(element, fileName = 'Certificate') {
-  // Clone the element to avoid modifying the original
+const A4_WIDTH_MM = 297;
+const A4_HEIGHT_MM = 210;
+
+/**
+ * Template dimensions in px (the fixed certificate layout size)
+ */
+const TEMPLATE_WIDTH_PX = 1122;
+const TEMPLATE_HEIGHT_PX = 794;
+
+/**
+ * Helper: Prepare an offscreen clone of the certificate element for capture.
+ * - Clones the element
+ * - Converts <canvas> (QR codes) to <img>
+ * - Strips box-shadow
+ * - Places it offscreen at the fixed template size
+ * Returns { container, clone } — caller must remove container when done.
+ */
+function prepareOffscreenClone(element) {
   const clone = element.cloneNode(true);
 
   // Convert any <canvas> elements (QR codes) to <img> with data URLs
@@ -71,155 +82,123 @@ export function printCertificateAsPDF(element, fileName = 'Certificate') {
     }
   });
 
-  // Remove box-shadow from the template (not needed in print)
+  // Remove visual artefacts that shouldn't appear in the PDF
   clone.style.boxShadow = 'none';
+  clone.style.border = 'none';
+  clone.style.borderRadius = '0';
 
-  // Convert relative image paths to absolute URLs
-  const origin = window.location.origin;
-  clone.querySelectorAll('img').forEach(img => {
-    if (img.src && img.src.startsWith('/')) {
-      img.src = origin + img.src;
-    }
-  });
+  // Force the clone to the exact template dimensions (no responsive overrides)
+  clone.style.width = TEMPLATE_WIDTH_PX + 'px';
+  clone.style.height = TEMPLATE_HEIGHT_PX + 'px';
+  clone.style.minWidth = TEMPLATE_WIDTH_PX + 'px';
+  clone.style.minHeight = TEMPLATE_HEIGHT_PX + 'px';
+  clone.style.maxWidth = TEMPLATE_WIDTH_PX + 'px';
+  clone.style.maxHeight = TEMPLATE_HEIGHT_PX + 'px';
+  clone.style.overflow = 'hidden';
+  clone.style.transform = 'none'; // Remove any CSS scale()
 
-  const certHTML = clone.outerHTML;
+  // Place the clone in a fixed-size offscreen container
+  const container = document.createElement('div');
+  container.style.cssText = `
+    position: fixed;
+    top: 0; left: 0;
+    width: ${TEMPLATE_WIDTH_PX}px;
+    height: ${TEMPLATE_HEIGHT_PX}px;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+    z-index: -9999;
+  `;
+  container.appendChild(clone);
+  document.body.appendChild(container);
 
-  // Open a popup window for printing
-  const printWindow = window.open('', '_blank', `width=1200,height=850,scrollbars=no,resizable=no`);
-  if (!printWindow) {
-    alert('Please allow popups for this site to download certificates.');
-    return;
-  }
-
-  printWindow.document.write(`<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <title>${fileName}</title>
-  <style>
-    @page {
-      size: A4 landscape;
-      margin: 0;
-    }
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    html, body {
-      width: 297mm;
-      height: 210mm;
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      background: #fff;
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-      color-adjust: exact !important;
-    }
-    body {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    /* Scale the 1122x794 template to fit A4 landscape (297mm x 210mm) */
-    .cert-print-container {
-      width: 297mm;
-      height: 210mm;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-    }
-    .cert-print-container > div {
-      transform-origin: top left;
-      /* 297mm ≈ 1122px at 96dpi, 210mm ≈ 794px at 96dpi — exact match */
-    }
-    @media print {
-      html, body {
-        width: 297mm;
-        height: 210mm;
-        margin: 0 !important;
-        padding: 0 !important;
-      }
-    }
-    @media screen {
-      body {
-        background: #f0f0f0;
-      }
-    }
-  </style>
-</head>
-<body>
-  <div class="cert-print-container">
-    ${certHTML}
-  </div>
-  <script>
-    // Wait for all images to load, then auto-print
-    function waitAndPrint() {
-      var images = document.querySelectorAll('img');
-      var loaded = 0;
-      var total = images.length;
-      
-      if (total === 0) {
-        setTimeout(function() { window.print(); }, 300);
-        return;
-      }
-      
-      images.forEach(function(img) {
-        if (img.complete) {
-          loaded++;
-          if (loaded >= total) setTimeout(function() { window.print(); }, 300);
-        } else {
-          img.onload = img.onerror = function() {
-            loaded++;
-            if (loaded >= total) setTimeout(function() { window.print(); }, 300);
-          };
-        }
-      });
-    }
-    
-    // Start after DOM is ready
-    if (document.readyState === 'complete') {
-      waitAndPrint();
-    } else {
-      window.addEventListener('load', waitAndPrint);
-    }
-  </script>
-</body>
-</html>`);
-  printWindow.document.close();
+  return { container, clone };
 }
 
 /**
- * Legacy: Generate PDF from element using html2canvas (kept for bulk download)
+ * Core: Capture an element as a high-quality A4 landscape PDF.
+ * Uses html2canvas at 3× scale for sharp text/images, then jsPDF
+ * to produce a proper A4 document (not a screenshot).
+ *
+ * @param {HTMLElement} element - The rendered certificate DOM element (original)
+ * @returns {Promise<jsPDF>} The generated PDF document
  */
-export async function generatePDFFromElement(element, fileName = 'certificate') {
+async function captureElementToPDF(element) {
+  // Wait for all fonts to be fully loaded
   await document.fonts.ready;
 
-  const canvas = await html2canvas(element, {
-    scale: 3,
-    useCORS: true,
-    allowTaint: true,
-    backgroundColor: '#ffffff',
-    width: 1122,
-    height: 794,
-    scrollX: -window.scrollX,
-    scrollY: -window.scrollY,
-  });
+  const { container, clone } = prepareOffscreenClone(element);
 
-  const imgData = canvas.toDataURL('image/png');
-  const pdf = new jsPDF({
-    orientation: 'landscape',
-    unit: 'mm',
-    format: 'a4',
-  });
+  // Brief pause for the DOM to settle and images to render
+  await new Promise(r => setTimeout(r, 200));
 
-  const pdfWidth = pdf.internal.pageSize.getWidth();
-  const pdfHeight = pdf.internal.pageSize.getHeight();
-  pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+  // Wait for all images in the clone to finish loading
+  const images = clone.querySelectorAll('img');
+  if (images.length > 0) {
+    await Promise.all(
+      Array.from(images).map(img =>
+        img.complete
+          ? Promise.resolve()
+          : new Promise(resolve => {
+              img.onload = resolve;
+              img.onerror = resolve;
+            })
+      )
+    );
+  }
 
-  return pdf;
+  try {
+    const canvas = await html2canvas(clone, {
+      scale: 3,                       // 3× for crisp output
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: '#ffffff',
+      width: TEMPLATE_WIDTH_PX,
+      height: TEMPLATE_HEIGHT_PX,
+      scrollX: 0,
+      scrollY: 0,
+      x: 0,
+      y: 0,
+      windowWidth: TEMPLATE_WIDTH_PX,
+      windowHeight: TEMPLATE_HEIGHT_PX,
+      logging: false,
+    });
+
+    const imgData = canvas.toDataURL('image/png');
+
+    const pdf = new jsPDF({
+      orientation: 'landscape',
+      unit: 'mm',
+      format: 'a4',
+    });
+
+    // Place image at exact A4 dimensions — no extra margins or offsets
+    pdf.addImage(imgData, 'PNG', 0, 0, A4_WIDTH_MM, A4_HEIGHT_MM);
+
+    return pdf;
+  } finally {
+    // Always clean up the offscreen clone
+    document.body.removeChild(container);
+  }
+}
+
+/**
+ * Download a certificate as a clean A4 PDF.
+ * This is the primary function used by student-facing and admin single-download buttons.
+ *
+ * @param {HTMLElement} element - The rendered certificate DOM element
+ * @param {string} fileName - Desired file name (without .pdf extension)
+ */
+export async function printCertificateAsPDF(element, fileName = 'Certificate') {
+  const pdf = await captureElementToPDF(element);
+  pdf.save(`${fileName}.pdf`);
+}
+
+/**
+ * Generate PDF from element (used by bulk download and other callers).
+ */
+export async function generatePDFFromElement(element, fileName = 'certificate') {
+  return captureElementToPDF(element);
 }
 
 /**

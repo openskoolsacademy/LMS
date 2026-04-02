@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { useAlert } from '../../context/AlertContext';
 import { printCertificateAsPDF } from '../../utils/certificateUtils';
 import CertificatePreview from '../admin/CertificatePreview';
@@ -11,6 +11,7 @@ import './Certificate.css'; // Modal layout styles
 export default function Certificate({ certificateData, onClose }) {
   const { showAlert } = useAlert();
   const certRef = useRef(null);
+  const [downloading, setDownloading] = useState(false);
 
   // Map to the format expected by the master template (CertificatePreview)
   const masterData = {
@@ -21,17 +22,20 @@ export default function Certificate({ certificateData, onClose }) {
     date_of_completion: certificateData.issuedAt || new Date().toISOString()
   };
 
-  const downloadCertificate = () => {
-    if (!certRef.current) return;
+  const downloadCertificate = async () => {
+    if (!certRef.current || downloading) return;
     
+    setDownloading(true);
     try {
-      printCertificateAsPDF(
+      await printCertificateAsPDF(
         certRef.current,
         `OpenSkools_Certificate_${certificateData.id.slice(0, 8).toUpperCase()}`
       );
     } catch (err) {
       console.error("Error generating PDF:", err);
       showAlert("Failed to generate PDF", "Export Error", "error");
+    } finally {
+      setDownloading(false);
     }
   };
 
@@ -40,7 +44,13 @@ export default function Certificate({ certificateData, onClose }) {
       <div className="cert-modal-content">
         <div className="cert-actions">
           <button className="btn btn-outline" onClick={onClose}>Close</button>
-          <button className="btn btn-primary" onClick={downloadCertificate}>Download PDF</button>
+          <button 
+            className="btn btn-primary" 
+            onClick={downloadCertificate}
+            disabled={downloading}
+          >
+            {downloading ? 'Generating PDF...' : 'Download PDF'}
+          </button>
         </div>
         
         {/* Render the Master Template as a READ-ONLY reference */}
