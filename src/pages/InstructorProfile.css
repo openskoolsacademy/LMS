@@ -107,6 +107,10 @@
   font-size: .938rem; line-height: 1.75; color: var(--gray-600);
   word-break: break-word; overflow-wrap: break-word;
 }
+.ipg-about-content p {
+  white-space: pre-wrap;
+  text-align: left;
+}
 .ipg-empty-text { color: var(--gray-400); font-style: italic; }
 
 /* Detail Cards */
