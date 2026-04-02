@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { FiPlay, FiClock, FiBookOpen, FiUsers, FiGlobe, FiAward, FiChevronDown, FiChevronUp, FiCheck, FiStar, FiTag, FiFileText } from 'react-icons/fi';
+import { FiPlay, FiClock, FiBookOpen, FiUsers, FiGlobe, FiAward, FiChevronDown, FiChevronUp, FiCheck, FiStar, FiTag, FiFileText, FiTrash2, FiEdit2 } from 'react-icons/fi';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { useAlert } from '../context/AlertContext';
@@ -13,8 +13,8 @@ import './CourseDetail.css';
 
 export default function CourseDetail() {
   const { id } = useParams();
-  const { user } = useAuth();
-  const { showAlert } = useAlert();
+  const { user, role } = useAuth();
+  const { showAlert, showConfirm } = useAlert();
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
   const [openSections, setOpenSections] = useState([0]);
@@ -29,6 +29,9 @@ export default function CourseDetail() {
   const [newRating, setNewRating] = useState(5);
   const [newComment, setNewComment] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [editingReview, setEditingReview] = useState(null);
+  const [editRating, setEditRating] = useState(5);
+  const [editComment, setEditComment] = useState('');
 
   useEffect(() => {
     fetchCourseDetails();
@@ -394,6 +397,72 @@ export default function CourseDetail() {
     }
   };
 
+  const handleEditReview = (review) => {
+    setEditingReview(review);
+    setEditRating(review.rating);
+    setEditComment(review.comment);
+  };
+
+  const handleUpdateReview = async (e) => {
+    e.preventDefault();
+    if (!editComment.trim()) return;
+    setSubmitting(true);
+    try {
+      const { data, error } = await supabase
+        .from('course_reviews')
+        .update({ rating: editRating, comment: editComment })
+        .eq('id', editingReview.id)
+        .select(`*, user:users(name, avatar_url)`)
+        .single();
+      
+      if (error) throw error;
+      setReviews(reviews.map(r => r.id === editingReview.id ? data : r));
+      if (editingReview.user_id === user?.id) setUserReview(data);
+      setEditingReview(null);
+
+      // Recalculate rating
+      const updatedReviews = reviews.map(r => r.id === editingReview.id ? data : r);
+      const total = updatedReviews.reduce((acc, r) => acc + r.rating, 0);
+      const avg = updatedReviews.length > 0 ? total / updatedReviews.length : 0;
+      setCourse(prev => ({ ...prev, rating: avg }));
+
+      await showAlert("Review updated successfully!", "Updated", "success");
+    } catch (err) {
+      console.error('Error updating review:', err);
+      await showAlert("Failed to update review: " + err.message, "Error", "error");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDeleteReview = async (reviewId) => {
+    const confirmed = await showConfirm("Are you sure you want to delete this review? This action cannot be undone.", undefined, 'Delete Review', 'Delete', 'Cancel');
+    if (!confirmed) return;
+    try {
+      const { error } = await supabase.from('course_reviews').delete().eq('id', reviewId);
+      if (error) throw error;
+      const updatedReviews = reviews.filter(r => r.id !== reviewId);
+      setReviews(updatedReviews);
+      
+      // If it was the user's own review, reset
+      if (userReview?.id === reviewId) setUserReview(null);
+
+      // Recalculate stats
+      const total = updatedReviews.reduce((acc, r) => acc + r.rating, 0);
+      const avg = updatedReviews.length > 0 ? total / updatedReviews.length : 0;
+      setCourse(prev => ({
+        ...prev,
+        rating: avg,
+        reviewsCount: updatedReviews.length
+      }));
+
+      await showAlert("Review deleted successfully.", "Deleted", "success");
+    } catch (err) {
+      console.error('Error deleting review:', err);
+      await showAlert("Failed to delete review: " + err.message, "Error", "error");
+    }
+  };
+
   const calculateRatingBars = () => {
     const bars = [5, 4, 3, 2, 1].map(stars => {
       const count = reviews.filter(r => r.rating === stars).length;
@@ -632,23 +701,90 @@ export default function CourseDetail() {
                   <div className="reviews-items">
                     {reviews.map(r => (
                       <div key={r.id} className="review-item card" style={{ marginBottom: '16px', padding: '20px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                            <img 
-                              src={r.user?.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(r.user?.name || 'User')}`} 
-                              alt={r.user?.name} 
-                              style={{ width: 40, height: 40, borderRadius: '50%' }}
-                            />
-                            <div>
-                              <strong style={{ display: 'block' }}>{r.user?.name}</strong>
-                              <Rating value={r.rating} showCount={false} size="xs" />
+                        {editingReview?.id === r.id ? (
+                          /* Inline Edit Form */
+                          <form onSubmit={handleUpdateReview} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '4px' }}>
+                              <img 
+                                src={r.user?.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(r.user?.name || 'User')}`} 
+                                alt={r.user?.name} 
+                                style={{ width: 40, height: 40, borderRadius: '50%' }}
+                              />
+                              <strong>{r.user?.name}</strong>
+                              <span style={{ fontSize: '0.8rem', color: '#94a3b8', marginLeft: 'auto' }}>Editing...</span>
                             </div>
-                          </div>
-                          <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
-                            {new Date(r.created_at).toLocaleDateString()}
-                          </span>
-                        </div>
-                        <p style={{ margin: 0, color: '#475569' }}>{r.comment}</p>
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                              {[1, 2, 3, 4, 5].map(star => (
+                                <button 
+                                  key={star} type="button" onClick={() => setEditRating(star)}
+                                  style={{ background: 'none', border: 'none', fontSize: '1.5rem', color: star <= editRating ? '#f59e0b' : '#d1d5db', cursor: 'pointer' }}
+                                >
+                                  <FiStar style={{ fill: star <= editRating ? '#f59e0b' : 'none' }} />
+                                </button>
+                              ))}
+                            </div>
+                            <textarea 
+                              rows={3} value={editComment} onChange={e => setEditComment(e.target.value)} required
+                              style={{ padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--gray-200)', fontSize: '0.938rem', resize: 'vertical' }}
+                            />
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                              <Button variant="primary" type="submit" disabled={submitting}>{submitting ? 'Saving...' : 'Save Changes'}</Button>
+                              <button type="button" className="btn btn-outline btn-sm" onClick={() => setEditingReview(null)}>Cancel</button>
+                            </div>
+                          </form>
+                        ) : (
+                          /* Normal Review Display */
+                          <>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                <img 
+                                  src={r.user?.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(r.user?.name || 'User')}`} 
+                                  alt={r.user?.name} 
+                                  style={{ width: 40, height: 40, borderRadius: '50%' }}
+                                />
+                                <div>
+                                  <strong style={{ display: 'block' }}>{r.user?.name}</strong>
+                                  <Rating value={r.rating} showCount={false} size="xs" />
+                                </div>
+                              </div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
+                                  {new Date(r.created_at).toLocaleDateString()}
+                                </span>
+                                {/* Edit/Delete for own review */}
+                                {user && r.user_id === user.id && (
+                                  <>
+                                    <button 
+                                      onClick={() => handleEditReview(r)} 
+                                      title="Edit Review"
+                                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--primary)', padding: '4px', display: 'flex', alignItems: 'center' }}
+                                    >
+                                      <FiEdit2 size={16} />
+                                    </button>
+                                    <button 
+                                      onClick={() => handleDeleteReview(r.id)} 
+                                      title="Delete Review"
+                                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--danger)', padding: '4px', display: 'flex', alignItems: 'center' }}
+                                    >
+                                      <FiTrash2 size={16} />
+                                    </button>
+                                  </>
+                                )}
+                                {/* Delete for admin (other people's reviews) */}
+                                {user && role === 'admin' && r.user_id !== user.id && (
+                                  <button 
+                                    onClick={() => handleDeleteReview(r.id)} 
+                                    title="Delete Review (Admin)"
+                                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--danger)', padding: '4px', display: 'flex', alignItems: 'center' }}
+                                  >
+                                    <FiTrash2 size={16} />
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                            <p style={{ margin: 0, color: '#475569' }}>{r.comment}</p>
+                          </>
+                        )}
                       </div>
                     ))}
                   </div>

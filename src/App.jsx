@@ -25,10 +25,12 @@ import CareersHub from './pages/CareersHub';
 import JobDetail from './pages/JobDetail';
 import SavedJobs from './pages/SavedJobs';
 import ProtectedRoute from './components/layout/ProtectedRoute';
+import ScrollToTop from './components/layout/ScrollToTop';
 
 export default function App() {
   return (
     <Router>
+      <ScrollToTop />
       <Routes>
         {/* Pages with Navbar + Footer */}
         <Route element={<Layout />}>

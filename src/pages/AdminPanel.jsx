@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { FiUsers, FiBookOpen, FiDollarSign, FiCheckCircle, FiSearch, FiMoreVertical, FiShield, FiTrendingUp, FiTrash2, FiEye, FiMapPin, FiPhone, FiLinkedin, FiAward, FiBriefcase, FiMail, FiCalendar, FiHash, FiClock, FiPercent, FiPlayCircle, FiInfo, FiMessageSquare, FiTag, FiFileText, FiLink, FiUser, FiImage } from 'react-icons/fi';
+import { FiUsers, FiBookOpen, FiDollarSign, FiCheckCircle, FiSearch, FiMoreVertical, FiShield, FiTrendingUp, FiTrash2, FiEye, FiMapPin, FiPhone, FiLinkedin, FiAward, FiBriefcase, FiMail, FiCalendar, FiHash, FiClock, FiPercent, FiPlayCircle, FiInfo, FiMessageSquare, FiTag, FiFileText, FiLink, FiUser, FiImage, FiStar } from 'react-icons/fi';
 import { supabase } from '../lib/supabase';
 import Skeleton from '../components/ui/Skeleton';
 import Modal from '../components/ui/Modal';
@@ -32,6 +32,8 @@ export default function AdminPanel() {
   const [jobs, setJobs] = useState([]);
   const [messages, setMessages] = useState([]);
   const [coupons, setCoupons] = useState([]);
+  const [courseReviews, setCourseReviews] = useState([]);
+  const [searchReviews, setSearchReviews] = useState('');
   const [showJobModal, setShowJobModal] = useState(false);
   const [showCouponModal, setShowCouponModal] = useState(false);
   const [editingCoupon, setEditingCoupon] = useState(null);
@@ -156,7 +158,7 @@ export default function AdminPanel() {
     async function fetchAdminData() {
       setLoading(true);
       const year = new Date().getFullYear();
-      const [usersRes, coursesRes, requestsRes, paymentsRes, enrollRes, blogsRes, jobsRes, messagesRes, couponsRes] = await Promise.all([
+      const [usersRes, coursesRes, requestsRes, paymentsRes, enrollRes, blogsRes, jobsRes, messagesRes, couponsRes, reviewsRes] = await Promise.all([
         supabase.from('users').select('*').order('created_at', { ascending: false }),
         supabase.from('courses').select('*, instructor:users(name)').order('created_at', { ascending: false }),
         supabase.from('instructor_requests').select('*').order('created_at', { ascending: false }),
@@ -168,7 +170,8 @@ export default function AdminPanel() {
         supabase.from('blogs').select('*, author:users(name)').order('created_at', { ascending: false }),
         supabase.from('jobs').select('*').order('created_at', { ascending: false }),
         supabase.from('contact_messages').select('*').order('created_at', { ascending: false }),
-        supabase.from('coupons').select('*, course:courses(title)').order('created_at', { ascending: false })
+        supabase.from('coupons').select('*, course:courses(title)').order('created_at', { ascending: false }),
+        supabase.from('course_reviews').select('*, user:users(name, avatar_url), course:courses(title)').order('created_at', { ascending: false })
       ]);
       
       if (!usersRes.error) setUsers(usersRes.data || []);
@@ -179,6 +182,7 @@ export default function AdminPanel() {
       if (!messagesRes.error) setMessages(messagesRes.data || []);
       if (!paymentsRes.error) setPayments(paymentsRes.data || []);
       if (!couponsRes.error) setCoupons(couponsRes.data || []);
+      if (!reviewsRes.error) setCourseReviews(reviewsRes.data || []);
       
       if (!paymentsRes.error && paymentsRes.data) {
         const total = paymentsRes.data.reduce((acc, p) => acc + Number(p.amount), 0);
@@ -571,6 +575,19 @@ export default function AdminPanel() {
     }
   };
 
+  const handleDeleteReview = async (reviewId) => {
+    const confirmed = await showConfirm("Are you sure you want to delete this review? This action cannot be undone.", undefined, 'Delete Review', 'Delete', 'Cancel');
+    if (!confirmed) return;
+    try {
+      const { error } = await supabase.from('course_reviews').delete().eq('id', reviewId);
+      if (error) throw error;
+      setCourseReviews(courseReviews.filter(r => r.id !== reviewId));
+      await showAlert("Review deleted successfully.", "Deleted", "success");
+    } catch (err) {
+      await showAlert("Error deleting review: " + err.message, 'Delete Failed', 'error');
+    }
+  };
+
   return (
     <div className="admin-panel section">
       <div className="container">
@@ -619,6 +636,7 @@ export default function AdminPanel() {
           <button className={`ap-tab ${tab === 'marketing' ? 'active' : ''}`} onClick={() => setTab('marketing')}><FiImage style={{marginRight: 4}} /> Marketing</button>
           <button className={`ap-tab ${tab === 'coupons' ? 'active' : ''}`} onClick={() => setTab('coupons')}>Coupons</button>
           <button className={`ap-tab ${tab === 'messages' ? 'active' : ''}`} onClick={() => setTab('messages')}>Messages <span className="ap-badge-count">{stats.unreadMessages || 0}</span></button>
+          <button className={`ap-tab ${tab === 'reviews' ? 'active' : ''}`} onClick={() => setTab('reviews')}><FiStar style={{marginRight: 4}} /> Reviews <span className="ap-badge-count">{courseReviews.length || 0}</span></button>
           <button className={`ap-tab ${tab === 'certificates' ? 'active' : ''}`} onClick={() => setTab('certificates')}><FiAward style={{marginRight: 4}} /> Certificates</button>
         </div>
 
@@ -1279,6 +1297,80 @@ export default function AdminPanel() {
                       )) : <tr><td colSpan="6" style={{textAlign: 'center', padding: '20px'}}>No messages found.</td></tr>}
                     </tbody>
                   </table>
+                </div>
+              </div>
+            )}
+
+            {/* Course Reviews Tab */}
+            {tab === 'reviews' && (
+              <div className="ap-approvals animate-fade">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                  <h3><FiStar style={{ marginRight: 8 }} /> Course Reviews ({courseReviews.length})</h3>
+                </div>
+                <div className="ap-search-row" style={{ marginBottom: 16 }}>
+                  <div className="ap-search"><FiSearch /><input placeholder="Search by course, student, or comment..." value={searchReviews} onChange={e => setSearchReviews(e.target.value)} /></div>
+                </div>
+                <div className="id-table-wrap" ref={dropdownRef}>
+                  <table className="id-table">
+                    <thead><tr><th>Student</th><th>Course</th><th>Rating</th><th>Comment</th><th>Date</th><th>Actions</th></tr></thead>
+                    <tbody>
+                      {(() => {
+                        const q = searchReviews.toLowerCase();
+                        const filtered = courseReviews.filter(r => 
+                          (r.user?.name || '').toLowerCase().includes(q) ||
+                          (r.course?.title || '').toLowerCase().includes(q) ||
+                          (r.comment || '').toLowerCase().includes(q)
+                        );
+                        return filtered.length > 0 ? filtered.map(r => (
+                          <tr key={r.id}>
+                            <td>
+                              <div className="id-user-cell">
+                                <div className="avatar-circle" style={{width:32,height:32,borderRadius:'50%',backgroundColor:'#e0e0e0',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:'bold',color:'#666'}}>{r.user?.name?.charAt(0) || 'U'}</div>
+                                <span>{r.user?.name || 'Unknown'}</span>
+                              </div>
+                            </td>
+                            <td>
+                              <div style={{ maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={r.course?.title}>
+                                {r.course?.title || 'Unknown Course'}
+                              </div>
+                            </td>
+                            <td>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                {[1,2,3,4,5].map(star => (
+                                  <FiStar key={star} style={{ color: star <= r.rating ? '#f59e0b' : '#d1d5db', fill: star <= r.rating ? '#f59e0b' : 'none', fontSize: '0.875rem' }} />
+                                ))}
+                                <span style={{ marginLeft: '4px', fontWeight: 600, fontSize: '0.875rem' }}>{r.rating}</span>
+                              </div>
+                            </td>
+                            <td>
+                              <div style={{ maxWidth: '250px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={r.comment}>
+                                {r.comment || '—'}
+                              </div>
+                            </td>
+                            <td>{new Date(r.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
+                            <td>
+                              <button
+                                className="id-action-btn"
+                                style={{ color: 'var(--danger)' }}
+                                title="Delete Review"
+                                onClick={() => handleDeleteReview(r.id)}
+                              >
+                                <FiTrash2 />
+                              </button>
+                            </td>
+                          </tr>
+                        )) : <tr><td colSpan="6" style={{textAlign: 'center', padding: '20px'}}>No reviews found.</td></tr>;
+                      })()}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="ap-table-footer" style={{ marginTop: '16px', padding: '12px 20px', background: 'var(--gray-50)', borderTop: '1px solid var(--gray-200)', borderRadius: '0 0 8px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.875rem' }}>
+                  <div style={{ color: 'var(--gray-500)' }}>
+                    Showing <strong>{courseReviews.filter(r => {
+                      const q = searchReviews.toLowerCase();
+                      return (r.user?.name || '').toLowerCase().includes(q) || (r.course?.title || '').toLowerCase().includes(q) || (r.comment || '').toLowerCase().includes(q);
+                    }).length}</strong> of <strong>{courseReviews.length}</strong> reviews
+                  </div>
                 </div>
               </div>
             )}
