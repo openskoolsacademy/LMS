@@ -152,15 +152,18 @@
 
 /* Responsive */
 @media (max-width: 768px) {
+  .instructor-profile-page { overflow-x: hidden; width: 100vw; max-width: 100%; }
   .ipg-hero-main { flex-direction: column; align-items: center; text-align: center; }
   .ipg-hero-info { text-align: center; width: 100%; }
   .ipg-name-row, .ipg-badge-row { justify-content: center !important; }
-  .ipg-hero-meta { justify-content: center; }
-  .ipg-stats-row { flex-direction: column; gap: 12px; }
-  .ipg-stat { padding: 16px; min-width: 100%; border-radius: 16px; }
-  .ipg-avatar { width: 100px; height: 100px; font-size: 2.5rem; }
+  .ipg-hero-meta { justify-content: center; width: 100%; }
+  .ipg-stats-row { flex-direction: column; gap: 12px; width: 100%; }
+  .ipg-stat { padding: 16px; width: 100%; border-radius: 12px; box-sizing: border-box; }
+  .ipg-avatar { width: 90px; height: 90px; font-size: 2.5rem; }
   .ipg-hero-info h1 { font-size: 1.5rem; }
-  .ipg-about-content { padding: 20px; border-radius: 16px; }
-  .ipg-details-grid { grid-template-columns: 1fr; }
-  .ipg-courses-grid { grid-template-columns: 1fr; }
+  .ipg-body { padding: 32px 16px !important; width: 100%; box-sizing: border-box; }
+  .ipg-about-content { padding: 20px; border-radius: 12px; margin-bottom: 24px; }
+  .ipg-details-grid { grid-template-columns: 1fr; gap: 12px; width: 100%; }
+  .ipg-courses-grid { grid-template-columns: 1fr; gap: 20px; width: 100%; }
+  .ipg-section { margin-bottom: 32px; width: 100%; }
 }
