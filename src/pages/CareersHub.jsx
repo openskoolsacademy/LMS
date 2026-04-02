@@ -50,6 +50,29 @@ export default function CareersHub() {
     return expiryDate < today;
   };
 
+  // Smart Category Matcher
+  const jobMatchesCategory = (job, cat) => {
+    if (cat === 'All') return true;
+    
+    // 1. Explicit database category match
+    if (job.category === cat) return true;
+    
+    // 2. Inferred matching based on job properties
+    if (cat === 'Walkin') {
+      return job.job_mode === 'walkin' || job.job_mode === 'both' || !!job.venue;
+    }
+    if (cat === 'Online' || cat === 'Work From Home') {
+      const loc = (job.location || '').toLowerCase();
+      return loc.includes('remote') || loc.includes('home') || loc.includes('online');
+    }
+    if (cat === 'Freshers') {
+      const expr = (job.qualification || '').toLowerCase();
+      return expr.includes('fresher') || expr.includes('0 year');
+    }
+    
+    return false;
+  };
+
   // Filter jobs
   const filteredJobs = jobs.filter(job => {
     const q = search.toLowerCase();
@@ -58,7 +81,8 @@ export default function CareersHub() {
       (job.role || '').toLowerCase().includes(q) ||
       (job.description || '').toLowerCase().includes(q) ||
       (job.location || '').toLowerCase().includes(q);
-    const matchesCategory = activeCategory === 'All' || job.category === activeCategory;
+    
+    const matchesCategory = jobMatchesCategory(job, activeCategory);
     return matchesSearch && matchesCategory;
   });
 
@@ -75,9 +99,7 @@ export default function CareersHub() {
 
   const activeJobsCount = jobs.filter(j => !isExpired(j.expiry_date)).length;
   const categoryCounts = JOB_CATEGORIES.reduce((acc, cat) => {
-    acc[cat] = cat === 'All' 
-      ? jobs.length 
-      : jobs.filter(j => j.category === cat).length;
+    acc[cat] = jobs.filter(j => jobMatchesCategory(j, cat)).length;
     return acc;
   }, {});
 
@@ -113,7 +135,7 @@ export default function CareersHub() {
                 <span>Companies</span>
               </div>
               <div className="stat-item-pro">
-                <strong>{jobs.filter(j => j.category === 'Work From Home').length}</strong>
+                <strong>{jobs.filter(j => jobMatchesCategory(j, 'Work From Home')).length}</strong>
                 <span>Remote Jobs</span>
               </div>
             </div>
