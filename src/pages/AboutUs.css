@@ -496,6 +496,8 @@
   
   .abstract-container {
     --scale: 0.55;
+    transform: scale(1.2);
+    transform-origin: bottom center;
   }
   
   .founder-profile-pro {
@@ -508,11 +510,6 @@
   
   .founder-info-pro h3 {
     font-size: 2.25rem;
-  }
-  
-  .kalam-portrait-img {
-    transform: scale(1.2);
-    transform-origin: bottom center;
   }
 }
 
@@ -539,6 +536,8 @@
   
   .abstract-container {
     --scale: 0.5;
+    transform: scale(1.35);
+    transform-origin: bottom center;
   }
   
   .founder-profile-pro {
@@ -568,10 +567,5 @@
   
   .vmv-item {
     padding: 0;
-  }
-  
-  .kalam-portrait-img {
-    transform: scale(1.35);
-    transform-origin: bottom center;
   }
 }
