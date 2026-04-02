@@ -45,6 +45,7 @@ export default function Navbar() {
           <Link to="/careers" className={`nav-link ${isActive('/careers')}`} onClick={closeMobile}>Careers</Link>
           <Link to="/contact" className={`nav-link ${isActive('/contact')}`} onClick={closeMobile}>Contact</Link>
           <Link to="/blog" className={`nav-link ${isActive('/blog')}`} onClick={closeMobile}>Blog</Link>
+          <Link to="/verify-certificate" className={`nav-link ${isActive('/verify-certificate')}`} onClick={closeMobile}>Verify</Link>
           <div className="nav-mobile-actions">
             {!user ? (
               <>

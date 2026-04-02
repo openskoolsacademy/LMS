@@ -39,6 +39,7 @@ export default function Footer() {
           <div className="footer__col">
             <h4>Support</h4>
             <a href="#">Help Center</a>
+            <Link to="/verify-certificate">Verify Certificate</Link>
             <a href="#">Terms of Service</a>
             <a href="#">Privacy Policy</a>
             <Link to="/contact">Contact Us</Link>
