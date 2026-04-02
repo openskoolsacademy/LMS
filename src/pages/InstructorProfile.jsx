@@ -127,7 +127,7 @@ export default function InstructorProfile() {
                 )}
               </div>
               <div className="ipg-hero-info">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '15px', flexWrap: 'wrap', marginBottom: '8px' }}>
+                <div className="ipg-name-row" style={{ display: 'flex', alignItems: 'center', gap: '15px', flexWrap: 'wrap', marginBottom: '8px' }}>
                   <h1 style={{ margin: 0, color: '#fff' }}>{instructor.name}</h1>
                   <span style={{ 
                     fontFamily: "'Courier New', monospace", 
@@ -144,7 +144,7 @@ export default function InstructorProfile() {
                     ID: {generateUserCode(instructor.id)}
                   </span>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 4 }}>
+                <div className="ipg-badge-row" style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 4 }}>
                   <p className="ipg-hero-badge"><FiAward /> Verified Instructor</p>
                 </div>
                 <div className="ipg-hero-meta">
