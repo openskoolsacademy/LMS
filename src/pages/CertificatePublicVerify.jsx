@@ -173,15 +173,6 @@ export default function CertificatePublicVerify() {
                     </strong>
                   </div>
                 </div>
-                {result.instructor_name && (
-                  <div className="cert-verify-row">
-                    <FiUser />
-                    <div>
-                      <label>Instructor</label>
-                      <strong>{result.instructor_name}</strong>
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
           )}
