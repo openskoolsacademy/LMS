@@ -271,7 +271,6 @@ export default function CertificatePreview({ data, innerRef }) {
         
         <div style={S.nameWrapper}>
           <div style={S.studentName}>{student_name}</div>
-          <div style={S.line} />
         </div>
 
         <div style={S.courseInfo}>
@@ -293,7 +292,6 @@ export default function CertificatePreview({ data, innerRef }) {
         {/* Right: QR Code and Cert Details */}
         <div style={S.qrSection}>
           <div style={S.qrWrap}>
-            <div style={S.qrLabel}>Scan To Verify</div>
             <QRCodeCanvas
               value={verifyUrl}
               size={85}
