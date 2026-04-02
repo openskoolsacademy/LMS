@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { FiPlay, FiClock, FiBookOpen, FiUsers, FiGlobe, FiAward, FiChevronDown, FiChevronUp, FiCheck, FiStar, FiTag } from 'react-icons/fi';
+import { FiPlay, FiClock, FiBookOpen, FiUsers, FiGlobe, FiAward, FiChevronDown, FiChevronUp, FiCheck, FiStar, FiTag, FiFileText } from 'react-icons/fi';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { useAlert } from '../context/AlertContext';
@@ -720,6 +720,7 @@ export default function CourseDetail() {
                 <ul>
                   <li><FiPlay /> ~{Math.floor(totalDuration/60)} hours on-demand video</li>
                   <li><FiBookOpen /> {lessons.length} lessons</li>
+                  <li><FiFileText /> Notes and Resource File Available</li>
                   <li><FiAward /> Certificate of completion</li>
                   <li><FiGlobe /> Full lifetime access</li>
                 </ul>
