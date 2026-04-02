@@ -110,7 +110,7 @@ export default function CareersHub() {
         <div className="careers-mesh-bg"></div>
         <div className="container careers-container-pro">
           <div className="careers-content-pro">
-            <h1 className="animate-slide">Find Your <span className="text-gradient-pro">Dream Career</span></h1>
+            <h1 className="animate-slide">Find Your <span style={{ color: '#008ad1' }}>Dream Career</span></h1>
             <p className="animate-slide">Discover the latest job opportunities from top companies. Apply directly and kickstart your career today!</p>
 
             <GlobalBanner location="Careers" />

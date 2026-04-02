@@ -169,10 +169,7 @@ export default function InstructorProfile() {
                 <div className="ipg-stat-icon"><FiStar /></div>
                 <div><strong>{avgRating}</strong><span>Avg Rating</span></div>
               </div>
-              <div className="ipg-stat">
-                <div className="ipg-stat-icon"><FiAward /></div>
-                <div><strong>{joinedDate}</strong><span>Member Since</span></div>
-              </div>
+
             </div>
           </div>
         </div>
