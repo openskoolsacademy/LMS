@@ -128,6 +128,12 @@
   align-items: center;
   gap: 12px;
   overflow-x: auto;
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.careers-filter-row::-webkit-scrollbar {
+  display: none;
 }
 
 .careers-filter-pill {
@@ -196,13 +202,25 @@
   color: var(--primary); font-weight: 900; font-size: 1.5rem;
 }
 
+.job-card__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: flex-end;
+  flex: 1;
+  margin-left: 12px;
+}
+
 .job-badge {
+  display: inline-flex;
+  align-items: center;
   padding: 4px 12px;
   border-radius: var(--radius-full);
   font-size: 0.625rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  white-space: nowrap;
 }
 
 .job-badge--new { background: var(--primary-100); color: var(--primary-dark); }
