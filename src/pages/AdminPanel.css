@@ -122,12 +122,11 @@
 
 .ap-tabs { 
   display: flex; 
-  gap: 4px; 
+  gap: 8px; 
+  flex-wrap: wrap;
   border-bottom: 2px solid var(--gray-200); 
+  padding-bottom: 12px;
   margin-bottom: 28px; 
-  overflow-x: auto; 
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE and Edge */
 }
 .ap-tabs::-webkit-scrollbar {
   display: none; /* Chrome, Safari, Opera */
