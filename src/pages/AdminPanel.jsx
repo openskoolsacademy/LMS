@@ -632,7 +632,6 @@ export default function AdminPanel() {
           <button className={`ap-tab ${tab === 'revenue' ? 'active' : ''}`} onClick={() => setTab('revenue')}>Revenue</button>
           <button className={`ap-tab ${tab === 'activities' ? 'active' : ''}`} onClick={() => setTab('activities')}>Activities</button>
           <button className={`ap-tab ${tab === 'approvals' ? 'active' : ''}`} onClick={() => setTab('approvals')}>Requests <span className="ap-badge-count">{stats.totalPending || 0}</span></button>
-          <button className={`ap-tab ${tab === 'jobs' ? 'active' : ''}`} onClick={() => setTab('jobs')}>Jobs</button>
           <button className={`ap-tab ${tab === 'marketing' ? 'active' : ''}`} onClick={() => setTab('marketing')}><FiImage style={{marginRight: 4}} /> Marketing</button>
           <button className={`ap-tab ${tab === 'coupons' ? 'active' : ''}`} onClick={() => setTab('coupons')}>Coupons</button>
           <button className={`ap-tab ${tab === 'messages' ? 'active' : ''}`} onClick={() => setTab('messages')}>Messages <span className="ap-badge-count">{stats.unreadMessages || 0}</span></button>
