@@ -906,6 +906,50 @@
   font-weight: 600;
 }
 
+/* Mobile Responsive Fixes for Verify Page */
+@media (max-width: 480px) {
+  .cert-verify-page {
+    padding: 30px 16px;
+    box-sizing: border-box;
+    width: 100%;
+    overflow-x: hidden;
+  }
+  .cert-verify-card {
+    border-radius: 16px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .cert-verify-header {
+    padding: 24px 16px;
+  }
+  .cert-verify-body {
+    padding: 24px 16px;
+  }
+  .cert-verify-search {
+    gap: 8px;
+    width: 100%;
+  }
+  .cert-verify-search input {
+    padding: 12px 14px;
+    font-size: 0.813rem;
+    min-width: 0;
+  }
+  .cert-verify-search button {
+    flex-shrink: 0;
+    padding: 0 16px;
+  }
+  .cert-verify-result-header {
+    padding: 16px;
+    gap: 10px;
+  }
+  .cert-verify-result-header h3 {
+    font-size: 1rem;
+  }
+  .cert-verify-details {
+    padding: 0 16px 16px;
+  }
+}
+
 /* Responsive table on mobile */
 @media (max-width: 768px) {
   .cert-template {

@@ -1045,18 +1045,19 @@ export default function InstructorDashboard() {
                 <label>Question</label>
                 <textarea rows={2} value={qForm.question_text} onChange={e => setQForm({...qForm, question_text: e.target.value})} placeholder="Enter the question..." required />
               </div>
-              <div className="form-row">
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
                 {qForm.options.map((opt, idx) => (
-                  <div className="form-group" key={idx} style={{ position: 'relative' }}>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <input type="radio" name="correct" checked={qForm.correct_option === idx} onChange={() => setQForm({...qForm, correct_option: idx})} />
-                      Option {String.fromCharCode(65 + idx)} {qForm.correct_option === idx && <span style={{color: '#10b981', fontSize: '0.75rem'}}>(Correct)</span>}
+                  <div className="form-group" key={idx} style={{ position: 'relative', margin: 0 }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                      <input type="radio" name="correct" checked={qForm.correct_option === idx} onChange={() => setQForm({...qForm, correct_option: idx})} style={{ margin: 0 }} />
+                      <span style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--gray-600)' }}>Option {String.fromCharCode(65 + idx)}</span>
+                      {qForm.correct_option === idx && <span style={{color: '#10b981', fontSize: '0.75rem', fontWeight: 700}}>(Correct)</span>}
                     </label>
                     <input type="text" value={opt} onChange={e => {
                       const newOpts = [...qForm.options];
                       newOpts[idx] = e.target.value;
                       setQForm({...qForm, options: newOpts});
-                    }} placeholder={`Option ${String.fromCharCode(65 + idx)}`} required />
+                    }} placeholder={`Enter option ${String.fromCharCode(65 + idx)}...`} required style={{ width: '100%' }} />
                   </div>
                 ))}
               </div>
