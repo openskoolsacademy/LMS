@@ -66,17 +66,17 @@ export default function GlobalBanner({ location }) {
     }
   };
 
-  const handleCtaClick = (e, banner) => {
+  const handleCtaClick = async (e, banner) => {
     e.stopPropagation();
-    trackBannerEvent(banner.id, 'clicks');
+    await trackBannerEvent(banner.id, 'clicks');
     if (banner.cta_link.startsWith('/')) navigate(banner.cta_link);
     else window.open(banner.cta_link, '_blank', 'noopener,noreferrer');
   };
 
-  const handleBannerClick = (e, banner) => {
+  const handleBannerClick = async (e, banner) => {
     if (e.target.closest('a') || e.target.closest('.btn-banner-cta')) return;
     if (banner.cta_link) {
-      trackBannerEvent(banner.id, 'clicks');
+      await trackBannerEvent(banner.id, 'clicks');
       if (banner.cta_link.startsWith('/')) navigate(banner.cta_link);
       else window.open(banner.cta_link, '_blank', 'noopener,noreferrer');
     }
