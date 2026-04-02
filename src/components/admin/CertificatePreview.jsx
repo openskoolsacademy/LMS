@@ -82,6 +82,7 @@ export default function CertificatePreview({ data, innerRef }) {
       top: '60px',
       left: '80px',
       height: '55px',
+      maxWidth: 'none',
       zIndex: 3,
     },
     iso: {
@@ -90,6 +91,7 @@ export default function CertificatePreview({ data, innerRef }) {
       right: '80px',
       width: '130px',
       height: '130px',
+      maxWidth: 'none',
       zIndex: 4,
     },
     content: {
@@ -108,12 +110,15 @@ export default function CertificatePreview({ data, innerRef }) {
       margin: '0 0 16px 0',
       letterSpacing: '1px',
       lineHeight: '1.1',
+      padding: 0,
     },
     subtitle: {
       fontSize: '18px',
       color: '#333',
       margin: 0,
       lineHeight: '1.4',
+      letterSpacing: 'normal',
+      fontWeight: 'normal',
     },
     nameWrapper: {
       marginTop: '24px',
@@ -126,6 +131,8 @@ export default function CertificatePreview({ data, innerRef }) {
       color: '#000',
       margin: '0 0 10px 0',
       lineHeight: '1.2',
+      letterSpacing: 'normal',
+      padding: 0,
     },
     line: {
       height: '2px',
@@ -154,6 +161,7 @@ export default function CertificatePreview({ data, innerRef }) {
     },
     founderSig: {
       height: '120px',
+      maxWidth: 'none',
       objectFit: 'contain',
       alignSelf: 'flex-start',
       marginTop: '50px',
@@ -258,11 +266,11 @@ export default function CertificatePreview({ data, innerRef }) {
 
       {/* Main Content Area */}
       <div style={S.content}>
-        <h1 style={S.title}>CERTIFICATE OF COMPLETION</h1>
+        <div style={S.title}>CERTIFICATE OF COMPLETION</div>
         <p style={S.subtitle}>This certificate is proudly presented to</p>
         
         <div style={S.nameWrapper}>
-          <h2 style={S.studentName}>{student_name}</h2>
+          <div style={S.studentName}>{student_name}</div>
           <div style={S.line} />
         </div>
 

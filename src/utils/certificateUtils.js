@@ -98,6 +98,7 @@ function prepareOffscreenClone(element) {
   clone.style.transform = 'none'; // Remove any CSS scale()
 
   // Place the clone in a fixed-size offscreen container
+  // Match body-level CSS so html2canvas renders text identically
   const container = document.createElement('div');
   container.style.cssText = `
     position: fixed;
@@ -109,8 +110,12 @@ function prepareOffscreenClone(element) {
     pointer-events: none;
     z-index: -9999;
     font-size: 16px;
-    font-family: 'Open Sans', 'Inter', sans-serif;
-    line-height: normal;
+    font-family: 'Open Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    line-height: 1.6;
+    color: #0f172a;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    box-sizing: border-box;
   `;
   container.appendChild(clone);
   document.body.appendChild(container);
