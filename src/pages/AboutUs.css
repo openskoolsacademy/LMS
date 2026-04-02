@@ -97,9 +97,10 @@
 }
 
 .abstract-container {
+  --scale: 1;
   position: relative;
-  width: 550px;
-  height: 550px;
+  width: calc(550px * var(--scale));
+  height: calc(550px * var(--scale));
   display: flex;
   justify-content: center;
   align-items: flex-end; /* Align portrait to bottom */
@@ -108,7 +109,7 @@
 .kalam-portrait-wrapper {
   position: relative;
   z-index: 2; /* Content above background fades */
-  width: 500px;
+  width: calc(500px * var(--scale));
   height: 100%;
   display: flex;
   justify-content: center;
@@ -120,8 +121,8 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 550px;
-  height: 550px;
+  width: calc(550px * var(--scale));
+  height: calc(550px * var(--scale));
   background: radial-gradient(circle, rgba(255, 255, 255, 0.25) 0%, transparent 70%);
   border-radius: 50%;
   z-index: -1;
@@ -133,8 +134,8 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 480px;
-  height: 480px;
+  width: calc(480px * var(--scale));
+  height: calc(480px * var(--scale));
   border: 1px dashed rgba(255, 255, 255, 0.4);
   border-radius: 50%;
   z-index: -1;
@@ -148,8 +149,8 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 420px;
-  height: 420px;
+  width: calc(420px * var(--scale));
+  height: calc(420px * var(--scale));
   background: rgba(255, 255, 255, 0.12); /* Increased opacity */
   border-radius: 50%;
   z-index: -1;
@@ -162,8 +163,8 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 480px;
-  height: 480px;
+  width: calc(480px * var(--scale));
+  height: calc(480px * var(--scale));
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cpath d='M10 10 L40 10 L50 20 L50 50 L60 60 L90 60 M10 30 L30 30 L40 40 L40 70 L50 80 L80 80 M10 60 L20 60 L30 70 L30 90 L40 100 M70 10 L70 30 L80 40 L80 50 L90 60 M10 90 L90 10' fill='none' stroke='white' stroke-width='0.5' stroke-opacity='0.4'/%3E%3Ccircle cx='40' cy='10' r='1.5' fill='white' fill-opacity='0.5'/%3E%3Ccircle cx='50' cy='50' r='1.5' fill='white' fill-opacity='0.5'/%3E%3Ccircle cx='90' cy='60' r='1.5' fill='white' fill-opacity='0.5'/%3E%3Ccircle cx='30' cy='30' r='1.5' fill='white' fill-opacity='0.5'/%3E%3Ccircle cx='80' cy='80' r='1.5' fill='white' fill-opacity='0.5'/%3E%3C/svg%3E");
   background-size: 150px 150px;
   opacity: 0.4;
@@ -438,8 +439,7 @@
   }
   
   .abstract-container {
-    width: 350px;
-    height: 350px;
+    --scale: 0.65;
   }
   
   .g-1 { width: 200px; }
@@ -462,8 +462,7 @@
   }
   
   .abstract-container {
-    height: 380px;
-    max-width: 400px;
+    --scale: 0.7;
     margin: 40px auto 0;
   }
   
@@ -496,8 +495,7 @@
   }
   
   .abstract-container {
-    height: 320px;
-    max-width: 350px;
+    --scale: 0.55;
   }
   
   .founder-profile-pro {
@@ -535,7 +533,7 @@
   }
   
   .abstract-container {
-    height: 280px;
+    --scale: 0.5;
   }
   
   .founder-profile-pro {
