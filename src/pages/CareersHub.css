@@ -48,9 +48,29 @@
 .careers-hero-pro p {
   font-size: 1.25rem;
   color: var(--dark-600);
-  max-width: 650px;
   line-height: 1.6;
   margin-bottom: 32px;
+}
+
+/* 2-Column Hero Layout */
+.careers-content-pro {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 40px;
+}
+
+.careers-hero-right {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+@media (max-width: 992px) {
+  .careers-content-pro {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
 }
 
 /* Modern Search Pro */

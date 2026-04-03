@@ -110,34 +110,38 @@ export default function CareersHub() {
         <div className="careers-mesh-bg"></div>
         <div className="container careers-container-pro">
           <div className="careers-content-pro">
-            <h1 className="animate-slide">Find Your <span style={{ color: '#008ad1' }}>Dream Career</span></h1>
-            <p className="animate-slide">Discover the latest job opportunities from top companies. Apply directly and kickstart your career today!</p>
+            <div className="careers-hero-left">
+              <h1 className="animate-slide">Find Your <span style={{ color: '#008ad1' }}>Dream Career</span></h1>
+              <p className="animate-slide">Discover the latest job opportunities from top companies. Apply directly and kickstart your career today!</p>
 
-            <GlobalBanner location="Careers" />
+              <div className="careers-search-pro animate-fade">
+                <FiSearch className="search-icon-pro" />
+                <input
+                  type="text"
+                  placeholder="Search by company, role, or location..."
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                />
+              </div>
 
-            <div className="careers-search-pro animate-fade">
-              <FiSearch className="search-icon-pro" />
-              <input
-                type="text"
-                placeholder="Search by company, role, or location..."
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-              />
+              <div className="careers-stats-pro animate-fade">
+                <div className="stat-item-pro">
+                  <strong>{activeJobsCount}</strong>
+                  <span>Active Jobs</span>
+                </div>
+                <div className="stat-item-pro">
+                  <strong>{new Set(jobs.map(j => j.company_name)).size}</strong>
+                  <span>Companies</span>
+                </div>
+                <div className="stat-item-pro">
+                  <strong>{jobs.filter(j => jobMatchesCategory(j, 'Work From Home')).length}</strong>
+                  <span>Remote Jobs</span>
+                </div>
+              </div>
             </div>
 
-            <div className="careers-stats-pro animate-fade">
-              <div className="stat-item-pro">
-                <strong>{activeJobsCount}</strong>
-                <span>Active Jobs</span>
-              </div>
-              <div className="stat-item-pro">
-                <strong>{new Set(jobs.map(j => j.company_name)).size}</strong>
-                <span>Companies</span>
-              </div>
-              <div className="stat-item-pro">
-                <strong>{jobs.filter(j => jobMatchesCategory(j, 'Work From Home')).length}</strong>
-                <span>Remote Jobs</span>
-              </div>
+            <div className="careers-hero-right">
+              <GlobalBanner location="Careers" />
             </div>
           </div>
         </div>
