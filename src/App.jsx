@@ -26,11 +26,13 @@ import JobDetail from './pages/JobDetail';
 import SavedJobs from './pages/SavedJobs';
 import ProtectedRoute from './components/layout/ProtectedRoute';
 import ScrollToTop from './components/layout/ScrollToTop';
+import WhatsAppButton from './components/ui/WhatsAppButton';
 
 export default function App() {
   return (
     <Router>
       <ScrollToTop />
+      <WhatsAppButton />
       <Routes>
         {/* Pages with Navbar + Footer */}
         <Route element={<Layout />}>
