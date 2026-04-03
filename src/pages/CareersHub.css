@@ -471,15 +471,15 @@
 /* Responsive */
 @media (max-width: 1024px) {
   .careers-grid { grid-template-columns: repeat(2, 1fr); }
-  .careers-hero h1 { font-size: 2rem; }
+  .careers-hero-pro h1 { font-size: 2rem; }
 }
 @media (max-width: 768px) {
   .careers-grid { grid-template-columns: 1fr; gap: 16px; }
-  .careers-hero { padding: 40px 0 32px; }
-  .careers-hero h1 { font-size: 1.75rem; }
-  .careers-stats { gap: 20px; }
+  .careers-hero-pro { padding: 40px 0 32px; }
+  .careers-hero-pro h1 { font-size: 1.75rem; }
+  .careers-stats-pro { gap: 20px; flex-wrap: wrap; }
   .whatsapp-cta { flex-direction: column; text-align: center; padding: 24px; }
 }
 @media (max-width: 480px) {
-  .careers-stats { flex-direction: column; gap: 12px; }
+  .careers-stats-pro { flex-direction: column; gap: 12px; }
 }
