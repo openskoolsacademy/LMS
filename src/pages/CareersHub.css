@@ -481,5 +481,7 @@
   .whatsapp-cta { flex-direction: column; text-align: center; padding: 24px; }
 }
 @media (max-width: 480px) {
-  .careers-stats-pro { flex-direction: column; gap: 12px; }
+  .careers-stats-pro { flex-direction: row; flex-wrap: wrap; justify-content: space-between; gap: 16px; margin-top: 32px; }
+  .stat-item-pro strong { font-size: 1.5rem; }
+  .stat-item-pro span { font-size: 0.75rem; }
 }
