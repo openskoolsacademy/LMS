@@ -49,6 +49,11 @@
 .auth-switch a { color: var(--primary); font-weight: 600; }
 .auth-switch a:hover { text-decoration: underline; }
 
+@media (max-width: 768px) {
+  .auth-page { padding-bottom: 100px; }
+}
+
 @media (max-width: 480px) {
   .auth-card { padding: 28px 20px; }
+  .auth-page { padding-bottom: 100px; padding-left: 16px; padding-right: 16px; }
 }
