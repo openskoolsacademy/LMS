@@ -111,7 +111,7 @@ export default function CareersHub() {
         <div className="container careers-container-pro">
           <div className="careers-content-pro">
             <div className="careers-hero-left">
-              <h1 className="animate-slide">Find Your <span style={{ color: '#008ad1' }}>Dream Career</span></h1>
+              <h1 className="animate-slide" style={{ color: 'var(--primary)' }}>Careers Hub</h1>
               <p className="animate-slide">Discover the latest job opportunities from top companies. Apply directly and kickstart your career today!</p>
 
               <div className="careers-search-pro animate-fade">
