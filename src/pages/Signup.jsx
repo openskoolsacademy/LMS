@@ -90,7 +90,7 @@ export default function Signup() {
               <button type="button" className="pw-toggle" onClick={() => setShowPw(!showPw)}>{showPw ? <FiEyeOff /> : <FiEye />}</button>
             </div>
           </div>
-          <label className="auth-terms"><input type="checkbox" required /> I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></label>
+          <label className="auth-terms"><input type="checkbox" required /> <span>I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></span></label>
           <button type="submit" className="btn btn-primary btn-lg btn-full" disabled={loading}>
             {loading ? 'Creating Account...' : 'Create Account'}
           </button>
