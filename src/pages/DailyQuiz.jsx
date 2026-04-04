@@ -329,7 +329,7 @@ export default function DailyQuiz() {
                     <Link to={`/login?redirect=/daily-quiz`} className="btn btn-primary btn-lg dq-start-btn">
                       <FiZap /> Login to Start Quiz
                     </Link>
-                    <Link to="/register" className="dq-register-link">Don't have an account? <strong>Sign up free →</strong></Link>
+                    <Link to="/signup" className="dq-register-link">Don't have an account? <strong>Sign up free →</strong></Link>
                   </div>
                 )}
               </div>
