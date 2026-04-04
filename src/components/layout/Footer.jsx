@@ -38,10 +38,10 @@ export default function Footer() {
           </div>
           <div className="footer__col">
             <h4>Support</h4>
-            <a href="#">Help Center</a>
+            <Link to="/help-center">Help Center</Link>
             <Link to="/verify-certificate">Verify Certificate</Link>
-            <a href="#">Terms of Service</a>
-            <a href="#">Privacy Policy</a>
+            <Link to="/terms-of-service">Terms of Service</Link>
+            <Link to="/privacy-policy">Privacy Policy</Link>
             <Link to="/contact">Contact Us</Link>
           </div>
         </div>

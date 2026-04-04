@@ -18,6 +18,9 @@ import AdminPanel from './pages/AdminPanel';
 import InstructorProfile from './pages/InstructorProfile';
 import AboutUs from './pages/AboutUs';
 import Contact from './pages/Contact';
+import HelpCenter from './pages/HelpCenter';
+import TermsOfService from './pages/TermsOfService';
+import PrivacyPolicy from './pages/PrivacyPolicy';
 import BlogList from './pages/blog/BlogList';
 import BlogDetail from './pages/blog/BlogDetail';
 import BlogEditor from './pages/blog/BlogEditor';
@@ -41,6 +44,9 @@ export default function App() {
           <Route path="/" element={<Landing />} />
           <Route path="/about" element={<AboutUs />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/help-center" element={<HelpCenter />} />
+          <Route path="/terms-of-service" element={<TermsOfService />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/courses" element={<CourseList />} />
           <Route path="/careers" element={<CareersHub />} />
           <Route path="/careers/:id" element={<JobDetail />} />
