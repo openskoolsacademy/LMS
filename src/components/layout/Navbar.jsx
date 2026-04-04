@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { FiMenu, FiX, FiUser, FiLogOut } from 'react-icons/fi';
+import { FiMenu, FiX, FiUser, FiLogOut, FiTrendingUp, FiZap } from 'react-icons/fi';
 import ProfileDropdown from '../ui/ProfileDropdown';
 import { useAuth } from '../../context/AuthContext';
 import './Navbar.css';
@@ -43,6 +43,7 @@ export default function Navbar() {
           <Link to="/about" className={`nav-link ${isActive('/about')}`} onClick={closeMobile}>About</Link>
           <Link to="/courses" className={`nav-link ${isActive('/courses')}`} onClick={closeMobile}>Courses</Link>
           <Link to="/careers" className={`nav-link ${isActive('/careers')}`} onClick={closeMobile}>Careers</Link>
+          <Link to="/daily-quiz" className={`nav-link ${isActive('/daily-quiz')}`} onClick={closeMobile}>Quiz</Link>
           <Link to="/contact" className={`nav-link ${isActive('/contact')}`} onClick={closeMobile}>Contact</Link>
           <Link to="/blog" className={`nav-link ${isActive('/blog')}`} onClick={closeMobile}>Blog</Link>
           <Link to="/verify-certificate" className={`nav-link ${isActive('/verify-certificate')}`} onClick={closeMobile}>Verify</Link>

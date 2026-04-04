@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FiSearch, FiMapPin, FiBriefcase, FiDollarSign, FiClock } from 'react-icons/fi';
+import {
+  FiSearch, FiMapPin, FiBriefcase, FiDollarSign, FiClock,
+  FiTrendingUp, FiUsers, FiStar, FiArrowRight, FiCheckCircle
+} from 'react-icons/fi';
 import { supabase } from '../lib/supabase';
 import GlobalBanner from '../components/ui/GlobalBanner';
 import Skeleton from '../components/ui/Skeleton';
@@ -105,42 +108,89 @@ export default function CareersHub() {
 
   return (
     <div className="careers-page">
-      {/* Hero */}
-      <section className="careers-hero-pro">
-        <div className="careers-mesh-bg"></div>
-        <div className="container careers-container-pro">
-          <div className="careers-content-pro">
-            <div className="careers-hero-left">
-              <h1 className="animate-slide" style={{ color: 'var(--primary)' }}>Careers Hub</h1>
-              <p className="animate-slide">Discover the latest job opportunities from top companies. Apply directly and kickstart your career today!</p>
+      {/* ═══════════════════════════════════════════
+          HERO SECTION — Mobile-First, Premium Design
+      ═══════════════════════════════════════════ */}
+      <section className="ch-hero">
+        {/* Decorative blobs */}
+        <div className="ch-blob ch-blob-1" aria-hidden />
+        <div className="ch-blob ch-blob-2" aria-hidden />
+        <div className="ch-dot-grid" aria-hidden />
 
-              <div className="careers-search-pro animate-fade">
-                <FiSearch className="search-icon-pro" />
+        <div className="container ch-hero-inner">
+          {/* LEFT — text + search + stats */}
+          <div className="ch-hero-left">
+            {/* Trust badge */}
+            <div className="ch-trust-badge">
+              <FiCheckCircle size={14} />
+              <span>Trusted Job Opportunities</span>
+            </div>
+
+            <h1 className="ch-headline">
+              Find Your <span className="ch-headline-accent">Dream Job</span><br />
+              <span className="ch-headline-sub">with Open Skools Careers</span>
+            </h1>
+
+            <p className="ch-desc">
+              Explore curated job listings from top companies walk-ins, remote roles,
+              fresher-friendly openings, and more. Your next opportunity is one click away.
+            </p>
+
+            {/* Search Bar */}
+            <div className="ch-search-wrap">
+              <div className="ch-search-bar">
+                <FiSearch className="ch-search-icon" />
                 <input
                   type="text"
                   placeholder="Search by company, role, or location..."
                   value={search}
                   onChange={e => setSearch(e.target.value)}
+                  aria-label="Search jobs"
                 />
+                <button className="ch-search-btn">
+                  Search
+                </button>
               </div>
-
-              <div className="careers-stats-pro animate-fade">
-                <div className="stat-item-pro">
-                  <strong>{activeJobsCount}</strong>
-                  <span>Active Jobs</span>
-                </div>
-                <div className="stat-item-pro">
-                  <strong>{new Set(jobs.map(j => j.company_name)).size}</strong>
-                  <span>Companies</span>
-                </div>
-                <div className="stat-item-pro">
-                  <strong>{jobs.filter(j => jobMatchesCategory(j, 'Work From Home')).length}</strong>
-                  <span>Remote Jobs</span>
-                </div>
+              <div className="ch-search-pills">
+                {['Software Engineer', 'Marketing', 'Remote', 'Fresher'].map(tag => (
+                  <button
+                    key={tag}
+                    className="ch-search-pill"
+                    onClick={() => setSearch(tag)}
+                  >
+                    {tag}
+                  </button>
+                ))}
               </div>
             </div>
 
-            <div className="careers-hero-right">
+            {/* Live Stats */}
+            <div className="ch-stats">
+              <div className="ch-stat">
+                <span className="ch-stat-val">{activeJobsCount}</span>
+                <span className="ch-stat-label">Active Jobs</span>
+              </div>
+              <div className="ch-stat-divider" />
+              <div className="ch-stat">
+                <span className="ch-stat-val">{new Set(jobs.map(j => j.company_name)).size}</span>
+                <span className="ch-stat-label">Companies</span>
+              </div>
+              <div className="ch-stat-divider" />
+              <div className="ch-stat">
+                <span className="ch-stat-val">{jobs.filter(j => jobMatchesCategory(j, 'Work From Home')).length}</span>
+                <span className="ch-stat-label">Remote Jobs</span>
+              </div>
+            </div>
+          </div>
+
+          {/* RIGHT — banner + floating cards */}
+          <div className="ch-hero-right">
+            {/* Floating highlight cards removed */}
+
+            {/* Main visual card removed */}
+
+            {/* Banner slot */}
+            <div className="ch-banner-slot">
               <GlobalBanner location="Careers" />
             </div>
           </div>

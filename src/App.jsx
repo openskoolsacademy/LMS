@@ -24,6 +24,8 @@ import BlogEditor from './pages/blog/BlogEditor';
 import CareersHub from './pages/CareersHub';
 import JobDetail from './pages/JobDetail';
 import SavedJobs from './pages/SavedJobs';
+import DailyQuiz from './pages/DailyQuiz';
+import Leaderboard from './pages/Leaderboard';
 import ProtectedRoute from './components/layout/ProtectedRoute';
 import ScrollToTop from './components/layout/ScrollToTop';
 import WhatsAppButton from './components/ui/WhatsAppButton';
@@ -54,6 +56,8 @@ export default function App() {
           <Route path="/verify-certificate" element={<CertificatePublicVerify />} />
           <Route path="/dashboard" element={<ProtectedRoute><StudentDashboard /></ProtectedRoute>} />
           <Route path="/saved-jobs" element={<ProtectedRoute><SavedJobs /></ProtectedRoute>} />
+          <Route path="/daily-quiz" element={<DailyQuiz />} />
+          <Route path="/leaderboard" element={<Leaderboard />} />
           <Route path="/instructor" element={<ProtectedRoute allowedRoles={['instructor', 'admin']}><InstructorDashboard /></ProtectedRoute>} />
           <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']}><AdminPanel /></ProtectedRoute>} />
           <Route path="/blog" element={<BlogList />} />

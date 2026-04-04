@@ -397,3 +397,184 @@
   border-color: var(--primary);
   box-shadow: 0 0 0 3px var(--primary-50);
 }
+
+/* ===================================
+   Quiz & Rewards Tab — Student Dashboard
+   =================================== */
+.sd-quiz { display: flex; flex-direction: column; gap: 24px; }
+
+/* Hero banner */
+.sdq-hero {
+  background: linear-gradient(135deg, #008ad1 0%, #006eb8 50%, #00437a 100%);
+  border-radius: 20px; padding: 32px; color: white;
+  display: flex; gap: 24px; align-items: flex-start;
+  position: relative; overflow: hidden;
+  box-shadow: 0 16px 40px rgba(0,138,209,0.2);
+}
+.sdq-hero::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(circle at 80% 20%, rgba(255,255,255,0.08) 0%, transparent 50%);
+  pointer-events: none;
+}
+.sdq-hero-left { flex: 1; position: relative; }
+.sdq-hero-badge {
+  display: inline-block; background: rgba(255,255,255,0.2);
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 100px; padding: 4px 14px;
+  font-size: 0.75rem; font-weight: 700;
+  letter-spacing: 0.05em; margin-bottom: 12px;
+}
+.sdq-hero-left h3 { color: white; font-size: 1.5rem; font-weight: 800; margin-bottom: 6px; }
+.sdq-hero-left p { color: rgba(255,255,255,0.75); font-size: 0.9rem; margin-bottom: 20px; }
+.sdq-stats-row { display: flex; gap: 16px; flex-wrap: wrap; }
+.sdq-stat {
+  background: rgba(255,255,255,0.12); border-radius: 12px;
+  padding: 12px 16px; text-align: center;
+  display: flex; flex-direction: column; gap: 2px;
+  min-width: 72px;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+.sdq-stat span { font-size: 1.25rem; }
+.sdq-stat strong { font-size: 1.1rem; font-weight: 800; color: white; }
+.sdq-stat small { font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.7; }
+
+.sdq-hero-right {
+  flex-shrink: 0; background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 16px; padding: 20px;
+  text-align: center; min-width: 180px;
+}
+.sdq-today-done p, .sdq-today-cta p { color: rgba(255,255,255,0.9); margin: 4px 0; font-size: 0.9rem; }
+.sdq-btn-white {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: white; color: var(--primary);
+  border-radius: 100px; padding: 9px 20px;
+  font-size: 0.85rem; font-weight: 800;
+  margin-top: 12px; transition: all 0.2s;
+}
+.sdq-btn-white:hover { background: var(--gray-100); transform: translateY(-1px); }
+
+/* Tier progress */
+.sdq-tier-card {
+  background: white; border-radius: 16px; padding: 20px 24px;
+  box-shadow: var(--shadow);
+}
+.sdq-tier-info {
+  display: flex; justify-content: space-between;
+  font-size: 0.875rem; font-weight: 600; color: var(--gray-600);
+  margin-bottom: 10px;
+}
+.sdq-tier-bar { height: 10px; background: var(--gray-100); border-radius: 100px; overflow: hidden; }
+.sdq-tier-fill { height: 100%; background: linear-gradient(90deg, var(--primary), #0db1e0, #005f9e); border-radius: inherit; transition: width 1s ease; }
+
+/* Grid */
+.sdq-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+@media (max-width: 768px) { .sdq-grid { grid-template-columns: 1fr; } }
+.sdq-card { background: white; border-radius: 16px; padding: 20px; box-shadow: var(--shadow); }
+.sdq-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.sdq-card-header h4 { font-size: 1rem; font-weight: 800; color: var(--dark-800); }
+.sdq-link { font-size: 0.8rem; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 4px; }
+
+/* Reward badges */
+.sdq-rewards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.sdq-badge {
+  border-radius: 14px; padding: 14px 8px;
+  text-align: center; position: relative;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  border: 2px solid var(--gray-100);
+  transition: all 0.2s;
+}
+.sdq-badge.unlocked { background: linear-gradient(135deg, var(--primary-50), var(--primary-100)); border-color: var(--primary-200); }
+.sdq-badge.locked { background: var(--gray-50); opacity: 0.5; }
+.sdq-badge-emoji { font-size: 1.75rem; }
+.sdq-badge-label { font-size: 0.7rem; font-weight: 800; color: var(--dark-700); }
+.sdq-badge-pts { font-size: 0.62rem; color: var(--gray-400); font-weight: 600; }
+.sdq-lock { position: absolute; top: 6px; right: 8px; font-size: 0.7rem; }
+
+/* Mini leaderboard */
+.sdq-mini-lb { display: flex; flex-direction: column; gap: 8px; }
+.sdq-lb-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; border-radius: 10px;
+  background: var(--gray-50); font-size: 0.875rem;
+}
+.sdq-lb-row.me { background: linear-gradient(135deg, var(--primary-50), #ede9fe); }
+.sdq-lb-rank { font-size: 1.1rem; min-width: 28px; }
+.sdq-lb-name { flex: 1; font-weight: 700; color: var(--dark-700); }
+.sdq-lb-pts { font-weight: 800; color: var(--primary); }
+
+/* Streak bonuses */
+.sdq-streak-card { background: white; border-radius: 16px; padding: 20px 24px; box-shadow: var(--shadow); }
+.sdq-streak-card h4 { font-size: 1rem; font-weight: 800; margin-bottom: 16px; }
+.sdq-streak-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.sdq-streak-item {
+  background: var(--gray-50); border-radius: 12px; padding: 16px 12px;
+  text-align: center; border: 2px solid var(--gray-100);
+  display: flex; flex-direction: column; gap: 4px;
+}
+.sdq-streak-item span { font-size: 0.8rem; color: var(--gray-500); font-weight: 600; }
+.sdq-streak-item strong { font-size: 1.2rem; font-weight: 900; color: var(--dark-800); }
+.sdq-streak-item.earned { background: linear-gradient(135deg, #fff7ed, #fef3c7); border-color: #fed7aa; }
+.sdq-streak-item.earned strong { color: #f97316; }
+
+/* Admin DailyQuizManager inline styles */
+.dqm { padding: 8px 0; }
+.dqm-header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; margin-bottom: 28px; }
+.dqm-header h3 { font-size: 1.25rem; font-weight: 800; margin-bottom: 4px; }
+.dqm-header p { color: var(--gray-500); font-size: 0.875rem; }
+.dqm-empty { text-align: center; padding: 60px 24px; background: var(--gray-50); border-radius: 16px; }
+.dqm-empty h4 { font-size: 1.25rem; margin: 12px 0 8px; }
+.dqm-empty p { color: var(--gray-500); margin-bottom: 20px; }
+
+.dqm-list { display: flex; flex-direction: column; gap: 12px; }
+.dqm-quiz-row {
+  background: white; border-radius: 14px; padding: 18px 20px;
+  border: 1px solid var(--gray-100);
+  box-shadow: var(--shadow-sm);
+  display: flex; flex-direction: column; gap: 12px;
+  transition: box-shadow 0.2s;
+}
+.dqm-quiz-row:hover { box-shadow: var(--shadow); }
+.dqm-quiz-info { display: flex; flex-direction: column; gap: 4px; }
+.dqm-quiz-date { display: flex; align-items: center; gap: 8px; font-size: 0.875rem; color: var(--gray-500); }
+.dqm-quiz-title { font-weight: 700; color: var(--dark-800); }
+.dqm-quiz-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+.dqm-q-preview { background: var(--gray-50); border-radius: 10px; padding: 16px; border-top: 2px solid var(--gray-100); }
+.dqm-q-preview-item { padding: 8px 0; border-bottom: 1px solid var(--gray-100); font-size: 0.875rem; color: var(--gray-700); }
+.dqm-q-preview-item:last-child { border-bottom: none; }
+.dqm-q-preview-opts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+.dqm-qp-opt { font-size: 0.75rem; padding: 3px 10px; background: var(--gray-100); border-radius: 100px; color: var(--gray-600); }
+.dqm-qp-opt.correct { background: #dcfce7; color: #15803d; font-weight: 700; }
+
+/* Form */
+.dqm-form { display: flex; flex-direction: column; gap: 24px; }
+.dqm-form-header { display: flex; justify-content: space-between; align-items: center; }
+.dqm-form-header h3 { font-size: 1.25rem; font-weight: 800; }
+.dqm-form-meta { display: grid; grid-template-columns: 1fr 1fr auto; gap: 16px; align-items: end; background: var(--gray-50); border-radius: 14px; padding: 20px; }
+.dqm-questions { display: flex; flex-direction: column; gap: 16px; }
+.dqm-q-header { display: flex; justify-content: space-between; align-items: center; }
+.dqm-q-header h4 { font-size: 1rem; font-weight: 700; }
+.dqm-q-card { background: white; border: 2px solid var(--gray-100); border-radius: 16px; padding: 20px; }
+.dqm-q-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.dqm-q-label { background: var(--primary); color: white; border-radius: 8px; padding: 4px 12px; font-size: 0.8rem; font-weight: 800; }
+.dqm-q-remove { background: none; border: none; color: var(--danger); cursor: pointer; font-size: 1rem; padding: 6px; border-radius: 8px; }
+.dqm-q-remove:hover { background: #fee2e2; }
+.dqm-q-text-input { width: 100%; padding: 12px 16px; border: 2px solid var(--gray-200); border-radius: 10px; font-family: inherit; font-size: 1rem; resize: vertical; outline: none; margin-bottom: 14px; }
+.dqm-q-text-input:focus { border-color: var(--primary); }
+.dqm-options-grid { display: flex; flex-direction: column; gap: 8px; }
+.dqm-option-row { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 10px; border: 2px solid var(--gray-100); background: var(--gray-50); }
+.dqm-option-row.correct { background: #dcfce7; border-color: #86efac; }
+.dqm-opt-letter { width: 24px; height: 24px; border-radius: 6px; background: var(--gray-200); display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800; color: var(--gray-600); flex-shrink: 0; }
+.dqm-opt-input { flex: 1; padding: 8px 12px; border: 1px solid var(--gray-200); border-radius: 8px; font-family: inherit; font-size: 0.9rem; background: white; outline: none; }
+.dqm-opt-input:focus { border-color: var(--primary); }
+.dqm-correct-tag { font-size: 0.7rem; font-weight: 800; color: #15803d; white-space: nowrap; }
+.dqm-form-actions { display: flex; gap: 12px; }
+
+@media (max-width: 768px) {
+  .sdq-hero { flex-direction: column; }
+  .sdq-hero-right { width: 100%; min-width: unset; }
+  .sdq-rewards-grid { grid-template-columns: repeat(2, 1fr); }
+  .sdq-streak-grid { grid-template-columns: 1fr; }
+  .dqm-form-meta { grid-template-columns: 1fr; }
+}

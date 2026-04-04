@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { FiBookOpen, FiAward, FiUser, FiDownload, FiBarChart2, FiPlay, FiPlusCircle, FiFileText } from 'react-icons/fi';
+import { FiBookOpen, FiAward, FiUser, FiDownload, FiBarChart2, FiPlay, FiPlusCircle, FiFileText, FiZap, FiTrendingUp, FiDatabase, FiCheckCircle, FiTarget, FiLock, FiStar } from 'react-icons/fi';
+import { FaFire, FaTrophy, FaCrown, FaSeedling } from 'react-icons/fa';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { useAlert } from '../context/AlertContext';
@@ -35,6 +36,12 @@ export default function StudentDashboard() {
   const [streakCount, setStreakCount] = useState(0);
   const [courseAssessments, setCourseAssessments] = useState({}); // { courseId: assessmentData }
   const [passedAssessments, setPassedAssessments] = useState({}); // { courseId: true }
+  // Gamification state
+  const [userPoints, setUserPoints] = useState(0);
+  const [userStreak, setUserStreak] = useState(0);
+  const [todayAttempt, setTodayAttempt] = useState(null);
+  const [topLeaders, setTopLeaders] = useState([]);
+  const [userRewards, setUserRewards] = useState([]);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -50,6 +57,7 @@ export default function StudentDashboard() {
       fetchCertificates();
       fetchStreak();
       fetchAssessmentStatus();
+      fetchGamificationData();
     }
   }, [user]);
 
@@ -74,6 +82,30 @@ export default function StudentDashboard() {
     } catch (err) {
       console.error('Error fetching assessment status:', err);
     }
+  };
+
+  const fetchGamificationData = async () => {
+    try {
+      const todayStr = new Date().toISOString().split('T')[0];
+      const [pts, streak, attempt, leaders, rewards] = await Promise.all([
+        supabase.from('user_points').select('total_points').eq('user_id', user.id).single(),
+        supabase.from('user_streaks').select('current_streak').eq('user_id', user.id).single(),
+        supabase.from('daily_quiz_attempts').select('*').eq('user_id', user.id).eq('quiz_date', todayStr).single(),
+        supabase.from('user_points').select('user_id, total_points').order('total_points', { ascending: false }).limit(5),
+        supabase.from('user_rewards').select('*').eq('user_id', user.id)
+      ]);
+      setUserPoints(pts.data?.total_points || 0);
+      setUserStreak(streak.data?.current_streak || 0);
+      setTodayAttempt(attempt.data || null);
+      setUserRewards(rewards.data || []);
+      // Enrich leaders with names
+      if (leaders.data?.length) {
+        const ids = leaders.data.map(l => l.user_id);
+        const { data: users } = await supabase.from('users').select('id, name').in('id', ids);
+        const uMap = Object.fromEntries((users || []).map(u => [u.id, u.name]));
+        setTopLeaders(leaders.data.map(l => ({ ...l, name: uMap[l.user_id] || 'Unknown' })));
+      }
+    } catch { /* gamification tables may not exist yet */ }
   };
 
   const formInitialized = useRef(false);
@@ -250,6 +282,7 @@ export default function StudentDashboard() {
           <button className={`sd-tab ${tab === 'courses' ? 'active' : ''}`} onClick={() => setTab('courses')}><FiBookOpen /> My Courses</button>
           <button className={`sd-tab ${tab === 'progress' ? 'active' : ''}`} onClick={() => setTab('progress')}><FiBarChart2 /> Progress</button>
           <button className={`sd-tab ${tab === 'certificates' ? 'active' : ''}`} onClick={() => setTab('certificates')}><FiAward /> Certificates</button>
+          <button className={`sd-tab ${tab === 'quiz' ? 'active' : ''}`} onClick={() => setTab('quiz')}><FiZap /> Quiz & Rewards</button>
           <button className={`sd-tab ${tab === 'profile' ? 'active' : ''}`} onClick={() => setTab('profile')}><FiUser /> Profile</button>
         </div>
 
@@ -370,9 +403,139 @@ export default function StudentDashboard() {
             )}
           </div>
         )}
+        {/* Quiz & Rewards Tab */}
+        {tab === 'quiz' && (() => {
+          const REWARD_TIERS = [
+            { type: 'newcomer', emoji: <FaSeedling style={{color: '#10b981'}} />, label: 'Newcomer', pts: 0 },
+            { type: 'bronze', emoji: <FiAward style={{color: '#cd7f32'}} />, label: 'Bronze', pts: 100 },
+            { type: 'silver', emoji: <FiAward style={{color: '#c0c0c0'}} />, label: 'Silver', pts: 300 },
+            { type: 'gold', emoji: <FiAward style={{color: '#f59e0b'}} />, label: 'Gold', pts: 700 },
+            { type: 'platinum', emoji: <FiStar style={{color: '#005f9e'}} />, label: 'Platinum', pts: 1500 },
+            { type: 'legend', emoji: <FaCrown style={{color: '#008ad1'}} />, label: 'Legend', pts: 3000 },
+          ];
+          const unlockedTypes = new Set(userRewards.map(r => r.reward_type));
+          const nextTier = REWARD_TIERS.find(t => t.pts > userPoints) || REWARD_TIERS[REWARD_TIERS.length - 1];
+          const prevTier = REWARD_TIERS.filter(t => t.pts <= userPoints).pop() || REWARD_TIERS[0];
+          const tierProgress = nextTier.pts > 0 ? Math.min(100, Math.round(((userPoints - prevTier.pts) / (nextTier.pts - prevTier.pts)) * 100)) : 100;
+
+          return (
+            <div className="sd-quiz animate-fade-in-up">
+              {/* Hero card */}
+              <div className="sdq-hero">
+                <div className="sdq-hero-left">
+                  <div className="sdq-hero-badge"><FiZap /> Daily Challenge</div>
+                  <h3>Quiz & Gamification</h3>
+                  <p>Earn points, build streaks, unlock rewards!</p>
+                  <div className="sdq-stats-row">
+                    <div className="sdq-stat">
+                      <span style={{color: '#f59e0b'}}><FiDatabase /></span>
+                      <strong>{userPoints}</strong>
+                      <small>Points</small>
+                    </div>
+                    <div className="sdq-stat">
+                      <span style={{color: '#f97316'}}><FaFire /></span>
+                      <strong>{userStreak}</strong>
+                      <small>Streak</small>
+                    </div>
+                    <div className="sdq-stat">
+                      <span>{prevTier.emoji}</span>
+                      <strong>{prevTier.label}</strong>
+                      <small>Rank</small>
+                    </div>
+                  </div>
+                </div>
+                <div className="sdq-hero-right">
+                  {todayAttempt ? (
+                    <div className="sdq-today-done">
+                      <div style={{ fontSize: '2.5rem', color: '#10b981' }}><FiCheckCircle /></div>
+                      <p><strong>Today's Quiz Done!</strong></p>
+                      <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)' }}>You scored {todayAttempt.score}% • +{todayAttempt.points_earned} pts</p>
+                      <Link to="/daily-quiz" className="sdq-btn-white">View Result</Link>
+                    </div>
+                  ) : (
+                    <div className="sdq-today-cta">
+                      <div style={{ fontSize: '2.5rem', color: '#f59e0b' }}><FiTarget /></div>
+                      <p><strong>Today's Challenge Ready!</strong></p>
+                      <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)' }}>Complete it to earn up to 100+ pts</p>
+                      <Link to="/daily-quiz" className="sdq-btn-white"><FiZap /> Start Quiz</Link>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Progress to next tier */}
+              <div className="sdq-tier-card">
+                <div className="sdq-tier-info">
+                  <span>Progress to {nextTier.emoji} {nextTier.label}</span>
+                  <span>{userPoints} / {nextTier.pts} pts</span>
+                </div>
+                <div className="sdq-tier-bar"><div className="sdq-tier-fill" style={{ width: `${tierProgress}%` }} /></div>
+              </div>
+
+              <div className="sdq-grid">
+                {/* Reward badges */}
+                <div className="sdq-card">
+                  <div className="sdq-card-header">
+                    <h4><FiAward style={{color: '#f59e0b', marginRight: 4}} /> Reward Badges</h4>
+                  </div>
+                  <div className="sdq-rewards-grid">
+                    {REWARD_TIERS.map(tier => {
+                      const unlocked = tier.pts === 0 || userPoints >= tier.pts || unlockedTypes.has(tier.type);
+                      return (
+                        <div key={tier.type} className={`sdq-badge ${unlocked ? 'unlocked' : 'locked'}`}>
+                          <span className="sdq-badge-emoji">{tier.emoji}</span>
+                          <span className="sdq-badge-label">{tier.label}</span>
+                          <span className="sdq-badge-pts">{tier.pts > 0 ? `${tier.pts} pts` : 'Free'}</span>
+                          {!unlocked && <div className="sdq-lock"><FiLock style={{color: '#9ca3af'}} /></div>}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Mini leaderboard */}
+                <div className="sdq-card">
+                  <div className="sdq-card-header">
+                    <h4><FaTrophy style={{color: '#f59e0b', marginRight: 4}} /> Top Learners</h4>
+                    <Link to="/leaderboard" className="sdq-link"><FiTrendingUp /> Full Board</Link>
+                  </div>
+                  {topLeaders.length === 0 ? (
+                    <p style={{ color: 'var(--gray-400)', fontSize: '0.875rem', textAlign: 'center', padding: '24px 0' }}>No data yet. Be the first!</p>
+                  ) : (
+                    <div className="sdq-mini-lb">
+                      {topLeaders.map((l, i) => (
+                        <div key={l.user_id} className={`sdq-lb-row ${l.user_id === user?.id ? 'me' : ''}`}>
+                          <span className="sdq-lb-rank">
+                            {i === 0 ? <FiAward style={{color: '#f59e0b'}} /> : 
+                             i === 1 ? <FiAward style={{color: '#c0c0c0'}} /> : 
+                             i === 2 ? <FiAward style={{color: '#cd7f32'}} /> : `#${i + 1}`}
+                          </span>
+                          <span className="sdq-lb-name">{l.user_id === user?.id ? <><FiStar style={{color:'#f59e0b', marginRight:4, verticalAlign: 'text-bottom'}} /> You</> : l.name}</span>
+                          <span className="sdq-lb-pts">{l.total_points} pts</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Streak rules */}
+              <div className="sdq-streak-card">
+                <h4><FaFire style={{color: '#f97316', marginRight: 4}} /> Streak Bonuses</h4>
+                <div className="sdq-streak-grid">
+                  <div className={`sdq-streak-item ${userStreak >= 3 ? 'earned' : ''}`}><span>3 Days</span><strong>+20 pts</strong></div>
+                  <div className={`sdq-streak-item ${userStreak >= 7 ? 'earned' : ''}`}><span>7 Days</span><strong>+50 pts</strong></div>
+                  <div className={`sdq-streak-item ${userStreak >= 30 ? 'earned' : ''}`}><span>30 Days</span><strong>+200 pts</strong></div>
+                </div>
+                <p style={{ fontSize: '0.8rem', color: 'var(--gray-400)', marginTop: 12 }}>Complete the daily quiz every day to keep your streak!</p>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Profile Tab */}
         {tab === 'profile' && (
+
           <div className="sd-profile animate-fade">
             <form className="profile-form" onSubmit={async (e) => {
               e.preventDefault();

@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
-import { FiUsers, FiBookOpen, FiDollarSign, FiCheckCircle, FiSearch, FiMoreVertical, FiShield, FiTrendingUp, FiTrash2, FiEye, FiMapPin, FiPhone, FiLinkedin, FiAward, FiBriefcase, FiMail, FiCalendar, FiHash, FiClock, FiPercent, FiPlayCircle, FiInfo, FiMessageSquare, FiTag, FiFileText, FiLink, FiUser, FiImage, FiStar } from 'react-icons/fi';
+import { FiUsers, FiBookOpen, FiDollarSign, FiCheckCircle, FiSearch, FiMoreVertical, FiShield, FiTrendingUp, FiTrash2, FiEye, FiMapPin, FiPhone, FiLinkedin, FiAward, FiBriefcase, FiMail, FiCalendar, FiHash, FiClock, FiPercent, FiPlayCircle, FiInfo, FiMessageSquare, FiTag, FiFileText, FiLink, FiUser, FiImage, FiStar, FiZap } from 'react-icons/fi';
 import { supabase } from '../lib/supabase';
 import Skeleton from '../components/ui/Skeleton';
 import Modal from '../components/ui/Modal';
 import RevenueAnalytics from '../components/admin/RevenueAnalytics';
 import MarketingBanners from '../components/admin/MarketingBanners';
 import CertificateGenerator from '../components/admin/CertificateGenerator';
+import DailyQuizManager from '../components/admin/DailyQuizManager';
 import { useAuth } from '../context/AuthContext';
 import { useAlert } from '../context/AlertContext';
 import { mapCategory } from '../data/categories';
@@ -609,6 +610,9 @@ export default function AdminPanel() {
                 </button>
                 <button className="action-pill" onClick={() => setTab('messages')}>
                    <FiMail /> Check Messages
+                </button>
+                <button className="action-pill" onClick={() => setTab('daily-quiz')}>
+                   <FiZap /> Daily Quiz
                 </button>
               </div>
             </div>
@@ -2165,6 +2169,12 @@ export default function AdminPanel() {
             </div>
           </form>
         </Modal>
+
+        {/* Daily Quiz Tab */}
+        {tab === 'daily-quiz' && (
+          <DailyQuizManager />
+        )}
+
       </div>
     </div>
   );

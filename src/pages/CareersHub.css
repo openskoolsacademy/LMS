@@ -1,3 +1,320 @@
+/* ================================================================
+   CareersHub Hero — Mobile-First Premium Design  (#008ad1 theme)
+   ================================================================ */
+
+/* ── Section wrapper ─────────────────────────────────────────── */
+.ch-hero {
+  position: relative;
+  background: linear-gradient(160deg, #eaf6fc 0%, #f0f9ff 40%, #ffffff 100%);
+  overflow: hidden;
+  padding: 56px 0 48px;
+  border-bottom: 1px solid #e0f0fa;
+}
+
+/* ── Decorative blobs ─────────────────────────────────────────── */
+.ch-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  pointer-events: none;
+  z-index: 0;
+}
+.ch-blob-1 {
+  width: 420px; height: 420px;
+  background: radial-gradient(circle, rgba(0,138,209,0.12) 0%, transparent 70%);
+  top: -100px; right: -80px;
+}
+.ch-blob-2 {
+  width: 320px; height: 320px;
+  background: radial-gradient(circle, rgba(0,138,209,0.07) 0%, transparent 70%);
+  bottom: -80px; left: -60px;
+}
+.ch-dot-grid {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(0,138,209,0.08) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: linear-gradient(to bottom, black 0%, transparent 100%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Inner layout — Mobile first: single column ─────────────── */
+.ch-hero-inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+/* ── LEFT — text, search, stats ───────────────────────────────── */
+.ch-hero-left { display: flex; flex-direction: column; gap: 0; }
+
+/* Trust badge */
+.ch-trust-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(0,138,209,0.1);
+  border: 1px solid rgba(0,138,209,0.2);
+  color: #007ab8;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 999px;
+  width: fit-content;
+  margin-bottom: 18px;
+  letter-spacing: 0.02em;
+}
+
+/* Headline */
+.ch-headline {
+  font-size: 2.4rem;
+  font-weight: 900;
+  line-height: 1.15;
+  color: var(--gray-900, #111827);
+  margin: 0 0 16px;
+  letter-spacing: -0.025em;
+}
+.ch-headline-accent {
+  background: linear-gradient(135deg, #008ad1, #0db1e0);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.ch-headline-sub {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--gray-600, #4b5563);
+}
+
+/* Description */
+.ch-desc {
+  font-size: 1rem;
+  color: var(--gray-500, #6b7280);
+  line-height: 1.7;
+  margin: 0 0 28px;
+  max-width: 520px;
+}
+
+/* Search bar */
+.ch-search-wrap { display: flex; flex-direction: column; gap: 12px; margin-bottom: 32px; }
+
+.ch-search-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #ffffff;
+  border: 1.5px solid var(--gray-200, #e5e7eb);
+  border-radius: 12px;
+  padding: 12px 14px;
+  box-shadow: 0 4px 20px rgba(0,138,209,0.08);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.ch-search-bar:focus-within {
+  border-color: #008ad1;
+  box-shadow: 0 0 0 4px rgba(0,138,209,0.12), 0 4px 20px rgba(0,138,209,0.1);
+}
+.ch-search-icon { color: #008ad1; font-size: 1.1rem; flex-shrink: 0; }
+.ch-search-bar input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 0.95rem;
+  color: var(--gray-800, #1f2937);
+  min-width: 0;
+  font-family: inherit;
+}
+.ch-search-btn {
+  background: #008ad1;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 9px 20px;
+  font-weight: 700;
+  font-size: 0.875rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+.ch-search-btn:hover { background: #0077b5; }
+
+/* Quick-search pills */
+.ch-search-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.ch-search-pill {
+  background: #fff;
+  border: 1px solid var(--gray-200, #e5e7eb);
+  color: var(--gray-600, #4b5563);
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 5px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.ch-search-pill:hover { border-color: #008ad1; color: #008ad1; background: #eaf6fc; }
+
+/* Stats row */
+.ch-stats {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.ch-stat { display: flex; flex-direction: column; align-items: center; min-width: 80px; }
+.ch-stat-val { font-size: 1.75rem; font-weight: 900; color: #008ad1; line-height: 1; }
+.ch-stat-label { font-size: 0.72rem; font-weight: 700; color: var(--gray-400, #9ca3af); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 3px; }
+.ch-stat-divider { width: 1px; height: 36px; background: var(--gray-200, #e5e7eb); margin: 0 12px; }
+
+/* ── RIGHT — visual card + floating chips + banner ────────────── */
+.ch-hero-right {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Visual job-listing card */
+.ch-visual-card {
+  background: #fff;
+  border: 1px solid var(--gray-200, #e5e7eb);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 8px 32px rgba(0,138,209,0.10);
+}
+.ch-visual-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--gray-100, #f3f4f6);
+}
+.ch-visual-avatar {
+  width: 44px; height: 44px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #008ad1, #0db1e0);
+  color: #fff;
+  font-weight: 900;
+  font-size: 0.9rem;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.ch-visual-header strong { font-size: 0.9rem; color: var(--gray-900, #111827); display: block; }
+.ch-visual-header span { font-size: 0.75rem; color: var(--gray-400, #9ca3af); }
+
+.ch-visual-roles { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+.ch-visual-role {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--gray-50, #f9fafb);
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--gray-700, #374151);
+}
+.ch-visual-role svg { color: #008ad1; flex-shrink: 0; }
+.ch-visual-role span:first-of-type { flex: 1; }
+
+.ch-role-hot {
+  background: #fee2e2;
+  color: #b91c1c;
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 999px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.ch-role-new {
+  background: #d1fae5;
+  color: #065f46;
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 999px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.ch-visual-footer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: #008ad1;
+  font-weight: 600;
+  padding-top: 12px;
+  border-top: 1px solid var(--gray-100, #f3f4f6);
+}
+
+/* Floating cards */
+.ch-float-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+  border: 1px solid #c9e8f7;
+  border-radius: 12px;
+  padding: 10px 16px;
+  box-shadow: 0 4px 16px rgba(0,138,209,0.12);
+  font-size: 0.8rem;
+  color: #008ad1;
+  width: fit-content;
+}
+.ch-float-card strong { display: block; font-size: 0.82rem; font-weight: 700; color: var(--gray-800, #1f2937); }
+.ch-float-card span { font-size: 0.72rem; color: var(--gray-400, #9ca3af); }
+
+/* On desktop, cards float absolutely */
+@media (min-width: 1024px) {
+  .ch-hero-right { position: relative; min-height: 420px; }
+  .ch-float-card { position: absolute; }
+  .ch-float-1 { top: -14px; left: -30px; animation: ch-float 4s ease-in-out infinite; }
+  .ch-float-2 { bottom: 60px; right: -20px; animation: ch-float 4s ease-in-out infinite 1.5s; }
+}
+
+@keyframes ch-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+/* Banner slot */
+.ch-banner-slot { margin-top: 8px; }
+
+/* ── Responsive ───────────────────────────────────────────────── */
+@media (min-width: 768px) {
+  .ch-hero { padding: 72px 0 60px; }
+  .ch-headline { font-size: 3rem; }
+  .ch-headline-sub { font-size: 2.2rem; }
+  .ch-stats { gap: 0; }
+}
+
+@media (min-width: 1024px) {
+  .ch-hero { padding: 88px 0 72px; }
+  .ch-hero-inner {
+    flex-direction: row;
+    align-items: center;
+    gap: 60px;
+  }
+  .ch-hero-left { flex: 1; }
+  .ch-hero-right { flex: 1; }
+  .ch-headline { font-size: 3.4rem; }
+  .ch-headline-sub { font-size: 2.4rem; }
+}
+
+/* ── Keep existing hero selectors intact below ───────────────── */
+
 /* Hero Section (Pro Level) */
 .careers-hero-pro {
   position: relative;
@@ -5,6 +322,7 @@
   padding: 80px 0 60px;
   overflow: hidden;
 }
+
 
 .careers-mesh-bg {
   position: absolute;

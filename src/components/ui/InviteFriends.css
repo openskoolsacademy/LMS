@@ -1,0 +1,247 @@
+/* ==============================
+   Invite Friends Component
+   ============================== */
+.inv-card {
+  background: white;
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.07);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  position: relative;
+  overflow: hidden;
+  margin-top: 20px;
+}
+
+/* Colored top accent border */
+.inv-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary), #0db1e0, #10b981);
+}
+
+/* Header */
+.inv-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.inv-header-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.inv-icon-wrap {
+  width: 48px; height: 48px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--primary), #005f9e);
+  color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem;
+  flex-shrink: 0;
+  box-shadow: 0 6px 16px rgba(0, 138, 209, 0.25);
+}
+
+.inv-header-left h3 {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--dark-800);
+  margin-bottom: 2px;
+}
+
+.inv-header-left p {
+  font-size: 0.825rem;
+  color: var(--gray-500);
+}
+
+.inv-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: linear-gradient(135deg, var(--primary-50), #ede9fe);
+  border: 1px solid var(--primary-200);
+  color: var(--primary);
+  padding: 5px 12px;
+  border-radius: 100px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* Referral link box */
+.inv-link-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 14px;
+  align-items: center;
+}
+
+.inv-link-box {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--gray-50);
+  border: 1.5px solid var(--gray-200);
+  border-radius: 12px;
+  padding: 10px 14px;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.inv-link-icon {
+  color: var(--primary);
+  flex-shrink: 0;
+  font-size: 1rem;
+}
+
+.inv-link-text {
+  font-size: 0.8rem;
+  color: var(--gray-600);
+  font-family: 'Courier New', monospace;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.inv-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-size: 0.825rem;
+  font-weight: 700;
+  border: 1.5px solid var(--gray-200);
+  background: white;
+  color: var(--gray-700);
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.inv-copy-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: var(--primary-50);
+}
+
+.inv-copy-btn.copied {
+  background: #dcfce7;
+  border-color: #86efac;
+  color: #15803d;
+}
+
+/* Action buttons */
+.inv-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.inv-wa-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #25d366;
+  color: white;
+  border-radius: 12px;
+  padding: 13px 20px;
+  font-size: 0.9rem;
+  font-weight: 800;
+  transition: all 0.2s;
+  min-width: 180px;
+  box-shadow: 0 4px 12px rgba(37, 211, 102, 0.25);
+}
+
+.inv-wa-btn:hover {
+  background: #1fb855;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(37, 211, 102, 0.35);
+  color: white;
+}
+
+.inv-share-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--primary-50);
+  color: var(--primary);
+  border: 1.5px solid var(--primary-200);
+  border-radius: 12px;
+  padding: 13px 20px;
+  font-size: 0.9rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 140px;
+}
+
+.inv-share-btn:hover {
+  background: var(--primary);
+  color: white;
+  transform: translateY(-1px);
+}
+
+/* Referral stats */
+.inv-stats {
+  margin-top: 16px;
+  background: linear-gradient(135deg, var(--gray-50), #f5f3ff);
+  border-radius: 12px;
+  padding: 14px 20px;
+  border: 1px solid var(--gray-100);
+}
+
+.inv-stat-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  gap: 12px;
+}
+
+.inv-stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.inv-stat-item strong {
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: var(--primary);
+  line-height: 1;
+}
+
+.inv-stat-item span {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--gray-400);
+}
+
+.inv-stat-divider {
+  width: 1px;
+  height: 32px;
+  background: var(--gray-200);
+}
+
+@media (max-width: 540px) {
+  .inv-actions { flex-direction: column; }
+  .inv-wa-btn, .inv-share-btn { min-width: unset; }
+  .inv-link-row { flex-direction: column; align-items: stretch; }
+  .inv-copy-btn { width: 100%; justify-content: center; }
+}

@@ -1,0 +1,115 @@
+/* Quiz Reward Popup */
+.qrp-overlay {
+  position: fixed; inset: 0; z-index: 9999;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(4px);
+  padding: 24px;
+}
+
+.qrp-card {
+  background: white; border-radius: 28px;
+  padding: 40px 36px 32px;
+  text-align: center; max-width: 400px; width: 100%;
+  position: relative;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.25);
+  overflow: hidden;
+}
+.qrp-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 6px;
+  background: linear-gradient(90deg, var(--primary), #005f9e, #f59e0b);
+}
+
+.qrp-close {
+  position: absolute; top: 12px; right: 16px;
+  background: var(--gray-100); border: none;
+  width: 32px; height: 32px; border-radius: 50%;
+  font-size: 0.9rem; color: var(--gray-500);
+  cursor: pointer; transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center;
+}
+.qrp-close:hover { background: var(--gray-200); color: var(--dark); }
+
+/* Points badge */
+.qrp-points-badge { margin-bottom: 24px; }
+.qrp-points-icon { font-size: 3.5rem; margin-bottom: 8px; animation: qrp-pop 0.5s cubic-bezier(0.175,0.885,0.32,1.275); }
+@keyframes qrp-pop { 0% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+.qrp-points-val {
+  font-size: 4rem; font-weight: 900;
+  background: linear-gradient(135deg, var(--primary), #005f9e);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  line-height: 1; margin-bottom: 4px;
+  animation: qrp-countup 0.8s ease-out;
+}
+@keyframes qrp-countup { 0% { opacity: 0; transform: scale(0.5); } 100% { opacity: 1; transform: scale(1); } }
+.qrp-points-label { font-size: 1rem; font-weight: 700; color: var(--gray-600); }
+
+/* Breakdown */
+.qrp-breakdown {
+  background: var(--gray-50); border-radius: 14px;
+  padding: 14px 20px; margin-bottom: 20px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.qrp-brow {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 0.9rem; color: var(--gray-600);
+}
+.qrp-brow strong { font-weight: 800; color: var(--dark-800); }
+.qrp-brow.highlight { color: #c2410c; }
+.qrp-brow.highlight strong { color: #f97316; }
+
+/* Streak message */
+.qrp-streak-msg {
+  background: linear-gradient(135deg, #fff7ed, #fef3c7);
+  color: #c2410c; font-size: 1.1rem; font-weight: 800;
+  border-radius: 12px; padding: 12px 20px;
+  margin-bottom: 20px;
+  border: 1.5px solid #fed7aa;
+  animation: qrp-pop 0.6s 0.3s cubic-bezier(0.175,0.885,0.32,1.275) both;
+}
+
+/* Rewards */
+.qrp-rewards { margin-bottom: 20px; }
+.qrp-rewards-title { font-size: 0.875rem; font-weight: 700; color: var(--gray-500); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.05em; }
+.qrp-reward-chip {
+  display: inline-flex; align-items: center; gap: 8px;
+  border: 2px solid; border-radius: 100px;
+  padding: 8px 18px; margin: 4px;
+  background: white;
+  animation: qrp-pop 0.5s cubic-bezier(0.175,0.885,0.32,1.275) both;
+}
+.qrp-reward-emoji { font-size: 1.3rem; }
+.qrp-reward-name { font-size: 0.9rem; font-weight: 800; }
+
+/* Dismiss */
+.qrp-dismiss {
+  width: 100%; padding: 16px;
+  background: linear-gradient(135deg, var(--primary), #005f9e);
+  color: white; border: none; border-radius: 14px;
+  font-size: 1rem; font-weight: 800; cursor: pointer;
+  font-family: inherit;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 8px 24px rgba(0,138,209,0.3);
+}
+.qrp-dismiss:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(0,138,209,0.4); }
+
+/* Confetti */
+.qrp-confetti { position: fixed; inset: 0; pointer-events: none; overflow: hidden; }
+.qrp-piece {
+  position: absolute; width: 10px; height: 10px;
+  animation: qrp-fall 2.5s ease-in forwards;
+  border-radius: 2px;
+  top: -10px;
+}
+.qrp-piece-1 { background: #f59e0b; }
+.qrp-piece-2 { background: #10b981; }
+.qrp-piece-3 { background: #0db1e0; }
+.qrp-piece-4 { background: var(--primary); }
+.qrp-piece-5 { background: #ef4444; }
+.qrp-piece-6 { background: #f97316; width: 8px; height: 8px; border-radius: 50%; }
+
+@keyframes qrp-fall {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
