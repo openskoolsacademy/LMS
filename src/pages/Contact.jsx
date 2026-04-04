@@ -187,11 +187,6 @@ export default function Contact() {
 
         </div>
       </section>
-      
-      {/* Mobile Sticky WhatsApp */}
-      <a href="https://wa.me/918189989150" target="_blank" rel="noreferrer" className="sticky-mobile-whatsapp">
-        <FiMessageCircle size={24} />
-      </a>
     </div>
   );
 }
