@@ -9,7 +9,7 @@ export default function HelpCenter() {
         <div className="legal-content animate-fade">
           <div className="legal-header">
             <h1>Help Center</h1>
-            <p>Welcome to Open Skools Help Center 👋</p>
+            <p>Welcome to Open Skools Help Center</p>
           </div>
           
           <div className="legal-body">
@@ -30,7 +30,7 @@ export default function HelpCenter() {
           </div>
           
           <div className="legal-footer">
-            <h4>📩 Contact Support:</h4>
+            <h4>Contact Support:</h4>
             <p>Email: <a href="mailto:contact@openskools.com">contact@openskools.com</a></p>
             <p>Response Time: 24–48 hours</p>
           </div>

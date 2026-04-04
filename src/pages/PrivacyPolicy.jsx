@@ -41,7 +41,7 @@ export default function PrivacyPolicy() {
           </div>
           
           <div className="legal-footer">
-            <p>📩 <strong>Contact:</strong> <a href="mailto:contact@openskools.com">contact@openskools.com</a></p>
+            <p><strong>Contact:</strong> <a href="mailto:contact@openskools.com">contact@openskools.com</a></p>
           </div>
         </div>
       </div>
