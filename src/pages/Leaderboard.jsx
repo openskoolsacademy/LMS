@@ -4,6 +4,7 @@ import { FiZap, FiTrendingUp, FiCalendar, FiClock, FiAward, FiStar, FiTarget } f
 import { FaFire, FaTrophy, FaCrown } from 'react-icons/fa';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
+import GlobalBanner from '../components/ui/GlobalBanner';
 import './Leaderboard.css';
 
 const MEDAL = [
@@ -133,6 +134,7 @@ export default function Leaderboard() {
 
   return (
     <div className="lb-page section">
+      <GlobalBanner location="Leaderboard" />
       <div className="container">
         {/* Hero */}
         <div className="lb-hero animate-fade">

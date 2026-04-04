@@ -4,6 +4,7 @@ import { categories, mapCategory } from '../data/categories';
 import CourseCard from '../components/ui/CourseCard';
 import SearchBar from '../components/ui/SearchBar';
 import Skeleton from '../components/ui/Skeleton';
+import GlobalBanner from '../components/ui/GlobalBanner';
 import './CourseList.css';
 
 const SORT_OPTIONS = [
@@ -122,6 +123,7 @@ export default function CourseList() {
 
   return (
     <div className="course-list-page section">
+      <GlobalBanner location="Courses" />
       <div className="container">
         <div className="cl-header animate-fade">
           <div>

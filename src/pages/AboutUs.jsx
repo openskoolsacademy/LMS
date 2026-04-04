@@ -1,9 +1,11 @@
 import { FiTarget, FiMessageSquare, FiEye, FiStar, FiLinkedin, FiTwitter, FiGlobe } from 'react-icons/fi';
+import GlobalBanner from '../components/ui/GlobalBanner';
 import './AboutUs.css';
 
 export default function AboutUs() {
   return (
     <div className="about-page">
+      <GlobalBanner location="About" />
       {/* Pro-Level Hero Section (No Images) */}
       <section className="about-hero-pro">
         <div className="hero-mesh-bg"></div>

@@ -12,7 +12,7 @@ export default function MarketingBanners() {
   const [showReport, setShowReport] = useState(false);
   const { showAlert } = useAlert();
 
-  const LOCATIONS = ['Home', 'Dashboard', 'Careers', 'Blog'];
+  const LOCATIONS = ['Home', 'Dashboard', 'Careers', 'Blog', 'Courses', 'Quiz', 'Leaderboard', 'About', 'Contact'];
 
   const [formConfig, setFormConfig] = useState({
     title: '',

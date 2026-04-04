@@ -10,6 +10,7 @@ import { useAuth } from '../context/AuthContext';
 import { useAlert } from '../context/AlertContext';
 import QuizRewardPopup from '../components/ui/QuizRewardPopup';
 import InviteFriends from '../components/ui/InviteFriends';
+import GlobalBanner from '../components/ui/GlobalBanner';
 import './DailyQuiz.css';
 
 // ── Fallback question bank (used when no admin quiz exists for today) ──────────
@@ -236,6 +237,7 @@ export default function DailyQuiz() {
 
   if (loading) return (
     <div className="dq-page section">
+      <GlobalBanner location="Quiz" />
       <div className="container">
         <div className="dq-loading">
           <div className="dq-loading-spinner" />
@@ -347,6 +349,7 @@ export default function DailyQuiz() {
 
     return (
       <div className="dq-page">
+        <GlobalBanner location="Quiz" />
         <div className="dq-quiz-layout">
           {/* Top bar */}
           <div className={`dq-topbar ${isTimeLow ? 'urgent' : ''}`}>
@@ -429,6 +432,7 @@ export default function DailyQuiz() {
 
     return (
       <div className="dq-page section">
+        <GlobalBanner location="Quiz" />
         <div className="container">
           <div className="dq-result animate-fade">
             <div className={`dq-result-card ${isPassing ? 'passed' : 'tried'}`}>
