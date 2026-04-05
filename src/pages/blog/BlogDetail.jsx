@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { FiArrowLeft, FiClock, FiUser } from 'react-icons/fi';
 import DOMPurify from 'dompurify'; // Need to sanitize HTML
+import GlobalBanner from '../../components/ui/GlobalBanner';
 import './Blog.css';
 
 export default function BlogDetail() {
@@ -72,10 +73,14 @@ export default function BlogDetail() {
             </div>
           </header>
 
+          <GlobalBanner location="Blog Top" />
+
           <div 
             className="article-content ql-editor" 
             dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(blog.content) }} 
           />
+
+          <GlobalBanner location="Blog Bottom" />
         </article>
       </div>
     </div>
