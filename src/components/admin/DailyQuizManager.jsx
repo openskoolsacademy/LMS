@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import {
   FiPlus, FiTrash2, FiEdit2, FiCalendar, FiCheckCircle, FiXCircle,
   FiSave, FiFileText, FiClock, FiBarChart2, FiUsers, FiEye, FiEyeOff,
-  FiAlertCircle, FiInfo, FiAward, FiTrendingUp
+  FiAlertCircle, FiInfo, FiAward, FiTrendingUp, FiMessageSquare
 } from 'react-icons/fi';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
@@ -12,7 +12,13 @@ import { useAlert } from '../../context/AlertContext';
 import QuizAnalyticsModal from './QuizAnalyticsModal';
 import './DailyQuizManager.css';
 
-const EMPTY_QUESTION = { question_text: '', options: ['', '', '', ''], correct_option: 0, order_index: 0 };
+const EMPTY_QUESTION = {
+  question_text: '',
+  options: ['', '', '', ''],
+  correct_option: 0,
+  order_index: 0,
+  explanation: '',
+};
 
 // Helper: combine a date string + time string into a local ISO string
 function toScheduledAt(dateStr, timeStr) {
@@ -47,14 +53,14 @@ export default function DailyQuizManager() {
   const [saving, setSaving]           = useState(false);
 
   // Per-quiz expand states
-  const [expandedQuiz, setExpandedQuiz]       = useState(null);
-  const [quizQuestions, setQuizQuestions]     = useState({});
+  const [expandedQuiz, setExpandedQuiz]           = useState(null);
+  const [quizQuestions, setQuizQuestions]         = useState({});
   const [expandedAnalytics, setExpandedAnalytics] = useState(null);
-  const [analyticsData, setAnalyticsData]     = useState({});
-  const [analyticsLoading, setAnalyticsLoading] = useState({});
+  const [analyticsData, setAnalyticsData]         = useState({});
+  const [analyticsLoading, setAnalyticsLoading]   = useState({});
 
   // Answer-sheet modal
-  const [sheetModal, setSheetModal] = useState(null); // { attempt, quiz }
+  const [sheetModal, setSheetModal] = useState(null); // { attempt, quiz, questions }
 
   useEffect(() => { loadQuizzes(); }, []);
 
@@ -80,7 +86,6 @@ export default function DailyQuizManager() {
   // ── Form open/close ───────────────────────────────────────────
   const openNew = () => {
     setEditingQuiz(null);
-    // Default: tomorrow at 09:00
     const tom = new Date(); tom.setDate(tom.getDate() + 1);
     const pad = n => String(n).padStart(2, '0');
     const tDate = `${tom.getFullYear()}-${pad(tom.getMonth() + 1)}-${pad(tom.getDate())}`;
@@ -101,7 +106,11 @@ export default function DailyQuizManager() {
       .eq('quiz_id', quiz.id)
       .order('order_index');
     setQuestions(data?.length > 0
-      ? data.map(q => ({ ...q, options: Array.isArray(q.options) ? q.options : ['','','',''] }))
+      ? data.map(q => ({
+          ...q,
+          options: Array.isArray(q.options) ? q.options : ['', '', '', ''],
+          explanation: q.explanation || '',
+        }))
       : [{ ...EMPTY_QUESTION }]
     );
     setShowForm(true);
@@ -124,6 +133,17 @@ export default function DailyQuizManager() {
     const validQs = questions.filter(q => q.question_text.trim() && q.options.every(o => o.trim()));
     if (validQs.length === 0) {
       await showAlert('Add at least one complete question.', 'No Questions', 'warning');
+      return;
+    }
+
+    // Validate: every question must have an explanation
+    const missingExplanation = validQs.findIndex(q => !q.explanation || !q.explanation.trim());
+    if (missingExplanation !== -1) {
+      await showAlert(
+        `Question ${missingExplanation + 1} is missing an explanation. All questions must have an explanation before publishing.`,
+        'Explanation Required',
+        'warning'
+      );
       return;
     }
 
@@ -160,6 +180,7 @@ export default function DailyQuizManager() {
         options: q.options,
         correct_option: Number(q.correct_option),
         order_index: i,
+        explanation: q.explanation.trim(),
       }));
       const { error: qErr } = await supabase.from('daily_quiz_questions').insert(qPayload);
       if (qErr) throw qErr;
@@ -208,18 +229,16 @@ export default function DailyQuizManager() {
     if (expandedAnalytics === quizId) { setExpandedAnalytics(null); return; }
 
     setExpandedAnalytics(quizId);
-    if (analyticsData[quizId]) return; // already loaded
+    if (analyticsData[quizId]) return;
 
     setAnalyticsLoading(p => ({ ...p, [quizId]: true }));
     try {
-      // Fetch attempts + user names
       const { data: attempts } = await supabase
         .from('daily_quiz_attempts')
         .select('*, user:users(name, email)')
         .eq('quiz_date', quiz.quiz_date)
         .order('score', { ascending: false });
 
-      // Load questions for this quiz (for answer-sheet)
       let qs = quizQuestions[quizId];
       if (!qs) {
         const { data: qd } = await supabase.from('daily_quiz_questions').select('*').eq('quiz_id', quizId).order('order_index');
@@ -326,6 +345,12 @@ export default function DailyQuizManager() {
           </div>
         </div>
 
+        {/* Explanation requirement notice */}
+        <div className="dqm-explanation-notice">
+          <FiInfo size={14} />
+          <span>An <strong>Explanation</strong> is required for every question before publishing. Students will see this after submitting.</span>
+        </div>
+
         {/* Questions */}
         <div className="dqm-questions">
           <div className="dqm-q-header">
@@ -348,7 +373,7 @@ export default function DailyQuizManager() {
                 rows={2}
               />
               <div className="dqm-options-grid">
-                {(q.options || ['','','','']).map((opt, oi) => (
+                {(q.options || ['', '', '', '']).map((opt, oi) => (
                   <div key={oi} className={`dqm-option-row ${q.correct_option === oi ? 'correct' : ''}`}>
                     <input
                       type="radio"
@@ -368,6 +393,27 @@ export default function DailyQuizManager() {
                     {q.correct_option === oi && <span className="dqm-correct-tag"><FiCheckCircle size={12} /> Correct</span>}
                   </div>
                 ))}
+              </div>
+
+              {/* Explanation Field */}
+              <div className="dqm-explanation-field">
+                <label className="dqm-explanation-label">
+                  <FiMessageSquare size={13} />
+                  Explanation / Reason
+                  <span className="dqm-explanation-required">Required</span>
+                </label>
+                <textarea
+                  className={`dqm-explanation-input ${!q.explanation?.trim() ? 'missing' : ''}`}
+                  placeholder="Explain why the correct answer is right. Students will see this after submitting the quiz."
+                  value={q.explanation || ''}
+                  onChange={e => updateQuestion(qi, 'explanation', e.target.value)}
+                  rows={3}
+                />
+                {!q.explanation?.trim() && (
+                  <div className="dqm-explanation-hint">
+                    <FiAlertCircle size={11} /> Explanation is required to publish this quiz.
+                  </div>
+                )}
               </div>
             </div>
           ))}
@@ -490,6 +536,12 @@ export default function DailyQuizManager() {
                             </span>
                           ))}
                         </div>
+                        {q.explanation && (
+                          <div className="dqm-q-preview-explanation">
+                            <FiMessageSquare size={12} />
+                            <span>{q.explanation}</span>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>

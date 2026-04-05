@@ -314,3 +314,324 @@
   .dq-question-card { padding: 24px 20px; }
   .dq-q-text { font-size: 1.1rem; }
 }
+
+/* ── RESULT — widen container to fit review section ── */
+.dq-result { max-width: 720px; margin: 0 auto; }
+
+/* Score horizontal progress bar */
+.dq-result-progress-wrap {
+  margin: -16px 0 24px;
+}
+.dq-result-progress-bar-wrap {
+  height: 10px;
+  background: var(--gray-100);
+  border-radius: 100px;
+  overflow: hidden;
+}
+.dq-result-progress-bar {
+  height: 100%;
+  border-radius: inherit;
+  transition: width 1.2s ease;
+}
+.dq-result-progress-bar.pass { background: linear-gradient(90deg, #10b981, #34d399); }
+.dq-result-progress-bar.fail { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+.dq-result-progress-labels {
+  display: flex; justify-content: space-between;
+  font-size: 0.72rem; color: var(--gray-400); margin-top: 4px; font-weight: 600;
+}
+
+/* ── REVIEW SECTION ── */
+.dq-review-section {
+  margin-top: 28px;
+}
+
+.dq-review-header {
+  margin-bottom: 20px;
+}
+.dq-review-header h2 {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--dark-800);
+  margin-bottom: 6px;
+}
+.dq-review-header p {
+  font-size: 0.9rem;
+  color: var(--gray-500);
+  margin: 0;
+}
+
+.dq-review-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--dark-800);
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--gray-100);
+}
+
+/* Filter tabs */
+.dq-result-filters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.dq-filter-pill {
+  padding: 8px 18px;
+  border-radius: 100px;
+  border: 2px solid var(--gray-200);
+  background: white;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--gray-500);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.dq-filter-pill:hover { border-color: var(--primary); color: var(--primary); }
+.dq-filter-pill.active { background: var(--primary); border-color: var(--primary); color: white; }
+.dq-filter-pill.correct.active { background: var(--success); border-color: var(--success); color: white; }
+.dq-filter-pill.wrong.active { background: var(--danger); border-color: var(--danger); color: white; }
+
+/* Review list */
+.dq-review-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Review card */
+.dq-review-card {
+  background: white;
+  border-radius: 16px;
+  padding: 20px 24px;
+  border: 2px solid var(--gray-100);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+  transition: border-color 0.2s;
+}
+.dq-review-card.correct { border-left: 4px solid var(--success); }
+.dq-review-card.wrong { border-left: 4px solid var(--danger); }
+
+.dq-review-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.dq-review-q-num {
+  font-size: 0.75rem;
+  font-weight: 800;
+  background: var(--gray-100);
+  color: var(--gray-500);
+  padding: 4px 10px;
+  border-radius: 8px;
+  letter-spacing: 0.04em;
+}
+
+.dq-review-status {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 100px;
+  background: var(--gray-100);
+  color: var(--gray-500);
+}
+.dq-review-status.correct { background: #dcfce7; color: var(--success); }
+.dq-review-status.wrong { background: #fee2e2; color: var(--danger); }
+
+.dq-review-time {
+  display: flex; align-items: center; gap: 4px;
+  font-size: 0.72rem; color: var(--gray-400); font-weight: 600;
+}
+
+.dq-review-q-info {
+  display: flex; align-items: center; gap: 8px;
+}
+
+/* Review tags */
+.dq-review-opt-tags {
+  display: flex; align-items: center; gap: 6px; margin-left: auto;
+}
+.dq-review-tag {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-size: 0.68rem; font-weight: 700;
+  padding: 2px 8px; border-radius: 100px;
+}
+.dq-review-tag.correct-tag { background: #dcfce7; color: #059669; }
+.dq-review-tag.wrong-tag { background: #fee2e2; color: #dc2626; }
+.dq-review-tag.your-tag { background: #dcfce7; color: #059669; }
+
+.dq-review-q-text {
+  font-size: 0.975rem;
+  font-weight: 600;
+  color: var(--dark-800);
+  line-height: 1.5;
+  margin-bottom: 14px;
+}
+
+/* Review options */
+.dq-review-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.dq-review-opt {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1.5px solid var(--gray-200);
+  background: var(--gray-50);
+  font-size: 0.875rem;
+  color: var(--gray-600);
+  transition: all 0.15s;
+}
+.dq-review-opt-letter {
+  width: 26px; height: 26px;
+  border-radius: 7px;
+  background: white;
+  border: 1.5px solid var(--gray-200);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.72rem; font-weight: 800;
+  flex-shrink: 0;
+}
+.dq-review-opt-text { flex: 1; font-weight: 500; }
+.dq-review-opt-icon { font-size: 1rem; flex-shrink: 0; margin-left: auto; }
+.dq-review-opt-icon.wrong { color: var(--danger); }
+
+/* Correct answer highlight */
+.dq-review-opt.dq-review-correct {
+  background: #dcfce7;
+  border-color: var(--success);
+  color: #166534;
+}
+.dq-review-opt.dq-review-correct .dq-review-opt-letter {
+  background: var(--success); color: white; border-color: var(--success);
+}
+.dq-review-opt.dq-review-correct .dq-review-opt-icon { color: var(--success); }
+
+/* Wrong answer highlight (student's pick) */
+.dq-review-opt.dq-review-selected {
+  background: #fee2e2;
+  border-color: var(--danger);
+  color: #991b1b;
+}
+.dq-review-opt.dq-review-selected .dq-review-opt-letter {
+  background: var(--danger); color: white; border-color: var(--danger);
+}
+
+/* Explanation box */
+.dq-explanation-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: linear-gradient(135deg, #eff6ff, #dbeafe);
+  border: 1.5px solid #bfdbfe;
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 0.875rem;
+  color: #1e40af;
+  line-height: 1.55;
+}
+.dq-explanation-box svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: #3b82f6;
+}
+
+/* Improvement tip */
+.dq-improvement-tip {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+  border: 1.5px solid #bbf7d0;
+  border-radius: 14px;
+  padding: 16px 20px;
+  margin-top: 20px;
+  font-size: 0.9rem;
+  color: #166534;
+  line-height: 1.5;
+}
+.dq-tip-icon {
+  width: 36px; height: 36px;
+  background: #10b981;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 1.1rem;
+  flex-shrink: 0;
+}
+.dq-improvement-tip p { margin: 0; font-weight: 500; flex: 1; }
+
+/* ── ADMIN — DailyQuizManager explanation field ── */
+.dq-explanation-field { margin-top: 14px; }
+.dq-explanation-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--gray-600);
+  margin-bottom: 6px;
+}
+.dq-required { color: var(--danger); margin-left: 2px; }
+.dqm-q-text-input.missing {
+  border-color: #fca5a5;
+  background: #fff5f5;
+}
+.dqm-explanation-hint {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  color: var(--danger);
+  margin-top: 4px;
+  font-weight: 600;
+}
+.dqm-q-preview-explanation {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 8px;
+  font-size: 0.78rem;
+  color: #1e40af;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  padding: 8px 12px;
+  line-height: 1.4;
+}
+
+/* ── ADMIN — QuizAnalyticsModal explanation box ── */
+.qam-explanation-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: linear-gradient(135deg, #eff6ff, #dbeafe);
+  border: 1.5px solid #bfdbfe;
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-top: 12px;
+  font-size: 0.82rem;
+  color: #1e40af;
+  line-height: 1.5;
+}
+.qam-explanation-box svg { flex-shrink: 0; margin-top: 2px; color: #3b82f6; }
+
+@media (max-width: 640px) {
+  .dq-result-filters { gap: 6px; }
+  .dq-filter-pill { font-size: 0.75rem; padding: 6px 12px; }
+  .dq-review-card { padding: 16px; }
+}
+

@@ -1,11 +1,21 @@
-import { FiX, FiCheckCircle, FiXCircle, FiUser, FiClock, FiAward } from 'react-icons/fi';
+import { FiX, FiCheckCircle, FiXCircle, FiUser, FiClock, FiAward, FiInfo } from 'react-icons/fi';
 import './DailyQuizManager.css';
 
 export default function QuizAnalyticsModal({ quiz, attempt, questions, onClose }) {
   if (!attempt || !questions) return null;
 
-  const userAnswers = attempt.answers || {};
-  const correct = questions.filter(q => userAnswers[q.id] === q.correct_option).length;
+  const rawAnswers = attempt.answers || {};
+
+  // Extract the user's selected option from JSONB — handles both
+  // { selected: N, time_spent: S } objects and plain number values
+  const getUserAnswer = (qId) => {
+    const entry = rawAnswers[qId];
+    if (entry && typeof entry === 'object') return entry.selected;
+    if (typeof entry === 'number') return entry;
+    return undefined;
+  };
+
+  const correct = questions.filter(q => getUserAnswer(q.id) === q.correct_option).length;
   const total = questions.length;
   const scorePercent = Math.round((correct / total) * 100);
   const timeTaken = attempt.time_taken ? `${Math.floor(attempt.time_taken / 60)}m ${attempt.time_taken % 60}s` : '—';
@@ -40,9 +50,9 @@ export default function QuizAnalyticsModal({ quiz, attempt, questions, onClose }
         {/* Questions */}
         <div className="qam-questions">
           {questions.map((q, i) => {
-            const userAns = userAnswers[q.id];
+            const userAns = getUserAnswer(q.id);
             const isCorrect = userAns === q.correct_option;
-            const notAnswered = userAns === undefined;
+            const notAnswered = userAns === undefined || userAns === null;
             return (
               <div key={q.id} className={`qam-q-item ${isCorrect ? 'correct' : 'wrong'}`}>
                 <div className="qam-q-top">
@@ -69,6 +79,14 @@ export default function QuizAnalyticsModal({ quiz, attempt, questions, onClose }
                     );
                   })}
                 </div>
+
+                {/* Explanation block */}
+                {q.explanation && (
+                  <div className="qam-explanation-box">
+                    <FiInfo size={13} />
+                    <span>{q.explanation}</span>
+                  </div>
+                )}
               </div>
             );
           })}
