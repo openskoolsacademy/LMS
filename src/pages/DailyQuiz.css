@@ -129,16 +129,32 @@
 
 .dq-rules {
   margin-bottom: 24px;
-  background: var(--gray-50); border-radius: 12px;
-  padding: 20px 24px;
+  background: var(--gray-50); border-radius: 16px;
+  padding: 24px 28px;
 }
 .dq-rules h4 {
   display: flex; align-items: center; gap: 8px;
-  font-size: 1rem; margin-bottom: 14px;
-  color: var(--dark-700);
+  font-size: 1.05rem; margin-bottom: 18px;
+  color: var(--dark-800);
 }
-.dq-rules ul { display: flex; flex-direction: column; gap: 10px; }
-.dq-rules li { font-size: 0.9rem; color: var(--gray-600); }
+.dq-rules ul { 
+  display: flex; flex-direction: column; gap: 16px; 
+  padding: 0; margin: 0; list-style: none;
+}
+.dq-rules li { 
+  font-size: 0.95rem; 
+  color: var(--gray-600); 
+  line-height: 1.4;
+  padding-left: 30px;
+  position: relative;
+}
+.dq-rules li svg {
+  position: absolute;
+  left: 0;
+  top: 2px;
+  font-size: 1.15rem;
+}
+.dq-rules li strong { color: var(--dark-800); font-weight: 700; }
 
 .dq-start-btn {
   width: 100%; padding: 18px;
@@ -306,8 +322,13 @@
 
 /* Responsive */
 @media (max-width: 640px) {
+  .dq-hide-mobile { display: none; }
+  .dq-topbar { padding: 10px 14px; }
+  .dq-topbar-left, .dq-topbar-right { gap: 8px; }
+  .dq-challenge-tag { padding: 4px 8px; }
+  .dq-timer { padding: 4px 10px; font-size: 0.95rem; }
   .dq-intro-hero h1 { font-size: 1.75rem; }
-  .dq-stats-row { grid-template-columns: repeat(2, 1fr); }
+  .dq-stats-row { grid-template-columns: repeat(2, 1fr); gap: 10px; }
   .dq-result-card { padding: 32px 20px; }
   .dq-result-stats { grid-template-columns: 1fr 1fr; }
   .dq-question-area { padding: 20px 16px; }

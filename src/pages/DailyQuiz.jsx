@@ -392,10 +392,10 @@ export default function DailyQuiz() {
                 <div className="dq-rules">
                   <h4><FiAlertCircle /> How it works</h4>
                   <ul>
-                    <li><FiCheck style={{color: 'var(--success)', marginRight: 4}} /> <strong>+10 points</strong> for every correct answer</li>
-                    <li><FaFire style={{color: '#f97316', marginRight: 4}} /> <strong>Streak Bonus:</strong> 3 days = +20 pts | 7 days = +50 pts | 30 days = +200 pts</li>
-                    <li><FiClock style={{color: 'var(--primary)', marginRight: 4}} /> You have <strong>2.5 minutes</strong> to answer all {questions.length} questions</li>
-                    <li><FiCalendar style={{color: 'var(--gray-500)', marginRight: 4}} /> One attempt per day — make it count!</li>
+                    <li><FiCheck style={{color: 'var(--success)'}} /> <strong>+10 pts</strong> per correct answer</li>
+                    <li><FaFire style={{color: '#f97316'}} /> <strong>Streak Bonus:</strong> Up to +200 pts for 3, 7, 30 days</li>
+                    <li><FiClock style={{color: 'var(--primary)'}} /> <strong>2.5 mins</strong> to answer {questions.length} questions</li>
+                    <li><FiCalendar style={{color: 'var(--gray-500)'}} /> <strong>1 attempt</strong> daily. Make it count!</li>
                   </ul>
                 </div>
                 {user ? (
@@ -433,14 +433,14 @@ export default function DailyQuiz() {
           {/* Top bar */}
           <div className={`dq-topbar ${isTimeLow ? 'urgent' : ''}`}>
             <div className="dq-topbar-left">
-              <span className="dq-challenge-tag"><FiZap style={{marginRight: 4}} /> Daily Challenge</span>
-              <span className="dq-q-counter">Q{currentQ + 1} / {questions.length}</span>
+              <span className="dq-challenge-tag"><FiZap /> <span className="dq-hide-mobile" style={{marginLeft: 4}}>Daily</span></span>
+              <span className="dq-q-counter">Q{currentQ + 1}/{questions.length}</span>
             </div>
             <div className="dq-topbar-right">
               <div className={`dq-timer ${isTimeLow ? 'low' : ''}`}>
                 <FiClock /> {formatTime(timeLeft)}
               </div>
-              <span className="dq-answered">{answered}/{questions.length} answered</span>
+              <span className="dq-answered">{answered}/{questions.length} <span className="dq-hide-mobile">answered</span></span>
             </div>
           </div>
 
