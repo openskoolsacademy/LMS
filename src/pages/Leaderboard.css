@@ -185,5 +185,19 @@
   .lb-pod-avatar { width: 48px; height: 48px; }
   .lb-pod-avatar.large { width: 60px; height: 60px; }
   .lb-cta { flex-direction: column; padding: 24px; text-align: center; }
-  .lb-tabs { max-width: 100%; }
+  .lb-tabs { 
+    max-width: 100%; 
+    overflow-x: auto; 
+    scrollbar-width: none; 
+    -ms-overflow-style: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .lb-tabs::-webkit-scrollbar { display: none; }
+  .lb-tab { 
+    padding: 10px 8px; 
+    font-size: 0.8rem; 
+    gap: 4px;
+    flex: 1 0 auto;
+  }
+  .lb-tab svg { font-size: 0.9rem; }
 }
