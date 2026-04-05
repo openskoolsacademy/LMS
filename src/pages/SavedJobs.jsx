@@ -10,7 +10,7 @@ export default function SavedJobs() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    document.title = 'Saved Jobs — Open Skools';
+    document.title = 'Saved Jobs | Open Skools';
     fetchSavedJobs();
   }, []);
 

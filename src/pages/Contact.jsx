@@ -16,7 +16,7 @@ export default function Contact() {
   });
 
   useEffect(() => {
-    document.title = 'Contact Us — Open Skools';
+    document.title = 'Contact Us | Open Skools';
     window.scrollTo(0, 0);
   }, []);
 

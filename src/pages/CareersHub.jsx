@@ -20,7 +20,7 @@ export default function CareersHub() {
   const [activeCategory, setActiveCategory] = useState('All');
 
   useEffect(() => {
-    document.title = 'Careers Hub — Open Skools';
+    document.title = 'Careers Hub | Open Skools';
     fetchJobs();
   }, []);
 

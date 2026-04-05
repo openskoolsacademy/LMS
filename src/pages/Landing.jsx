@@ -95,7 +95,7 @@ export default function Landing() {
           <div className="hero-text-pro animate-fade-in-up">
             <span className="hero-label">Level up your skills</span>
             <h1 style={{ color: '#008ad1' }}>Unlock Your Future with Elite Education</h1>
-            <p>Master high-demand skills in AI, Development, Design, and Business. Learn from industry-leading mentors through award-winning interactive courses.</p>
+            <p>Master high demand skills in AI, Development, Design, and Business. Learn from industry leading mentors through award winning interactive courses.</p>
             
             <div className="hero-actions-pro">
               <Link to="/courses" className="btn btn-primary btn-lg">

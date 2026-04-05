@@ -36,7 +36,7 @@ export default function JobDetail() {
 
       if (error) throw error;
       setJob(data);
-      document.title = `${data.role} at ${data.company_name} — Open Skools Careers`;
+      document.title = `${data.role} at ${data.company_name} | Open Skools Careers`;
     } catch (err) {
       console.error('Error fetching job:', err);
     } finally {
