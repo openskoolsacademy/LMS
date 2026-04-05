@@ -73,14 +73,14 @@ export default function BlogDetail() {
             </div>
           </header>
 
-          <GlobalBanner location="Blog Top" />
+          <GlobalBanner location="Blog Reading Top" />
 
           <div 
             className="article-content ql-editor" 
             dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(blog.content) }} 
           />
 
-          <GlobalBanner location="Blog Bottom" />
+          <GlobalBanner location="Blog Reading Bottom" />
         </article>
       </div>
     </div>
