@@ -131,7 +131,7 @@
 .lb-medal { font-size: 1.5rem; }
 .lb-rank-num { font-size: 0.9rem; font-weight: 800; color: var(--gray-400); }
 
-.lb-user-cell { display: flex; align-items: center; gap: 12px; }
+.lb-user-cell { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .lb-avatar {
   width: 40px; height: 40px; border-radius: 50%;
   background: linear-gradient(135deg, var(--primary), #005f9e);
@@ -140,9 +140,9 @@
   flex-shrink: 0; overflow: hidden;
 }
 .lb-avatar img { width: 100%; height: 100%; object-fit: cover; }
-.lb-user-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.lb-name { font-size: 0.95rem; font-weight: 700; color: var(--dark-800); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.lb-you-tag { font-size: 0.65rem; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.05em; }
+.lb-user-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+.lb-name { font-size: 0.95rem; font-weight: 700; color: var(--dark-800); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+.lb-you-tag { font-size: 0.65rem; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
 
 .lb-points { display: flex; align-items: baseline; gap: 4px; }
 .lb-pts-val { font-size: 1.1rem; font-weight: 900; color: var(--primary); }
@@ -180,8 +180,20 @@
 /* Responsive */
 @media (max-width: 640px) {
   .lb-hero h1 { font-size: 1.875rem; }
-  .lb-list-header, .lb-row { grid-template-columns: 44px 1fr 72px 64px; padding: 12px 14px; }
+  .lb-list-header { font-size: 0.65rem; padding: 10px 12px; }
+  .lb-list-header, .lb-row { 
+    grid-template-columns: 32px minmax(0, 1fr) 56px 48px; 
+    padding: 12px 12px; 
+    gap: 8px;
+  }
+  .lb-avatar { width: 32px; height: 32px; font-size: 0.75rem; }
+  .lb-user-cell { gap: 8px; min-width: 0; }
+  .lb-name { font-size: 0.9rem; }
+  .lb-pts-val { font-size: 0.95rem; }
+  .lb-pts-label { font-size: 0.65rem; }
+  .lb-streak-badge { padding: 2px 6px; font-size: 0.7rem; }
   .lb-podium-card { width: 90px; }
+  /* podium mobile sizes unchanged but included here from existing CSS */
   .lb-pod-avatar { width: 48px; height: 48px; }
   .lb-pod-avatar.large { width: 60px; height: 60px; }
   .lb-cta { flex-direction: column; padding: 24px; text-align: center; }
