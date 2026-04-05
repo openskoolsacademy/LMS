@@ -60,7 +60,9 @@ export default function DailyQuiz() {
 
   const timerRef     = useRef(null);
   const startTimeRef = useRef(null);
-  const todayStr     = new Date().toISOString().split('T')[0];
+  // Use local date (not UTC) — toISOString() returns UTC which can differ from local date
+  const _now = new Date();
+  const todayStr = `${_now.getFullYear()}-${String(_now.getMonth() + 1).padStart(2, '0')}-${String(_now.getDate()).padStart(2, '0')}`;
 
   useEffect(() => {
     loadQuizData();

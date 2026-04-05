@@ -86,7 +86,9 @@ export default function StudentDashboard() {
 
   const fetchGamificationData = async () => {
     try {
-      const todayStr = new Date().toISOString().split('T')[0];
+      // Use local date (not UTC)
+      const _n = new Date();
+      const todayStr = `${_n.getFullYear()}-${String(_n.getMonth() + 1).padStart(2, '0')}-${String(_n.getDate()).padStart(2, '0')}`;
       const [pts, streak, attempt, leaders, rewards] = await Promise.all([
         supabase.from('user_points').select('total_points').eq('user_id', user.id).single(),
         supabase.from('user_streaks').select('current_streak').eq('user_id', user.id).single(),

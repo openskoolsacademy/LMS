@@ -472,7 +472,7 @@ export default function DailyQuizManager() {
                     <div className="dqm-quiz-date">
                       <FiCalendar />
                       <span>{new Date(quiz.quiz_date + 'T00:00:00').toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}</span>
-                      {quiz.quiz_date === new Date().toISOString().split('T')[0] && (
+                      {quiz.quiz_date === (() => { const n = new Date(); return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`; })() && (
                         <span className="badge badge-primary" style={{ fontSize: '0.65rem' }}>TODAY</span>
                       )}
                     </div>

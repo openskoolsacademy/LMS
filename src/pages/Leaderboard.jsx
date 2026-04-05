@@ -25,7 +25,9 @@ export default function Leaderboard() {
   const [loading, setLoading] = useState(true);
   const [myRank, setMyRank] = useState(null);
   const [myRow, setMyRow] = useState(null);
-  const todayStr = new Date().toISOString().split('T')[0];
+  // Use local date (not UTC)
+  const _now = new Date();
+  const todayStr = `${_now.getFullYear()}-${String(_now.getMonth() + 1).padStart(2, '0')}-${String(_now.getDate()).padStart(2, '0')}`;
 
   useEffect(() => {
     loadLeaderboard(tab);
