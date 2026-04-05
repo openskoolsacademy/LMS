@@ -196,7 +196,7 @@ export default function Landing() {
           </div>
           <div className="categories__grid">
             {categories.map(cat => (
-              <Link to="/courses" key={cat.id} className="category-card" style={{ '--cat-color': cat.color }}>
+              <Link to={`/courses?category=${encodeURIComponent(cat.name)}`} key={cat.id} className="category-card" style={{ '--cat-color': cat.color }}>
                 <span className="category-card__icon">{cat.icon}</span>
                 <div className="category-card__info">
                   <h4>{cat.name}</h4>

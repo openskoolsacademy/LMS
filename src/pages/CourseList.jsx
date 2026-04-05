@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { categories, mapCategory } from '../data/categories';
 import CourseCard from '../components/ui/CourseCard';
@@ -21,7 +22,11 @@ export default function CourseList() {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [selectedCats, setSelectedCats] = useState([]);
+  const [searchParams] = useSearchParams();
+  const [selectedCats, setSelectedCats] = useState(() => {
+    const cat = searchParams.get('category');
+    return cat ? [cat] : [];
+  });
   const [selectedLevels, setSelectedLevels] = useState([]);
   const [priceRange, setPriceRange] = useState([0, 10000]);
   const [minRating, setMinRating] = useState(0);
