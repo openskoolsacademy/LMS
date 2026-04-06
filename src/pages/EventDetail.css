@@ -325,7 +325,7 @@
   margin-bottom: 20px;
 }
 
-.ed-sidebar-actions .btn {
+.ed-sidebar-actions > .btn {
   width: 100%;
   padding: 14px 20px;
   font-size: 0.95rem;
