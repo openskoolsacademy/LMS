@@ -19,6 +19,7 @@
 .ed-breadcrumb {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
   font-size: 0.85rem;
   margin-bottom: 20px;
@@ -146,6 +147,9 @@
 /* ---- Main Content (Left) ---- */
 .ed-main {
   min-width: 0;
+  max-width: 100%;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .ed-section-label {
@@ -475,7 +479,7 @@
 /* ---- Responsive ---- */
 @media (max-width: 1024px) {
   .ed-header-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 24px;
   }
 
@@ -484,7 +488,7 @@
   }
 
   .ed-body {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 0;
   }
 
@@ -510,7 +514,7 @@
   }
 
   .ed-body {
-    padding: 24px 0 40px;
+    padding: 24px 0 80px;
   }
 
   .ed-section-title {
