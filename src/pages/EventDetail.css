@@ -387,6 +387,7 @@
 
 .ed-coupon input {
   flex: 1;
+  min-width: 0;
   padding: 10px 14px;
   border: 2px solid #e5e7eb;
   border-radius: 10px;
