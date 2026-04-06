@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { FiCalendar, FiClock, FiUser, FiVideo, FiAward, FiDownload, FiExternalLink, FiCheckCircle, FiXCircle, FiUsers, FiMapPin, FiMessageCircle, FiChevronRight } from 'react-icons/fi';
+import { FiCalendar, FiClock, FiUser, FiVideo, FiAward, FiDownload, FiExternalLink, FiCheckCircle, FiXCircle, FiUsers, FiMapPin, FiMessageCircle, FiChevronRight, FiTag } from 'react-icons/fi';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { useAlert } from '../context/AlertContext';
@@ -16,6 +16,8 @@ export default function EventDetail() {
   const [loading, setLoading] = useState(true);
   const [registering, setRegistering] = useState(false);
   const [activeCert, setActiveCert] = useState(null);
+  const [coupon, setCoupon] = useState('');
+  const [couponApplied, setCouponApplied] = useState(null);
 
   useEffect(() => {
     fetchEvent();
@@ -60,6 +62,57 @@ export default function EventDetail() {
     return 'upcoming';
   };
 
+  // Coupon logic
+  const applyCoupon = async () => {
+    if (!coupon.trim()) return;
+    try {
+      const { data, error } = await supabase
+        .from('coupons')
+        .select('*')
+        .eq('code', coupon.toUpperCase())
+        .eq('is_active', true)
+        .single();
+
+      if (error || !data) {
+        await showAlert('Invalid or inactive coupon code.', 'Invalid Coupon', 'error');
+        return;
+      }
+      if (data.expiry_date && new Date(data.expiry_date) < new Date()) {
+        await showAlert('This coupon has expired.', 'Expired', 'error');
+        return;
+      }
+      if (data.usage_limit && data.used_count >= data.usage_limit) {
+        await showAlert('This coupon has reached its usage limit.', 'Limit Reached', 'error');
+        return;
+      }
+      // If coupon is course-specific, it can't be used for events
+      if (data.course_id) {
+        await showAlert('This coupon is not applicable to events.', 'Not Applicable', 'error');
+        return;
+      }
+      // If coupon is event-specific, check it matches this event
+      if (data.event_id && data.event_id !== id) {
+        await showAlert('This coupon is not applicable to this event.', 'Not Applicable', 'error');
+        return;
+      }
+      setCouponApplied(data);
+      await showAlert(`Coupon ${data.code} applied!`, 'Success', 'success', { celebrate: true });
+    } catch (err) {
+      await showAlert('Could not apply coupon.', 'Error', 'error');
+    }
+  };
+
+  const calculateFinalPrice = () => {
+    if (!event || event.price <= 0) return 0;
+    const basePrice = event.price;
+    if (!couponApplied) return basePrice;
+    if (couponApplied.discount_type === 'percentage') {
+      return Math.max(0, Math.round(basePrice * (1 - couponApplied.discount_value / 100)));
+    } else {
+      return Math.max(0, basePrice - couponApplied.discount_value);
+    }
+  };
+
   const handleRegister = async () => {
     if (!user) {
       await showAlert('Please log in to register for this event.', 'Login Required', 'info');
@@ -67,7 +120,9 @@ export default function EventDetail() {
     }
     setRegistering(true);
     try {
-      if (event.price > 0) {
+      const finalPrice = calculateFinalPrice();
+
+      if (finalPrice > 0) {
         // Paid event — Razorpay flow
         const { data: sessionData, error: sessionError } = await supabase.auth.refreshSession();
         if (sessionError || !sessionData?.session) {
@@ -77,7 +132,7 @@ export default function EventDetail() {
         }
 
         const { data: orderData, error: orderError } = await supabase.functions.invoke('create-razorpay-order', {
-          body: { event_id: event.id, amount: event.price * 100 }
+          body: { event_id: event.id, amount: finalPrice * 100 }
         });
 
         if (orderError) throw orderError;
@@ -110,16 +165,21 @@ export default function EventDetail() {
               if (verifyError) throw verifyError;
               if (verifyData?.error) throw new Error(verifyData.error);
 
+              // Increment coupon usage
+              if (couponApplied) {
+                await supabase.from('coupons').update({ used_count: (couponApplied.used_count || 0) + 1 }).eq('id', couponApplied.id);
+              }
+
               const { data: attData } = await supabase.from('event_attendance').insert([{
                 user_id: user.id,
                 event_id: event.id,
                 registered: true,
                 payment_id: response.razorpay_payment_id,
-                amount_paid: event.price
+                amount_paid: finalPrice
               }]).select().single();
 
               setAttendance(attData || { registered: true });
-              await showAlert('Payment successful! You are registered.', 'Success', 'success');
+              await showAlert('Payment successful! You are registered.', 'Success', 'success', { celebrate: true });
             } catch (err) {
               await showAlert(err.message || 'Payment verification failed.', 'Error', 'error');
             } finally {
@@ -139,7 +199,12 @@ export default function EventDetail() {
         return;
       }
 
-      // Free event
+      // Free event (or 100% coupon discount)
+      // Increment coupon usage if applied
+      if (couponApplied) {
+        await supabase.from('coupons').update({ used_count: (couponApplied.used_count || 0) + 1 }).eq('id', couponApplied.id);
+      }
+
       const { data: attData, error: attError } = await supabase.from('event_attendance').insert([{
         user_id: user.id,
         event_id: event.id,
@@ -153,7 +218,7 @@ export default function EventDetail() {
         } else throw attError;
       } else {
         setAttendance(attData);
-        await showAlert('You have been registered!', 'Success', 'success');
+        await showAlert('You have been registered!', 'Success', 'success', { celebrate: true });
       }
     } catch (err) {
       let msg = 'Registration failed.';
@@ -350,17 +415,57 @@ export default function EventDetail() {
           <aside className="ed-sidebar animate-fade">
             <div className="ed-sidebar-card">
               <div className="ed-sidebar-card-header">
-                {event.price > 0 ? (
-                  <span className="ed-sidebar-price">₹{event.price}</span>
-                ) : (
-                  <span className="ed-sidebar-price"><span className="free-label">Free</span></span>
-                )}
+                {(() => {
+                  const fp = calculateFinalPrice();
+                  if (event.price <= 0) return <span className="ed-sidebar-price"><span className="free-label">Free</span></span>;
+                  return (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                      <span className="ed-sidebar-price">₹{fp}</span>
+                      {couponApplied && fp < event.price && (
+                        <>
+                          <span style={{ textDecoration: 'line-through', color: '#9ca3af', fontSize: '1.1rem' }}>₹{event.price}</span>
+                          <span style={{ background: '#dcfce7', color: '#15803d', padding: '2px 10px', borderRadius: '100px', fontSize: '0.75rem', fontWeight: 700 }}>
+                            {couponApplied.discount_type === 'percentage' ? `${couponApplied.discount_value}% OFF` : `₹${couponApplied.discount_value} OFF`}
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
               <div className="ed-sidebar-card-body">
                 <div className="ed-sidebar-actions">
+                  {!isRegistered && status !== 'completed' && event.price > 0 && (
+                    <div className="ed-coupon">
+                      <input
+                        type="text"
+                        placeholder="Enter coupon code"
+                        value={coupon}
+                        onChange={(e) => setCoupon(e.target.value)}
+                        disabled={!!couponApplied}
+                      />
+                      <button
+                        className="btn ed-btn-outline"
+                        onClick={applyCoupon}
+                        disabled={!!couponApplied}
+                        style={{ whiteSpace: 'nowrap', padding: '8px 14px', fontSize: '0.82rem' }}
+                      >
+                        <FiTag /> {couponApplied ? 'Applied' : 'Apply'}
+                      </button>
+                    </div>
+                  )}
+                  {couponApplied && (
+                    <p style={{ fontSize: '0.78rem', color: '#059669', fontWeight: 600, margin: '0 0 4px 0', textAlign: 'center' }}>
+                      Coupon {couponApplied.code} applied successfully!
+                    </p>
+                  )}
                   {!isRegistered && status !== 'completed' && (
                     <button className="btn ed-btn-primary" onClick={handleRegister} disabled={registering}>
-                      {registering ? 'Processing...' : event.price > 0 ? `Register - ₹${event.price}` : 'Register for Free'}
+                      {registering ? 'Processing...' : (() => {
+                        const fp = calculateFinalPrice();
+                        if (event.price <= 0 || fp <= 0) return 'Register for Free';
+                        return `Register - ₹${fp}`;
+                      })()}
                     </button>
                   )}
                   {isRegistered && !isAttended && (status === 'upcoming' || status === 'live') && (
@@ -402,7 +507,7 @@ export default function EventDetail() {
                 {/* Help */}
                 <div className="ed-sidebar-help">
                   <p>Have questions about this event?</p>
-                  <a href="https://wa.me/919361166523" target="_blank" rel="noreferrer">
+                  <a href="https://api.whatsapp.com/message/E5OKPXTRFRD5E1?autoload=1&app_absent=0" target="_blank" rel="noreferrer">
                     <FiMessageCircle /> Contact Support
                   </a>
                 </div>

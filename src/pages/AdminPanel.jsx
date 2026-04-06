@@ -38,7 +38,7 @@ export default function AdminPanel() {
   const [showJobModal, setShowJobModal] = useState(false);
   const [showCouponModal, setShowCouponModal] = useState(false);
   const [editingCoupon, setEditingCoupon] = useState(null);
-  const [couponForm, setCouponForm] = useState({ code: '', discount_type: 'percentage', discount_value: '', course_id: '', expiry_date: '', usage_limit: '' });
+  const [couponForm, setCouponForm] = useState({ code: '', discount_type: 'percentage', discount_value: '', course_id: '', event_id: '', expiry_date: '', usage_limit: '' });
   const [couponSubmitting, setCouponSubmitting] = useState(false);
   const [editingJob, setEditingJob] = useState(null);
   const [jobForm, setJobForm] = useState({ company_name: '', role: '', category: 'Freshers', salary: '', location: '', job_type: 'Full-time', qualification: '', vacancies: '', description: '', venue: '', contact_details: '', date_time: '', apply_link: '', expiry_date: '', is_urgent: false, job_mode: 'apply_link' });
@@ -548,6 +548,7 @@ export default function AdminPanel() {
         discount_type: couponForm.discount_type,
         discount_value: parseFloat(couponForm.discount_value),
         course_id: couponForm.course_id || null,
+        event_id: couponForm.event_id || null,
         expiry_date: couponForm.expiry_date || null,
         usage_limit: couponForm.usage_limit ? parseInt(couponForm.usage_limit) : null
       };
@@ -1221,7 +1222,7 @@ export default function AdminPanel() {
               <div className="ap-approvals animate-fade">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
                   <h3>Coupon Management</h3>
-                  <button className="btn btn-primary btn-sm" onClick={() => { setEditingCoupon(null); setCouponForm({ code: '', discount_type: 'percentage', discount_value: '', course_id: '', expiry_date: '', usage_limit: '' }); setShowCouponModal(true); }}>
+                  <button className="btn btn-primary btn-sm" onClick={() => { setEditingCoupon(null); setCouponForm({ code: '', discount_type: 'percentage', discount_value: '', course_id: '', event_id: '', expiry_date: '', usage_limit: '' }); setShowCouponModal(true); }}>
                     + Create Coupon
                   </button>
                 </div>
@@ -1254,7 +1255,7 @@ export default function AdminPanel() {
                             </button>
                             {activeMenu?.id === c.id && activeMenu.type === 'coupon' && (
                               <div className="ap-dropdown-menu animate-scale fixed-menu" style={{ top: `${activeMenu.rect.bottom + 5}px`, left: `${activeMenu.rect.right - 180}px` }}>
-                                <button onClick={() => { setEditingCoupon(c); setCouponForm({ ...c, expiry_date: c.expiry_date ? c.expiry_date.split('T')[0] : '' }); setShowCouponModal(true); setActiveMenu(null); }}>Edit Coupon</button>
+                                <button onClick={() => { setEditingCoupon(c); setCouponForm({ ...c, event_id: c.event_id || '', expiry_date: c.expiry_date ? c.expiry_date.split('T')[0] : '' }); setShowCouponModal(true); setActiveMenu(null); }}>Edit Coupon</button>
                                 <button onClick={() => { handleCouponStatusToggle(c.id, c.is_active); setActiveMenu(null); }}>{c.is_active ? 'Disable' : 'Enable'}</button>
                                 <div className="dropdown-divider" />
                                 <button className="danger" onClick={() => { handleDeleteCoupon(c.id); setActiveMenu(null); }}>Delete Coupon</button>
@@ -2138,18 +2139,34 @@ export default function AdminPanel() {
 
             {/* Row 3: Applies To */}
             <div className="form-group-modern">
-              <label>Applies To (Course)</label>
+              <label>Applies To</label>
               <div className="input-with-icon">
                 <FiBookOpen />
                 <select 
                   className="form-control-modern" 
-                  value={couponForm.course_id} 
-                  onChange={e => setCouponForm({...couponForm, course_id: e.target.value})}
+                  value={couponForm.course_id ? `course_${couponForm.course_id}` : couponForm.event_id ? `event_${couponForm.event_id}` : ''}
+                  onChange={e => {
+                    const val = e.target.value;
+                    if (val.startsWith('course_')) {
+                      setCouponForm({...couponForm, course_id: val.replace('course_', ''), event_id: ''});
+                    } else if (val.startsWith('event_')) {
+                      setCouponForm({...couponForm, event_id: val.replace('event_', ''), course_id: ''});
+                    } else {
+                      setCouponForm({...couponForm, course_id: '', event_id: ''});
+                    }
+                  }}
                 >
-                  <option value="">All Courses (Global)</option>
-                  {courses.filter(c => c.status === 'approved').map(c => (
-                    <option key={c.id} value={c.id}>{c.title}</option>
-                  ))}
+                  <option value="">All (Global)</option>
+                  <optgroup label="Courses">
+                    {courses.filter(c => c.status === 'approved').map(c => (
+                      <option key={c.id} value={`course_${c.id}`}>{c.title}</option>
+                    ))}
+                  </optgroup>
+                  <optgroup label="Events">
+                    {adminEvents.map(ev => (
+                      <option key={ev.id} value={`event_${ev.id}`}>{ev.title}</option>
+                    ))}
+                  </optgroup>
                 </select>
               </div>
             </div>

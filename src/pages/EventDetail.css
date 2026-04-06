@@ -374,6 +374,33 @@
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0,138,209,0.3);
 }
+/* Coupon Input */
+.ed-coupon {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.ed-coupon input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s;
+  text-transform: uppercase;
+}
+
+.ed-coupon input:focus {
+  border-color: #008ad1;
+}
+
+.ed-coupon input:disabled {
+  background: #f9fafb;
+  color: #9ca3af;
+}
 
 /* Highlights List */
 .ed-highlights {

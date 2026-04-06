@@ -334,6 +334,12 @@ export default function CourseDetail() {
         return;
       }
 
+      // If coupon is event-specific, it can't be used for courses
+      if (data.event_id) {
+        await showAlert("This coupon is not applicable to courses.", "Not Applicable", "error");
+        return;
+      }
+
       if (course.is_coupon_applicable === false) {
           await showAlert("Coupons are not allowed for this specific course.", "Not Allowed", "error");
           return;

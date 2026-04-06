@@ -46,8 +46,15 @@ serve(async (req) => {
         throw new Error(`Event not found: ${eventError?.message || 'unknown'}`);
       }
 
-      console.log(`Event found: "${event.title}" | Price: ${event.price}`);
-      finalPrice = Number(event.price ?? 0);
+      console.log(`Event found: "${event.title}" | Price: ${event.price} | Requested: ${eventAmount}`);
+      // Use the amount from the frontend (already coupon-adjusted) if provided,
+      // but never allow it to exceed the actual event price (security check)
+      const requestedPrice = eventAmount ? Math.round(eventAmount / 100) : null;
+      if (requestedPrice !== null && requestedPrice <= Number(event.price ?? 0)) {
+        finalPrice = requestedPrice;
+      } else {
+        finalPrice = Number(event.price ?? 0);
+      }
       receiptId = `rcpt_evt_${event_id.substring(0, 8)}_${Date.now().toString().slice(-6)}`;
 
     } else if (course_id) {
