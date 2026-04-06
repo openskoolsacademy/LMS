@@ -13,7 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    const { razorpay_payment_id, razorpay_order_id, razorpay_signature, course_id, amount } = await req.json()
+    const { razorpay_payment_id, razorpay_order_id, razorpay_signature, course_id, event_id, amount } = await req.json()
 
     // Need user context which is sent via Authorization header
     const authHeader = req.headers.get('Authorization')
@@ -34,8 +34,6 @@ serve(async (req) => {
     }
 
     // 2. Initialize Supabase Admin Client
-    // We use the service_role key to bypass RLS for inserting raw payments, 
-    // or we can use the user's token. Let's use the service role key to securely write.
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const supabase = createClient(supabaseUrl, supabaseKey)
@@ -44,6 +42,18 @@ serve(async (req) => {
     const { data: { user }, error: userError } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''))
     if (userError || !user) throw new Error('Invalid user token')
 
+    if (event_id) {
+      // ── Event Payment Flow ──
+      // The frontend handles inserting the event_attendance record after this succeeds
+      console.log(`Event payment verified for user ${user.id}, event ${event_id}`);
+      
+      return new Response(
+        JSON.stringify({ success: true, message: 'Event payment verified!' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+      )
+    }
+
+    // ── Course Payment Flow (existing) ──
     // 3. Insert Payment Tracking
     const { error: paymentError } = await supabase.from('payments').insert([{
       user_id: user.id,

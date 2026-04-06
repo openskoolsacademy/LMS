@@ -12,8 +12,8 @@ serve(async (req) => {
   }
 
   try {
-    const { course_id, coupon_code } = await req.json()
-    console.log(`Order Request: course=${course_id}, coupon=${coupon_code}`);
+    const { course_id, coupon_code, event_id, amount: eventAmount } = await req.json()
+    console.log(`Order Request: course=${course_id}, event=${event_id}, coupon=${coupon_code}`);
 
     // Retrieve Razorpay keys from environment variables
     // Fallback to the public ID from the frontend if the environment variable is missing
@@ -30,60 +30,85 @@ serve(async (req) => {
     const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? ''
     const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
-    // 1. Fetch actual course price from database
-    const { data: course, error: courseError } = await supabase
-      .from('courses')
-      .select('id, title, regular_price, offer_price, is_coupon_applicable')
-      .eq('id', course_id)
-      .single()
+    let finalPrice = 0;
+    let receiptId = '';
 
-    if (courseError || !course) {
-      console.error('Course fetch error:', courseError);
-      throw new Error(`Course not found: ${courseError?.message || 'unknown'}`);
+    if (event_id) {
+      // ── Event Payment Flow ──
+      const { data: event, error: eventError } = await supabase
+        .from('events')
+        .select('id, title, price')
+        .eq('id', event_id)
+        .single()
+
+      if (eventError || !event) {
+        console.error('Event fetch error:', eventError);
+        throw new Error(`Event not found: ${eventError?.message || 'unknown'}`);
+      }
+
+      console.log(`Event found: "${event.title}" | Price: ${event.price}`);
+      finalPrice = Number(event.price ?? 0);
+      receiptId = `rcpt_evt_${event_id.substring(0, 8)}_${Date.now().toString().slice(-6)}`;
+
+    } else if (course_id) {
+      // ── Course Payment Flow (existing) ──
+      const { data: course, error: courseError } = await supabase
+        .from('courses')
+        .select('id, title, regular_price, offer_price, is_coupon_applicable')
+        .eq('id', course_id)
+        .single()
+
+      if (courseError || !course) {
+        console.error('Course fetch error:', courseError);
+        throw new Error(`Course not found: ${courseError?.message || 'unknown'}`);
+      }
+
+      console.log(`Course found: "${course.title}" | Regular: ${course.regular_price} | Offer: ${course.offer_price}`);
+
+      let basePrice = Number(course.offer_price ?? course.regular_price ?? 0);
+      finalPrice = basePrice;
+
+      // Apply coupon logic
+      if (coupon_code && course.is_coupon_applicable !== false) {
+          const { data: coupon, error: couponError } = await supabase
+              .from('coupons')
+              .select('*')
+              .eq('code', coupon_code.toUpperCase())
+              .eq('is_active', true)
+              .single()
+
+          if (!couponError && coupon) {
+              console.log('Valid coupon found:', coupon.code, 'Value:', coupon.discount_value);
+              const isNotExpired = !coupon.expiry_date || new Date(coupon.expiry_date) > new Date();
+              const isUnderLimit = !coupon.usage_limit || coupon.used_count < coupon.usage_limit;
+              const isCourseMatch = !coupon.course_id || coupon.course_id === course_id;
+
+              if (isNotExpired && isUnderLimit && isCourseMatch) {
+                  if (coupon.discount_type === 'percentage') {
+                      finalPrice = Math.round(basePrice * (1 - coupon.discount_value / 100));
+                  } else {
+                      finalPrice = Math.max(0, basePrice - coupon.discount_value);
+                  }
+                  console.log('New final price after coupon:', finalPrice);
+              } else {
+                  console.warn('Coupon applied but validation failed:', { isNotExpired, isUnderLimit, isCourseMatch });
+              }
+          } else if (couponError) {
+              console.warn('Coupon fetch error (non-fatal):', couponError.message);
+          }
+      }
+
+      receiptId = `rcpt_${course_id.substring(0, 8)}_${Date.now().toString().slice(-6)}`;
+    } else {
+      throw new Error('Either course_id or event_id is required');
     }
 
-    console.log(`Course found: "${course.title}" | Regular: ${course.regular_price} | Offer: ${course.offer_price}`);
-
-    // 2. Determine base price
-    let basePrice = Number(course.offer_price ?? course.regular_price ?? 0);
-    let finalPrice = basePrice;
-    
-    // 3. Apply coupon logic
-    if (coupon_code && course.is_coupon_applicable !== false) {
-        const { data: coupon, error: couponError } = await supabase
-            .from('coupons')
-            .select('*')
-            .eq('code', coupon_code.toUpperCase())
-            .eq('is_active', true)
-            .single()
-
-        if (!couponError && coupon) {
-            console.log('Valid coupon found:', coupon.code, 'Value:', coupon.discount_value);
-            const isNotExpired = !coupon.expiry_date || new Date(coupon.expiry_date) > new Date();
-            const isUnderLimit = !coupon.usage_limit || coupon.used_count < coupon.usage_limit;
-            const isCourseMatch = !coupon.course_id || coupon.course_id === course_id;
-
-            if (isNotExpired && isUnderLimit && isCourseMatch) {
-                if (coupon.discount_type === 'percentage') {
-                    finalPrice = Math.round(basePrice * (1 - coupon.discount_value / 100));
-                } else {
-                    finalPrice = Math.max(0, basePrice - coupon.discount_value);
-                }
-                console.log('New final price after coupon:', finalPrice);
-            } else {
-                console.warn('Coupon applied but validation failed:', { isNotExpired, isUnderLimit, isCourseMatch });
-            }
-        } else if (couponError) {
-            console.warn('Coupon fetch error (non-fatal):', couponError.message);
-        }
-    }
-    
     if (finalPrice <= 0) finalPrice = 1; 
     const amountInPaise = Math.round(finalPrice * 100);
 
-    // 4. Create order
+    // Create order
     const auth = btoa(`${key_id}:${key_secret}`);
-    console.log(`Calling Razorpay API: Amount: ${amountInPaise} | Receipt: rcpt_${course_id.substring(0, 8)}`);
+    console.log(`Calling Razorpay API: Amount: ${amountInPaise} | Receipt: ${receiptId}`);
     
     let razorpayResponse;
     try {
@@ -96,7 +121,7 @@ serve(async (req) => {
         body: JSON.stringify({
           amount: amountInPaise,
           currency: 'INR',
-          receipt: `rcpt_${course_id.substring(0, 8)}_${Date.now().toString().slice(-6)}`
+          receipt: receiptId
         })
       });
     } catch (fetchErr) {

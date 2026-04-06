@@ -56,6 +56,16 @@ export const AuthProvider = ({ children }) => {
       if (profileData && !profileData.contact_number && authUser?.user_metadata?.phone) {
         profileData.contact_number = authUser.user_metadata.phone;
       }
+
+      // Auto-sync Google profile picture if avatar_url is empty
+      if (profileData && !profileData.avatar_url && authUser?.user_metadata?.avatar_url) {
+        const googleAvatar = authUser.user_metadata.avatar_url;
+        profileData.avatar_url = googleAvatar;
+        // Persist to database so it's available everywhere
+        supabase.from('users').update({ avatar_url: googleAvatar }).eq('id', userId).then(() => {
+          console.log('AuthContext: Auto-synced Google profile picture.');
+        });
+      }
       
       setProfile(profileData);
     } catch (error) {

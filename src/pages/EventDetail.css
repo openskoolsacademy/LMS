@@ -1,0 +1,498 @@
+/* ========================================
+   Event Detail Page Styles
+   Inspired by LearnzConnect event layout
+   Theme: #008ad1 primary, white background
+   ======================================== */
+
+.event-detail {
+  background: #fff;
+  min-height: 70vh;
+}
+
+/* ---- Header Section ---- */
+.ed-header {
+  background: linear-gradient(135deg, #008ad1 0%, #0062a0 100%);
+  padding: 40px 0 48px;
+  color: #fff;
+}
+
+.ed-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  margin-bottom: 20px;
+  opacity: 0.85;
+}
+
+.ed-breadcrumb a {
+  color: rgba(255,255,255,0.85);
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.ed-breadcrumb a:hover {
+  opacity: 1;
+  text-decoration: underline;
+}
+
+.ed-breadcrumb span {
+  color: rgba(255,255,255,0.6);
+}
+
+.ed-header-grid {
+  display: grid;
+  grid-template-columns: 1fr 420px;
+  gap: 40px;
+  align-items: start;
+}
+
+.ed-header-badges {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.ed-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 100px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.2);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.ed-badge.live {
+  background: rgba(34,197,94,0.2);
+  border-color: rgba(34,197,94,0.4);
+  animation: livePulse 2s ease-in-out infinite;
+}
+
+@keyframes livePulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.3); }
+  50% { box-shadow: 0 0 0 6px rgba(34,197,94,0); }
+}
+
+.ed-badge.cert {
+  background: rgba(255,255,255,0.15);
+  border-color: rgba(255,255,255,0.2);
+}
+
+.ed-header-content h1 {
+  font-size: 2.25rem;
+  font-weight: 800;
+  line-height: 1.2;
+  margin: 0 0 12px 0;
+  letter-spacing: -0.5px;
+  color: #fff;
+}
+
+.ed-header-desc {
+  font-size: 1.05rem;
+  opacity: 0.9;
+  line-height: 1.6;
+  margin: 0 0 20px 0;
+  max-width: 560px;
+}
+
+.ed-header-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  font-size: 0.9rem;
+}
+
+.ed-header-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  opacity: 0.9;
+}
+
+.ed-header-meta-item svg {
+  opacity: 0.8;
+  font-size: 1.1rem;
+}
+
+/* ---- Thumbnail / Media ---- */
+.ed-media {
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+}
+
+.ed-media img {
+  width: 100%;
+  height: 280px;
+  object-fit: cover;
+  display: block;
+}
+
+/* ---- Body Section (2-column) ---- */
+.ed-body {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 40px;
+  padding: 40px 0 60px;
+}
+
+/* ---- Main Content (Left) ---- */
+.ed-main {
+  min-width: 0;
+}
+
+.ed-section-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #008ad1;
+  margin: 0 0 6px 0;
+}
+
+.ed-section-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #1f2937;
+  margin: 0 0 20px 0;
+}
+
+.ed-about-text {
+  font-size: 0.95rem;
+  color: #4b5563;
+  line-height: 1.8;
+  margin-bottom: 40px;
+}
+
+/* ---- Attendance Status Banner ---- */
+.ed-attendance-banner {
+  padding: 16px 20px;
+  border-radius: 12px;
+  margin-bottom: 32px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.ed-attendance-banner.attended {
+  background: #dcfce7;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
+
+.ed-attendance-banner.not-attended {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+.ed-attendance-banner svg {
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+
+.ed-attendance-banner .sub-text {
+  font-weight: 400;
+  font-size: 0.8rem;
+  display: block;
+  margin-top: 2px;
+}
+
+/* ---- What You'll Achieve ---- */
+.ed-achieve-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.ed-achieve-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 0;
+  font-size: 0.9rem;
+  color: #374151;
+  line-height: 1.5;
+}
+
+.ed-achieve-list li svg {
+  color: #008ad1;
+  flex-shrink: 0;
+  margin-top: 3px;
+  font-size: 1.1rem;
+}
+
+/* ---- Instructor Section ---- */
+.ed-instructor-section {
+  margin-top: 40px;
+  padding-top: 32px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.ed-instructor-card {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.ed-instructor-avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #e0f2fe;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(0,138,209,0.1);
+}
+
+.ed-instructor-info {
+  flex: 1;
+}
+
+.ed-instructor-info h4 {
+  margin: 0 0 4px 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.ed-instructor-info p {
+  margin: 0 0 12px 0;
+  font-size: 0.92rem;
+  color: #4b5563;
+  line-height: 1.7;
+}
+
+.ed-instructor-info p:last-child {
+  margin-bottom: 0;
+}
+
+.ed-instructor-info strong {
+  color: #1f2937;
+  font-weight: 700;
+}
+
+/* ---- Sidebar (Right) ---- */
+.ed-sidebar {
+  position: sticky;
+  top: 100px;
+}
+
+.ed-sidebar-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+}
+
+.ed-sidebar-card-header {
+  padding: 24px 24px 20px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.ed-sidebar-price {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #1f2937;
+}
+
+.ed-sidebar-price .free-label {
+  color: #059669;
+}
+
+.ed-sidebar-card-body {
+  padding: 20px 24px 24px;
+}
+
+.ed-sidebar-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.ed-sidebar-actions .btn {
+  width: 100%;
+  padding: 14px 20px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.ed-btn-primary {
+  background: #008ad1;
+  color: #fff;
+  border: none;
+}
+
+.ed-btn-primary:hover {
+  background: #0074b3;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,138,209,0.3);
+}
+
+.ed-btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.ed-btn-outline {
+  background: #fff;
+  color: #008ad1;
+  border: 2px solid #008ad1;
+}
+
+.ed-btn-outline:hover {
+  background: #f0f9ff;
+}
+
+.ed-btn-cert {
+  background: #008ad1;
+  color: #fff;
+  border: none;
+}
+
+.ed-btn-cert:hover {
+  background: #0074b3;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,138,209,0.3);
+}
+
+/* Highlights List */
+.ed-highlights {
+  border-top: 1px solid #f3f4f6;
+  padding-top: 20px;
+}
+
+.ed-highlights h4 {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 14px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.ed-highlights-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.ed-highlights-list li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  font-size: 0.875rem;
+  color: #4b5563;
+  border-bottom: 1px solid #f9fafb;
+}
+
+.ed-highlights-list li:last-child {
+  border-bottom: none;
+}
+
+.ed-highlights-list li svg {
+  color: #008ad1;
+  flex-shrink: 0;
+  font-size: 1rem;
+}
+
+/* WhatsApp CTA in sidebar */
+.ed-sidebar-help {
+  margin-top: 20px;
+  padding: 16px;
+  background: #f9fafb;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.ed-sidebar-help p {
+  margin: 0 0 10px 0;
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+.ed-sidebar-help a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #008ad1;
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-decoration: none;
+}
+
+.ed-sidebar-help a:hover {
+  text-decoration: underline;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 1024px) {
+  .ed-header-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .ed-media img {
+    height: 220px;
+  }
+
+  .ed-body {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .ed-sidebar {
+    position: static;
+    order: -1;
+    margin-bottom: 32px;
+  }
+}
+
+@media (max-width: 640px) {
+  .ed-header {
+    padding: 24px 0 32px;
+  }
+
+  .ed-header-content h1 {
+    font-size: 1.6rem;
+  }
+
+  .ed-header-meta {
+    gap: 12px;
+    font-size: 0.8rem;
+  }
+
+  .ed-body {
+    padding: 24px 0 40px;
+  }
+
+  .ed-section-title {
+    font-size: 1.25rem;
+  }
+
+  .ed-instructor-card {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+}

@@ -29,6 +29,8 @@ import JobDetail from './pages/JobDetail';
 import SavedJobs from './pages/SavedJobs';
 import DailyQuiz from './pages/DailyQuiz';
 import Leaderboard from './pages/Leaderboard';
+import Events from './pages/Events';
+import EventDetail from './pages/EventDetail';
 import ProtectedRoute from './components/layout/ProtectedRoute';
 import ScrollToTop from './components/layout/ScrollToTop';
 import WhatsAppButton from './components/ui/WhatsAppButton';
@@ -64,6 +66,8 @@ export default function App() {
           <Route path="/saved-jobs" element={<ProtectedRoute><SavedJobs /></ProtectedRoute>} />
           <Route path="/daily-quiz" element={<DailyQuiz />} />
           <Route path="/leaderboard" element={<Leaderboard />} />
+          <Route path="/events" element={<Events />} />
+          <Route path="/events/:id" element={<EventDetail />} />
           <Route path="/instructor" element={<ProtectedRoute allowedRoles={['instructor', 'admin']}><InstructorDashboard /></ProtectedRoute>} />
           <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']}><AdminPanel /></ProtectedRoute>} />
           <Route path="/blog" element={<BlogList />} />

@@ -58,6 +58,82 @@ export async function createStudentCertificate(user, courseId, courseTitle, prof
 }
 
 /**
+ * Create a certificate for event attendance
+ * @param {Object} user - Auth user object
+ * @param {string} eventId - Event UUID
+ * @param {string} eventTitle - Event title
+ * @param {string} instructorName - Speaker/instructor name
+ * @param {string} profileName - Student display name
+ * @returns {Object} Certificate log record
+ */
+export async function createEventCertificate(user, eventId, eventTitle, instructorName, profileName) {
+  try {
+    // 1. Check if already generated
+    const { data: existingAttendance } = await supabase
+      .from('event_attendance')
+      .select('certificate_id')
+      .eq('user_id', user.id)
+      .eq('event_id', eventId)
+      .single();
+
+    if (existingAttendance?.certificate_id) {
+      // Already has a certificate — fetch the log
+      const { data: existingLog } = await supabase
+        .from('certificate_logs')
+        .select('*')
+        .eq('certificate_id', existingAttendance.certificate_id)
+        .single();
+      if (existingLog) return existingLog;
+    }
+
+    // 2. Generate new OPSK ID
+    const { data: logs } = await supabase.from('certificate_logs').select('certificate_id');
+    const existingIds = (logs || []).map(l => l.certificate_id);
+    const newOpskId = generateCertificateId(existingIds);
+
+    // 3. Insert into bulk_certificates for public verification
+    await supabase.from('bulk_certificates').insert([{
+      certificate_id: newOpskId,
+      student_name: profileName || user.email,
+      course_name: eventTitle,
+      certificate_type: 'live',
+      instructor_name: instructorName || 'Open Skools',
+      status: 'valid'
+    }]);
+
+    // 4. Insert into certificate_logs
+    const { data: newLog, error: logErr } = await supabase.from('certificate_logs').insert([{
+      certificate_id: newOpskId,
+      user_id: user.id,
+      student_name: profileName || user.email,
+      student_email: user.email,
+      course_name: eventTitle,
+      certificate_type: 'live',
+      status: 'active',
+      issued_by: instructorName || 'Open Skools',
+      issued_at: new Date().toISOString()
+    }]).select().single();
+
+    if (logErr) throw logErr;
+
+    // 5. Update event_attendance with certificate info
+    await supabase
+      .from('event_attendance')
+      .update({
+        certificate_issued: true,
+        certificate_id: newOpskId
+      })
+      .eq('user_id', user.id)
+      .eq('event_id', eventId);
+
+    return newLog;
+  } catch (err) {
+    console.error('Error creating event certificate:', err);
+    throw err;
+  }
+}
+
+/**
  * Log a certificate generation event
  * @param {Object} data 
  */

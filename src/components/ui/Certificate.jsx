@@ -18,7 +18,7 @@ export default function Certificate({ certificateData, onClose }) {
     certificate_id: certificateData.id,
     student_name: certificateData.studentName,
     course_name: certificateData.courseTitle,
-    certificate_type: 'course', // Default to course, can be dynamic if needed
+    certificate_type: certificateData.certificateType || 'course',
     date_of_completion: certificateData.issuedAt || new Date().toISOString()
   };
 

@@ -48,7 +48,7 @@
 
 .sd-stats {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 12px;
   position: relative;
   z-index: 1;
@@ -56,7 +56,7 @@
 }
 
 @media (min-width: 768px) {
-  .sd-stats { grid-template-columns: repeat(3, 160px); gap: 20px; width: auto; }
+  .sd-stats { grid-template-columns: repeat(4, 140px); gap: 16px; width: auto; }
 }
 
 .sd-stat-card {
@@ -316,7 +316,6 @@
 
 @media (max-width: 480px) {
   .sd-stats { grid-template-columns: 1fr 1fr; gap: 8px; }
-  .sd-stat-card:nth-child(3) { grid-column: span 2; }
   .sd-stat-card { padding: 12px 8px; }
   .sd-stat-card span { font-size: 0.65rem; letter-spacing: 0; }
   .sd-tabs { flex-wrap: wrap; }
@@ -572,8 +571,14 @@
 .dqm-form-actions { display: flex; gap: 12px; }
 
 @media (max-width: 768px) {
-  .sdq-hero { flex-direction: column; }
+  .sdq-hero { flex-direction: column; padding: 24px; gap: 24px; }
+  .sdq-hero-left h3 { font-size: 1.35rem; }
   .sdq-hero-right { width: 100%; min-width: unset; }
+  .sdq-stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; flex-wrap: nowrap; }
+  .sdq-stat { padding: 12px 6px; min-width: 0; }
+  .sdq-stat span { font-size: 1.1rem; }
+  .sdq-stat strong { font-size: 0.95rem; word-break: break-word; line-height: 1.2; }
+  .sdq-stat small { font-size: 0.55rem; }
   .sdq-rewards-grid { grid-template-columns: repeat(2, 1fr); }
   .sdq-streak-grid { grid-template-columns: 1fr; }
   .dqm-form-meta { grid-template-columns: 1fr; }

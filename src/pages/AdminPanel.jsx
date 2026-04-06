@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { FiUsers, FiBookOpen, FiDollarSign, FiCheckCircle, FiSearch, FiMoreVertical, FiShield, FiTrendingUp, FiTrash2, FiEye, FiMapPin, FiPhone, FiLinkedin, FiAward, FiBriefcase, FiMail, FiCalendar, FiHash, FiClock, FiPercent, FiPlayCircle, FiInfo, FiMessageSquare, FiTag, FiFileText, FiLink, FiUser, FiImage, FiStar, FiZap } from 'react-icons/fi';
+import { FiUsers, FiBookOpen, FiDollarSign, FiCheckCircle, FiSearch, FiMoreVertical, FiShield, FiTrendingUp, FiTrash2, FiEye, FiMapPin, FiPhone, FiLinkedin, FiAward, FiBriefcase, FiMail, FiCalendar, FiHash, FiClock, FiPercent, FiPlayCircle, FiInfo, FiMessageSquare, FiTag, FiFileText, FiLink, FiUser, FiImage, FiStar, FiZap, FiVideo, FiToggleLeft, FiToggleRight, FiExternalLink, FiDownload, FiXCircle } from 'react-icons/fi';
 import { supabase } from '../lib/supabase';
 import Skeleton from '../components/ui/Skeleton';
 import Modal from '../components/ui/Modal';
@@ -51,6 +51,18 @@ export default function AdminPanel() {
   const [profileExtras, setProfileExtras] = useState(null);
   const [profileLoading, setProfileLoading] = useState(false);
   const [payments, setPayments] = useState([]);
+  
+  // Events State
+  const [adminEvents, setAdminEvents] = useState([]);
+  const [showEventModal, setShowEventModal] = useState(false);
+  const [editingEvent, setEditingEvent] = useState(null);
+  const [eventForm, setEventForm] = useState({ title: '', description: '', instructor_name: '', event_date: '', duration_minutes: 60, live_link: '', thumbnail_url: '', enable_certificate: false, price: 0, status: 'upcoming' });
+  const [eventSubmitting, setEventSubmitting] = useState(false);
+  const [eventAttendees, setEventAttendees] = useState([]);
+  const [selectedEventId, setSelectedEventId] = useState(null);
+  const [eventAttendeesLoading, setEventAttendeesLoading] = useState(false);
+  const [eventSearchFilter, setEventSearchFilter] = useState('');
+  const [eventStatusFilter, setEventStatusFilter] = useState('all');
   
   // Review Mode State
   const [reviewCourse, setReviewCourse] = useState(null);
@@ -184,6 +196,12 @@ export default function AdminPanel() {
       if (!paymentsRes.error) setPayments(paymentsRes.data || []);
       if (!couponsRes.error) setCoupons(couponsRes.data || []);
       if (!reviewsRes.error) setCourseReviews(reviewsRes.data || []);
+      
+      // Fetch events
+      try {
+        const { data: eventsData } = await supabase.from('events').select('*').order('event_date', { ascending: false });
+        if (eventsData) setAdminEvents(eventsData);
+      } catch { /* events table may not exist yet */ }
       
       if (!paymentsRes.error && paymentsRes.data) {
         const total = paymentsRes.data.reduce((acc, p) => acc + Number(p.amount), 0);
@@ -614,6 +632,9 @@ export default function AdminPanel() {
                 <button className="action-pill" onClick={() => setTab('daily-quiz')}>
                    <FiZap /> Daily Quiz
                 </button>
+                <button className="action-pill" onClick={() => { setTab('events'); setShowEventModal(true); setEditingEvent(null); setEventForm({ title: '', description: '', instructor_name: '', event_date: '', duration_minutes: 60, live_link: '', thumbnail_url: '', enable_certificate: false, price: 0, status: 'upcoming' }); }}>
+                   <FiVideo /> Create Event
+                </button>
               </div>
             </div>
             <div className="ap-hero-status">
@@ -640,6 +661,7 @@ export default function AdminPanel() {
           <button className={`ap-tab ${tab === 'messages' ? 'active' : ''}`} onClick={() => setTab('messages')}>Messages <span className="ap-badge-count">{stats.unreadMessages || 0}</span></button>
           <button className={`ap-tab ${tab === 'reviews' ? 'active' : ''}`} onClick={() => setTab('reviews')}><FiStar style={{marginRight: 4}} /> Reviews <span className="ap-badge-count">{courseReviews.length || 0}</span></button>
           <button className={`ap-tab ${tab === 'certificates' ? 'active' : ''}`} onClick={() => setTab('certificates')}><FiAward style={{marginRight: 4}} /> Certificates</button>
+          <button className={`ap-tab ${tab === 'events' ? 'active' : ''}`} onClick={() => setTab('events')}><FiVideo style={{marginRight: 4}} /> Events</button>
         </div>
 
         {loading ? (
@@ -2174,6 +2196,353 @@ export default function AdminPanel() {
         {tab === 'daily-quiz' && (
           <DailyQuizManager />
         )}
+
+        {/* Events Tab */}
+        {tab === 'events' && (
+          <div className="ap-users animate-fade">
+            <div className="ap-search-row">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', flexWrap: 'wrap', gap: '12px' }}>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flex: 1 }}>
+                  <div className="ap-search" style={{ flex: 1 }}><FiSearch /><input placeholder="Search events..." value={eventSearchFilter} onChange={e => setEventSearchFilter(e.target.value)} /></div>
+                  <div className="ap-activity-filters">
+                    {['all', 'upcoming', 'live', 'completed'].map(s => (
+                      <button key={s} className={`ap-filter-pill ${eventStatusFilter === s ? 'active' : ''}`} onClick={() => setEventStatusFilter(s)}>
+                        {s === 'all' ? 'All' : s.charAt(0).toUpperCase() + s.slice(1)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <button className="btn btn-primary btn-sm" onClick={() => { setEditingEvent(null); setEventForm({ title: '', description: '', instructor_name: '', instructor_bio: '', instructor_image: '', event_date: '', duration_minutes: 60, live_link: '', thumbnail_url: '', enable_certificate: false, price: 0, status: 'upcoming' }); setShowEventModal(true); }}>
+                  <FiVideo style={{ marginRight: 6 }} /> Create Event
+                </button>
+              </div>
+            </div>
+
+            {/* Events Table */}
+            <div className="id-table-wrap">
+              <table className="id-table">
+                <thead>
+                  <tr>
+                    <th>Event</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Price</th>
+                    <th>Certificate</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {adminEvents
+                    .filter(ev => {
+                      const q = eventSearchFilter.toLowerCase();
+                      const matchesSearch = !q || ev.title.toLowerCase().includes(q) || (ev.instructor_name || '').toLowerCase().includes(q);
+                      const matchesStatus = eventStatusFilter === 'all' || ev.status === eventStatusFilter;
+                      return matchesSearch && matchesStatus;
+                    })
+                    .map(ev => (
+                    <tr key={ev.id}>
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          {ev.thumbnail_url && <img src={ev.thumbnail_url} alt="" style={{ width: 48, height: 36, objectFit: 'cover', borderRadius: 6 }} />}
+                          <div>
+                            <strong style={{ display: 'block', fontSize: '0.9rem' }}>{ev.title}</strong>
+                            <span style={{ fontSize: '0.8rem', color: 'var(--gray-400)' }}>{ev.instructor_name}</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td style={{ fontSize: '0.85rem' }}>
+                        {new Date(ev.event_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        <br />
+                        <span style={{ fontSize: '0.75rem', color: 'var(--gray-400)' }}>{ev.duration_minutes} min</span>
+                      </td>
+                      <td>
+                        <span className={`badge badge-${ev.status === 'live' ? 'success' : ev.status === 'upcoming' ? 'primary' : 'info'}`}>
+                          {ev.status}
+                        </span>
+                      </td>
+                      <td style={{ fontWeight: 600 }}>{ev.price > 0 ? `₹${ev.price}` : 'Free'}</td>
+                      <td>
+                        {ev.enable_certificate ? (
+                          <span style={{ color: '#8b5cf6', fontWeight: 600, fontSize: '0.85rem' }}><FiAward style={{ marginRight: 4 }} /> Yes</span>
+                        ) : (
+                          <span style={{ color: 'var(--gray-400)', fontSize: '0.85rem' }}>No</span>
+                        )}
+                      </td>
+                      <td>
+                        <div style={{ display: 'flex', gap: '6px' }}>
+                          <button className="btn btn-outline btn-sm" onClick={async () => {
+                            setSelectedEventId(ev.id);
+                            setEventAttendeesLoading(true);
+                            try {
+                              const { data } = await supabase.from('event_attendance').select('*, user:users(name, email)').eq('event_id', ev.id);
+                              setEventAttendees(data || []);
+                            } catch { setEventAttendees([]); }
+                            finally { setEventAttendeesLoading(false); }
+                          }}>
+                            <FiUsers style={{ marginRight: 4 }} /> Attendees
+                          </button>
+                          <button className="btn btn-outline btn-sm" onClick={() => {
+                            setEditingEvent(ev);
+                            setEventForm({
+                              title: ev.title || '',
+                              description: ev.description || '',
+                              instructor_name: ev.instructor_name || '',
+                              instructor_bio: ev.instructor_bio || '',
+                              instructor_image: ev.instructor_image || '',
+                              event_date: ev.event_date ? new Date(ev.event_date).toISOString().slice(0, 16) : '',
+                              duration_minutes: ev.duration_minutes || 60,
+                              live_link: ev.live_link || '',
+                              thumbnail_url: ev.thumbnail_url || '',
+                              enable_certificate: ev.enable_certificate || false,
+                              price: ev.price || 0,
+                              status: ev.status || 'upcoming'
+                            });
+                            setShowEventModal(true);
+                          }}>
+                            <FiEye />
+                          </button>
+                          <button className="btn btn-outline btn-sm" style={{ color: 'var(--danger)', borderColor: 'var(--danger)' }} onClick={async () => {
+                            const confirmed = await showConfirm('Delete this event and all attendance records?', undefined, 'Delete Event', 'Delete', 'Cancel');
+                            if (!confirmed) return;
+                            try {
+                              await supabase.from('event_attendance').delete().eq('event_id', ev.id);
+                              const { error } = await supabase.from('events').delete().eq('id', ev.id);
+                              if (error) throw error;
+                              setAdminEvents(adminEvents.filter(e => e.id !== ev.id));
+                              await showAlert('Event deleted.', 'Deleted', 'success');
+                            } catch (err) {
+                              await showAlert('Error deleting event: ' + err.message, 'Error', 'error');
+                            }
+                          }}>
+                            <FiTrash2 />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  {adminEvents.length === 0 && (
+                    <tr><td colSpan="6" style={{ textAlign: 'center', padding: '40px', color: 'var(--gray-400)' }}>No events created yet. Click "Create Event" to get started.</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Attendees Panel */}
+            {selectedEventId && (
+              <div className="ap-card" style={{ marginTop: '24px' }}>
+                <div className="ap-card-header">
+                  <h3><FiUsers style={{ marginRight: 8 }} /> Attendees — {adminEvents.find(e => e.id === selectedEventId)?.title}</h3>
+                  <button className="btn-text" onClick={() => setSelectedEventId(null)}>Close</button>
+                </div>
+                {eventAttendeesLoading ? (
+                  <div style={{ padding: '24px', textAlign: 'center', color: 'var(--gray-400)' }}>Loading attendees...</div>
+                ) : eventAttendees.length === 0 ? (
+                  <div style={{ padding: '24px', textAlign: 'center', color: 'var(--gray-400)' }}>No registrations yet.</div>
+                ) : (
+                  <div className="id-table-wrap">
+                    <table className="id-table">
+                      <thead><tr><th>Student</th><th>Email</th><th>Registered</th><th>Attended</th><th>Payment</th><th>Certificate</th><th>Actions</th></tr></thead>
+                      <tbody>
+                        {eventAttendees.map(att => (
+                          <tr key={att.id}>
+                            <td style={{ fontWeight: 600 }}>{att.user?.name || 'Unknown'}</td>
+                            <td style={{ fontSize: '0.85rem', color: 'var(--gray-500)' }}>{att.user?.email || '-'}</td>
+                            <td>{att.registered ? <span className="badge badge-success">Yes</span> : <span className="badge badge-info">No</span>}</td>
+                            <td>{att.attended ? <span className="badge badge-success">Attended</span> : <span className="badge badge-danger">No</span>}</td>
+                            <td style={{ fontSize: '0.85rem' }}>{att.amount_paid > 0 ? `₹${att.amount_paid}` : 'Free'}</td>
+                            <td>{att.certificate_issued ? <span style={{ color: '#8b5cf6', fontWeight: 600, fontSize: '0.8rem' }}>{att.certificate_id}</span> : <span style={{ color: 'var(--gray-400)', fontSize: '0.8rem' }}>—</span>}</td>
+                            <td>
+                              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                                <button
+                                  className={`btn btn-sm ${att.attended ? 'btn-outline' : 'btn-primary'}`}
+                                  style={{ fontSize: '0.75rem' }}
+                                  onClick={async () => {
+                                    try {
+                                      const newVal = !att.attended;
+                                      await supabase.from('event_attendance').update({ attended: newVal, join_time: newVal ? new Date().toISOString() : null }).eq('id', att.id);
+                                      setEventAttendees(eventAttendees.map(a => a.id === att.id ? { ...a, attended: newVal } : a));
+                                    } catch (err) {
+                                      await showAlert('Error updating attendance: ' + err.message, 'Error', 'error');
+                                    }
+                                  }}
+                                >
+                                  {att.attended ? <><FiXCircle style={{ marginRight: 4 }} /> Unmark</> : <><FiCheckCircle style={{ marginRight: 4 }} /> Mark Attended</>}
+                                </button>
+                                {att.attended && adminEvents.find(e => e.id === selectedEventId)?.enable_certificate && (
+                                  <button
+                                    className="btn btn-outline btn-sm"
+                                    style={{ fontSize: '0.75rem', color: '#8b5cf6', borderColor: '#8b5cf6' }}
+                                    onClick={async () => {
+                                      try {
+                                        const { createEventCertificate } = await import('../utils/certificateLogUtils');
+                                        const eventData = adminEvents.find(e => e.id === selectedEventId);
+                                        await createEventCertificate(
+                                          { id: att.user_id, email: att.user?.email },
+                                          selectedEventId,
+                                          eventData?.title,
+                                          eventData?.instructor_name,
+                                          att.user?.name
+                                        );
+                                        // Refresh attendees
+                                        const { data } = await supabase.from('event_attendance').select('*, user:users(name, email)').eq('event_id', selectedEventId);
+                                        setEventAttendees(data || []);
+                                        await showAlert('Certificate issued!', 'Success', 'success');
+                                      } catch (err) {
+                                        await showAlert('Error issuing certificate: ' + err.message, 'Error', 'error');
+                                      }
+                                    }}
+                                  >
+                                    <FiAward style={{ marginRight: 4 }} /> {att.certificate_issued ? 'Re-issue' : 'Issue'} Cert
+                                  </button>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Event Create/Edit Modal */}
+        <Modal isOpen={showEventModal} onClose={() => setShowEventModal(false)} title={editingEvent ? 'Edit Event' : 'Create Event'}>
+          <form onSubmit={async (e) => {
+            e.preventDefault();
+            setEventSubmitting(true);
+            try {
+              const payload = {
+                title: eventForm.title,
+                description: eventForm.description,
+                instructor_name: eventForm.instructor_name,
+                instructor_bio: eventForm.instructor_bio || null,
+                instructor_image: eventForm.instructor_image || null,
+                event_date: eventForm.event_date,
+                duration_minutes: parseInt(eventForm.duration_minutes) || 60,
+                live_link: eventForm.live_link,
+                thumbnail_url: eventForm.thumbnail_url,
+                enable_certificate: eventForm.enable_certificate,
+                price: parseFloat(eventForm.price) || 0,
+                status: eventForm.status
+              };
+
+              if (editingEvent) {
+                const { data, error } = await supabase.from('events').update(payload).eq('id', editingEvent.id).select();
+                if (error) throw error;
+                setAdminEvents(adminEvents.map(ev => ev.id === editingEvent.id ? data[0] : ev));
+                await showAlert('Event updated.', 'Success', 'success');
+              } else {
+                payload.created_by = user.id;
+                const { data, error } = await supabase.from('events').insert([payload]).select();
+                if (error) throw error;
+                setAdminEvents([data[0], ...adminEvents]);
+                await showAlert('Event created!', 'Success', 'success');
+              }
+              setShowEventModal(false);
+              setEditingEvent(null);
+            } catch (err) {
+              await showAlert('Error saving event: ' + err.message, 'Error', 'error');
+            } finally {
+              setEventSubmitting(false);
+            }
+          }}>
+            <div className="modal-body-modern">
+              <div className="form-grid-modern">
+                <div className="form-group-modern full" style={{ gridColumn: '1 / -1' }}>
+                  <label>Event Title *</label>
+                  <div className="input-with-icon">
+                    <FiVideo />
+                    <input className="form-control-modern" placeholder="e.g. Web Development Masterclass" value={eventForm.title} onChange={e => setEventForm({...eventForm, title: e.target.value})} required />
+                  </div>
+                </div>
+                <div className="form-group-modern">
+                  <label>Instructor / Speaker *</label>
+                  <div className="input-with-icon">
+                    <FiUser />
+                    <input className="form-control-modern" placeholder="Speaker name" value={eventForm.instructor_name} onChange={e => setEventForm({...eventForm, instructor_name: e.target.value})} required />
+                  </div>
+                </div>
+                <div className="form-group-modern">
+                  <label>Instructor Photo URL</label>
+                  <div className="input-with-icon">
+                    <FiImage />
+                    <input className="form-control-modern" placeholder="https://example.com/photo.jpg" value={eventForm.instructor_image} onChange={e => setEventForm({...eventForm, instructor_image: e.target.value})} />
+                  </div>
+                </div>
+                <div className="form-group-modern">
+                  <label>Date & Time *</label>
+                  <div className="input-with-icon">
+                    <FiCalendar />
+                    <input type="datetime-local" className="form-control-modern" value={eventForm.event_date} onChange={e => setEventForm({...eventForm, event_date: e.target.value})} required />
+                  </div>
+                </div>
+                <div className="form-group-modern">
+                  <label>Duration (minutes)</label>
+                  <div className="input-with-icon">
+                    <FiClock />
+                    <input type="number" className="form-control-modern" value={eventForm.duration_minutes} onChange={e => setEventForm({...eventForm, duration_minutes: e.target.value})} min="5" />
+                  </div>
+                </div>
+                <div className="form-group-modern">
+                  <label>Price (₹0 = Free)</label>
+                  <div className="input-with-icon">
+                    <FiDollarSign />
+                    <input type="number" className="form-control-modern" value={eventForm.price} onChange={e => setEventForm({...eventForm, price: e.target.value})} min="0" step="1" />
+                  </div>
+                </div>
+                <div className="form-group-modern">
+                  <label>Live Session Link</label>
+                  <div className="input-with-icon">
+                    <FiExternalLink />
+                    <input className="form-control-modern" placeholder="Zoom / Meet / YouTube link" value={eventForm.live_link} onChange={e => setEventForm({...eventForm, live_link: e.target.value})} />
+                  </div>
+                </div>
+                <div className="form-group-modern">
+                  <label>Thumbnail URL</label>
+                  <div className="input-with-icon">
+                    <FiImage />
+                    <input className="form-control-modern" placeholder="External image URL" value={eventForm.thumbnail_url} onChange={e => setEventForm({...eventForm, thumbnail_url: e.target.value})} />
+                  </div>
+                </div>
+                <div className="form-group-modern">
+                  <label>Status</label>
+                  <select className="form-control-modern" value={eventForm.status} onChange={e => setEventForm({...eventForm, status: e.target.value})}>
+                    <option value="upcoming">Upcoming</option>
+                    <option value="live">Live</option>
+                    <option value="completed">Completed</option>
+                  </select>
+                </div>
+                <div className="form-group-modern" style={{ gridColumn: '1 / -1' }}>
+                  <label>Description</label>
+                  <textarea className="form-control-modern" rows={3} placeholder="Event description..." value={eventForm.description} onChange={e => setEventForm({...eventForm, description: e.target.value})} style={{ resize: 'vertical' }} />
+                </div>
+                <div className="form-group-modern" style={{ gridColumn: '1 / -1' }}>
+                  <label>Instructor Bio <span style={{ fontSize: '0.75rem', color: 'var(--gray-400)', fontWeight: 400 }}>Use **bold** for emphasis. Separate paragraphs with Enter.</span></label>
+                  <textarea className="form-control-modern" rows={4} placeholder={`Hi! I'm [Name], a software architect with 10+ years of experience.
+
+My teaching style is simple: **no fluff, no wasted time.**`} value={eventForm.instructor_bio} onChange={e => setEventForm({...eventForm, instructor_bio: e.target.value})} style={{ resize: 'vertical' }} />
+                </div>
+                <div className="form-group-modern" style={{ gridColumn: '1 / -1' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}>
+                    <span onClick={() => setEventForm({...eventForm, enable_certificate: !eventForm.enable_certificate})} style={{ fontSize: '1.5rem', color: eventForm.enable_certificate ? '#8b5cf6' : 'var(--gray-300)', cursor: 'pointer', display: 'flex' }}>
+                      {eventForm.enable_certificate ? <FiToggleRight /> : <FiToggleLeft />}
+                    </span>
+                    Enable Certificate for this Event
+                  </label>
+                </div>
+              </div>
+            </div>
+            <div className="modal-footer-modern">
+              <button type="button" className="btn-modern outline" onClick={() => setShowEventModal(false)}>Cancel</button>
+              <button type="submit" className="btn-modern primary" disabled={eventSubmitting}>
+                {eventSubmitting ? 'Saving...' : editingEvent ? 'Update Event' : 'Create Event'}
+              </button>
+            </div>
+          </form>
+        </Modal>
 
       </div>
     </div>

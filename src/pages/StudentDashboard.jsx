@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { FiBookOpen, FiAward, FiUser, FiDownload, FiBarChart2, FiPlay, FiPlusCircle, FiFileText, FiZap, FiTrendingUp, FiDatabase, FiCheckCircle, FiTarget, FiLock, FiStar } from 'react-icons/fi';
+import { FiBookOpen, FiAward, FiUser, FiDownload, FiBarChart2, FiPlay, FiPlusCircle, FiFileText, FiZap, FiTrendingUp, FiDatabase, FiCheckCircle, FiTarget, FiLock, FiStar, FiVideo, FiCalendar, FiClock, FiExternalLink } from 'react-icons/fi';
 import { FaFire, FaTrophy, FaCrown, FaSeedling } from 'react-icons/fa';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
@@ -42,11 +42,15 @@ export default function StudentDashboard() {
   const [todayAttempt, setTodayAttempt] = useState(null);
   const [topLeaders, setTopLeaders] = useState([]);
   const [userRewards, setUserRewards] = useState([]);
+  // Events state
+  const [userEvents, setUserEvents] = useState([]);
+  const [userEventAttendance, setUserEventAttendance] = useState({});
+  const [activeCertEvent, setActiveCertEvent] = useState(null);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const tabParam = params.get('tab');
-    if (tabParam && ['courses', 'progress', 'certificates', 'profile'].includes(tabParam)) {
+    if (tabParam && ['courses', 'progress', 'certificates', 'events', 'quiz', 'profile'].includes(tabParam)) {
       setTab(tabParam);
     }
   }, [location.search]);
@@ -58,6 +62,7 @@ export default function StudentDashboard() {
       fetchStreak();
       fetchAssessmentStatus();
       fetchGamificationData();
+      fetchUserEvents();
     }
   }, [user]);
 
@@ -108,6 +113,17 @@ export default function StudentDashboard() {
         setTopLeaders(leaders.data.map(l => ({ ...l, name: uMap[l.user_id] || 'Unknown' })));
       }
     } catch { /* gamification tables may not exist yet */ }
+  };
+
+  const fetchUserEvents = async () => {
+    try {
+      const { data: eventsData } = await supabase.from('events').select('*').order('event_date', { ascending: false });
+      setUserEvents(eventsData || []);
+      const { data: attData } = await supabase.from('event_attendance').select('*').eq('user_id', user.id);
+      const attMap = {};
+      (attData || []).forEach(a => { attMap[a.event_id] = a; });
+      setUserEventAttendance(attMap);
+    } catch { /* events table may not exist yet */ }
   };
 
   const formInitialized = useRef(false);
@@ -273,6 +289,10 @@ export default function StudentDashboard() {
                 <strong>{certificates.length}</strong>
                 <span>Certificates</span>
               </div>
+              <div className="sd-stat-card">
+                <strong>{Object.values(userEventAttendance).filter(a => a.registered || a.attended).length}</strong>
+                <span>Events</span>
+              </div>
             </div>
           </div>
         </div>
@@ -284,6 +304,7 @@ export default function StudentDashboard() {
           <button className={`sd-tab ${tab === 'courses' ? 'active' : ''}`} onClick={() => setTab('courses')}><FiBookOpen /> My Courses</button>
           <button className={`sd-tab ${tab === 'progress' ? 'active' : ''}`} onClick={() => setTab('progress')}><FiBarChart2 /> Progress</button>
           <button className={`sd-tab ${tab === 'certificates' ? 'active' : ''}`} onClick={() => setTab('certificates')}><FiAward /> Certificates</button>
+          <button className={`sd-tab ${tab === 'events' ? 'active' : ''}`} onClick={() => setTab('events')}><FiVideo /> Events</button>
           <button className={`sd-tab ${tab === 'quiz' ? 'active' : ''}`} onClick={() => setTab('quiz')}><FiZap /> Quiz & Rewards</button>
           <button className={`sd-tab ${tab === 'profile' ? 'active' : ''}`} onClick={() => setTab('profile')}><FiUser /> Profile</button>
         </div>
@@ -366,54 +387,93 @@ export default function StudentDashboard() {
         {/* Certificates Tab */}
         {tab === 'certificates' && (
           <div className="sd-certs animate-fade-in-up">
-            {completedCount === 0 ? (
-              <div className="cert-empty">
-                <p className="text-muted">Complete more courses to earn certificates!</p>
-              </div>
-            ) : (
-              enrollments.filter(e => e.status === 'completed').map((enr, idx) => {
-                const hasCert = certificates.find(c => c.course_id === enr.course.id);
-                const hasAssessment = !!courseAssessments[enr.course.id];
-                const hasPassed = !!passedAssessments[enr.course.id];
-                const canGetCert = hasAssessment ? hasPassed : true;
+            {(() => {
+              const completedEnrollments = enrollments.filter(e => e.status === 'completed');
+              const eventCerts = certificates.filter(c => c.certificate_type === 'live');
+              const hasAnyCert = completedEnrollments.length > 0 || eventCerts.length > 0;
 
+              if (!hasAnyCert) {
                 return (
-                 <div key={idx} className="certificate-card">
-                    <div>
-                      <h4 style={{ margin: '0 0 5px 0' }}>{enr.course.title}</h4>
-                      <p style={{ margin: 0, color: '#64748b', fontSize: '14px' }}>Instructor: {enr.course.instructor?.name || 'Unknown'}</p>
-                      {hasAssessment && !hasPassed && (
-                        <p style={{ margin: '6px 0 0', color: '#f59e0b', fontSize: '13px', fontWeight: 600 }}>
-                          <FiFileText style={{marginRight: 4}} /> Assessment required to unlock certificate
-                        </p>
-                      )}
-                    </div>
-                    <div>
-                      {canGetCert ? (
-                        hasCert ? (
-                          <button className="btn btn-primary" onClick={() => generateCertificate(enr.course)}><FiDownload /> View & Download</button>
-                        ) : (
-                          <button className="btn btn-outline" onClick={() => generateCertificate(enr.course)}><FiPlusCircle /> Claim Certificate</button>
-                        )
-                      ) : (
-                        <Link to={`/assessment/${enr.course.id}`} className="btn btn-primary"><FiFileText /> Take Assessment</Link>
-                      )}
-                    </div>
-                 </div>
+                  <div className="cert-empty">
+                    <p className="text-muted">Complete courses or attend live events to earn certificates!</p>
+                  </div>
                 );
-              })
-            )}
+              }
+
+              return (
+                <>
+                  {/* Course Certificates */}
+                  {completedEnrollments.map((enr, idx) => {
+                    const hasCert = certificates.find(c => c.course_id === enr.course.id);
+                    const hasAssessment = !!courseAssessments[enr.course.id];
+                    const hasPassed = !!passedAssessments[enr.course.id];
+                    const canGetCert = hasAssessment ? hasPassed : true;
+
+                    return (
+                     <div key={`course-${idx}`} className="certificate-card">
+                        <div>
+                          <h4 style={{ margin: '0 0 5px 0' }}>{enr.course.title}</h4>
+                          <p style={{ margin: 0, color: '#64748b', fontSize: '14px' }}>Instructor: {enr.course.instructor?.name || 'Unknown'}</p>
+                          <span style={{ display: 'inline-block', marginTop: 6, fontSize: '0.7rem', fontWeight: 700, padding: '2px 10px', borderRadius: 100, background: '#e0f2fe', color: '#008ad1' }}>Recorded Course</span>
+                          {hasAssessment && !hasPassed && (
+                            <p style={{ margin: '6px 0 0', color: '#f59e0b', fontSize: '13px', fontWeight: 600 }}>
+                              <FiFileText style={{marginRight: 4}} /> Assessment required to unlock certificate
+                            </p>
+                          )}
+                        </div>
+                        <div>
+                          {canGetCert ? (
+                            hasCert ? (
+                              <button className="btn btn-primary" onClick={() => generateCertificate(enr.course)}><FiDownload /> View & Download</button>
+                            ) : (
+                              <button className="btn btn-outline" onClick={() => generateCertificate(enr.course)}><FiPlusCircle /> Claim Certificate</button>
+                            )
+                          ) : (
+                            <Link to={`/assessment/${enr.course.id}`} className="btn btn-primary"><FiFileText /> Take Assessment</Link>
+                          )}
+                        </div>
+                     </div>
+                    );
+                  })}
+
+                  {/* Event / Live Session Certificates */}
+                  {eventCerts.map((cert, idx) => (
+                    <div key={`event-${idx}`} className="certificate-card">
+                      <div>
+                        <h4 style={{ margin: '0 0 5px 0' }}>{cert.course_name}</h4>
+                        <p style={{ margin: 0, color: '#64748b', fontSize: '14px' }}>
+                          Instructor: {cert.issued_by || 'Open Skools'}
+                          {cert.issued_at && <> &middot; {new Date(cert.issued_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</>}
+                        </p>
+                        <span style={{ display: 'inline-block', marginTop: 6, fontSize: '0.7rem', fontWeight: 700, padding: '2px 10px', borderRadius: 100, background: '#e0f2fe', color: '#008ad1' }}>Live Event</span>
+                      </div>
+                      <div>
+                        <button className="btn btn-primary" onClick={() => {
+                          setActiveCert({
+                            id: cert.certificate_id,
+                            studentName: cert.student_name,
+                            courseTitle: cert.course_name,
+                            issuedAt: cert.issued_at,
+                            certificateType: 'live'
+                          });
+                        }}><FiDownload /> View & Download</button>
+                      </div>
+                    </div>
+                  ))}
+                </>
+              );
+            })()}
           </div>
         )}
         {/* Quiz & Rewards Tab */}
         {tab === 'quiz' && (() => {
           const REWARD_TIERS = [
-            { type: 'newcomer', emoji: <FaSeedling style={{color: '#10b981'}} />, label: 'Newcomer', pts: 0 },
-            { type: 'bronze', emoji: <FiAward style={{color: '#cd7f32'}} />, label: 'Bronze', pts: 100 },
-            { type: 'silver', emoji: <FiAward style={{color: '#c0c0c0'}} />, label: 'Silver', pts: 300 },
+            { type: 'newcomer', emoji: <FaSeedling style={{color: '#10b981'}} />, label: 'Seed', pts: 0 },
+            { type: 'bronze', emoji: <FiAward style={{color: '#cd7f32'}} />, label: 'Iron', pts: 100 },
+            { type: 'silver', emoji: <FiAward style={{color: '#c0c0c0'}} />, label: 'Steel', pts: 300 },
             { type: 'gold', emoji: <FiAward style={{color: '#f59e0b'}} />, label: 'Gold', pts: 700 },
-            { type: 'platinum', emoji: <FiStar style={{color: '#005f9e'}} />, label: 'Platinum', pts: 1500 },
-            { type: 'legend', emoji: <FaCrown style={{color: '#008ad1'}} />, label: 'Legend', pts: 3000 },
+            { type: 'platinum', emoji: <FiStar style={{color: '#005f9e'}} />, label: 'Elite', pts: 1500 },
+            { type: 'legend', emoji: <FaCrown style={{color: '#008ad1'}} />, label: 'Crown', pts: 3000 },
           ];
           const unlockedTypes = new Set(userRewards.map(r => r.reward_type));
           const nextTier = REWARD_TIERS.find(t => t.pts > userPoints) || REWARD_TIERS[REWARD_TIERS.length - 1];
@@ -612,6 +672,119 @@ export default function StudentDashboard() {
               </div>
               <button type="submit" className="btn btn-primary btn-md" disabled={saving} style={{marginTop: '16px'}}>{saving ? 'Saving...' : 'Save Changes'}</button>
             </form>
+          </div>
+        )}
+
+        {/* Events Tab */}
+        {tab === 'events' && (
+          <div className="sd-courses animate-fade-in-up">
+            {(() => {
+              const attendedEvents = userEvents.filter(e => userEventAttendance[e.id]?.attended);
+              const registeredEvents = userEvents.filter(e => userEventAttendance[e.id]?.registered && !userEventAttendance[e.id]?.attended);
+
+              if (attendedEvents.length === 0 && registeredEvents.length === 0) {
+                return (
+                  <div className="cert-empty">
+                    <p className="text-muted">No events yet. <a href="/events" style={{ color: 'var(--primary)' }}>Browse live events</a></p>
+                  </div>
+                );
+              }
+
+              return (
+                <div className="sd-events-list">
+                  {attendedEvents.map(ev => {
+                    return (
+                      <div key={ev.id} className="sd-event-item">
+                        <div className="sd-event-item-info">
+                          <h4>{ev.title}</h4>
+                          <p>
+                            <FiCalendar style={{ marginRight: 4 }} />
+                            {new Date(ev.event_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                            {' '} | <FiClock style={{ marginRight: 4, marginLeft: 4 }} /> {ev.duration_minutes} min
+                            {' '} | {ev.instructor_name}
+                          </p>
+                        </div>
+                        <div className="sd-event-item-actions">
+                          <span className="badge badge-success" style={{ fontSize: '0.75rem' }}>Attended</span>
+                          {ev.enable_certificate && (
+                            <button className="btn btn-primary btn-sm" onClick={async () => {
+                              try {
+                                const { createEventCertificate } = await import('../utils/certificateLogUtils');
+                                const certRecord = await createEventCertificate(user, ev.id, ev.title, ev.instructor_name, profile?.name);
+                                setActiveCert({
+                                  id: certRecord.certificate_id,
+                                  studentName: profile?.name || user.email,
+                                  courseTitle: ev.title,
+                                  issuedAt: certRecord.issued_at,
+                                  certificateType: 'live'
+                                });
+                              } catch (err) {
+                                console.error('Cert error:', err);
+                                await showAlert('Error generating certificate.', 'Error', 'error');
+                              }
+                            }}>
+                              <FiDownload style={{ marginRight: 4 }} /> Certificate
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {registeredEvents.map(ev => {
+                    const now = new Date();
+                    const eventDate = new Date(ev.event_date);
+                    const endDate = new Date(eventDate.getTime() + (ev.duration_minutes || 60) * 60000);
+                    const isLive = ev.status === 'live' || (now >= eventDate && now <= endDate);
+                    const isUpcoming = !isLive && now < eventDate;
+                    const isCompleted = ev.status === 'completed' || now > endDate;
+
+                    return (
+                      <div key={ev.id} className="sd-event-item">
+                        <div className="sd-event-item-info">
+                          <h4><Link to={`/events/${ev.id}`} style={{ color: 'inherit', textDecoration: 'none' }}>{ev.title}</Link></h4>
+                          <p>
+                            <FiCalendar style={{ marginRight: 4 }} />
+                            {new Date(ev.event_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                            {' '} | {ev.instructor_name}
+                          </p>
+                        </div>
+                        <div className="sd-event-item-actions">
+                          {isCompleted && (
+                            <span className="badge badge-info" style={{ fontSize: '0.75rem' }}>Ended</span>
+                          )}
+                          {isUpcoming && (
+                            <span className="badge badge-primary" style={{ fontSize: '0.75rem' }}>Upcoming</span>
+                          )}
+                          {(isLive || isUpcoming) && (
+                            <button className="btn btn-primary btn-sm" onClick={async () => {
+                              try {
+                                await supabase.from('event_attendance')
+                                  .update({ attended: true, join_time: new Date().toISOString() })
+                                  .eq('user_id', user.id)
+                                  .eq('event_id', ev.id);
+                                setUserEventAttendance(prev => ({
+                                  ...prev,
+                                  [ev.id]: { ...prev[ev.id], attended: true, join_time: new Date().toISOString() }
+                                }));
+                                if (ev.live_link) window.open(ev.live_link, '_blank');
+                                else await showAlert('Live link not available yet. Please check back later.', 'Info', 'info');
+                              } catch (err) {
+                                console.error('Join error:', err);
+                              }
+                            }}>
+                              <FiExternalLink style={{ marginRight: 4 }} /> Join Now
+                            </button>
+                          )}
+                          <Link to={`/events/${ev.id}`} className="btn btn-outline btn-sm" style={{ fontSize: '0.75rem' }}>
+                            View Event
+                          </Link>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
           </div>
         )}
 
