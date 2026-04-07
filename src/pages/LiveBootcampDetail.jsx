@@ -240,26 +240,6 @@ export default function LiveBootcampDetail() {
     else await showAlert('Live link not available yet. Please check back later.', 'Info', 'info');
   };
 
-  const handleDownloadCert = async () => {
-    try {
-      const { createLiveBootcampCertificate } = await import('../utils/certificateLogUtils');
-      const certRecord = await createLiveBootcampCertificate(
-        user, bootcamp.id, bootcamp.title, bootcamp.instructor_name, profile?.name,
-        bootcamp.start_date, bootcamp.end_date
-      );
-      setActiveCert({
-        id: certRecord.certificate_id,
-        studentName: profile?.name || user.email,
-        courseTitle: bootcamp.title,
-        issuedAt: certRecord.issued_at,
-        certificateType: 'live_bootcamp',
-        startDate: bootcamp.start_date,
-        endDate: bootcamp.end_date
-      });
-    } catch (err) {
-      await showAlert('Error generating certificate.', 'Error', 'error');
-    }
-  };
 
   const formatDate = (d) => new Date(d).toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   const formatShortDate = (d) => new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
@@ -517,11 +497,11 @@ export default function LiveBootcampDetail() {
                     </button>
                   )}
 
-                  {/* Download Certificate */}
                   {isCompleted && bootcamp.enable_certificate && (
-                    <button className="btn lbd-btn-cert" onClick={handleDownloadCert}>
-                      <FiDownload /> Download Certificate
-                    </button>
+                    <p style={{ textAlign: 'center', fontSize: '0.85rem', color: '#6b7280', margin: '16px 0 0 0', padding: '12px', background: '#f9fafb', borderRadius: '8px' }}>
+                      <FiAward style={{ marginRight: 6, verticalAlign: 'middle', color: '#008ad1' }} />
+                      Certificate will be available in your <Link to="/student-dashboard" style={{ color: '#008ad1', fontWeight: 600, textDecoration: 'none' }}>Dashboard</Link> once issued by the Admin.
+                    </p>
                   )}
 
                   {isEnrolled && (

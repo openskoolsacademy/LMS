@@ -190,8 +190,17 @@ export default function CertificateGenerator() {
     if (!confirmed) return;
 
     try {
-      const { error } = await supabase.from('bulk_certificates').delete().eq('id', id);
+      const targetCert = certificates.find(c => c.id === id);
+      
+      // Delete from primary logs
+      const { error } = await supabase.from('certificate_logs').delete().eq('id', id);
       if (error) throw error;
+      
+      // Delete from public verification table if applicable
+      if (targetCert && targetCert.certificate_id) {
+        await supabase.from('bulk_certificates').delete().eq('certificate_id', targetCert.certificate_id);
+      }
+      
       setCertificates(prev => prev.filter(c => c.id !== id));
     } catch (err) {
       await showAlert('Error deleting certificate: ' + err.message, 'Delete Failed', 'error');

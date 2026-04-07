@@ -245,21 +245,7 @@ export default function EventDetail() {
     }
   };
 
-  const handleDownloadCert = async () => {
-    try {
-      const { createEventCertificate } = await import('../utils/certificateLogUtils');
-      const certRecord = await createEventCertificate(user, event.id, event.title, event.instructor_name, profile?.name);
-      setActiveCert({
-        id: certRecord.certificate_id,
-        studentName: profile?.name || user.email,
-        courseTitle: event.title,
-        issuedAt: certRecord.issued_at,
-        certificateType: 'live'
-      });
-    } catch (err) {
-      await showAlert('Error generating certificate.', 'Error', 'error');
-    }
-  };
+
 
   const formatDate = (d) => new Date(d).toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   const formatTime = (d) => new Date(d).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
@@ -474,9 +460,10 @@ export default function EventDetail() {
                     </button>
                   )}
                   {isAttended && event.enable_certificate && (
-                    <button className="btn ed-btn-cert" onClick={handleDownloadCert}>
-                      <FiDownload /> Download Certificate
-                    </button>
+                    <p style={{ textAlign: 'center', fontSize: '0.85rem', color: '#6b7280', margin: '16px 0 0 0', padding: '12px', background: '#f9fafb', borderRadius: '8px' }}>
+                      <FiAward style={{ marginRight: 6, verticalAlign: 'middle', color: '#008ad1' }} />
+                      Certificate will be available in your <Link to="/student-dashboard" style={{ color: '#008ad1', fontWeight: 600, textDecoration: 'none' }}>Dashboard</Link> once issued by the Admin.
+                    </p>
                   )}
                   {isRegistered && (
                     <span style={{ textAlign: 'center', fontSize: '0.8rem', color: '#059669', fontWeight: 600 }}>

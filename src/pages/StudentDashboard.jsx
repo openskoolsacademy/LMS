@@ -264,6 +264,9 @@ export default function StudentDashboard() {
     ? Math.round(enrollments.reduce((acc, e) => acc + (e.progress || 0), 0) / enrollments.length) 
     : 0;
 
+  const eventCerts = certificates.filter(c => c.certificate_type === 'live');
+  const bootcampCerts = certificates.filter(c => c.certificate_type === 'live_bootcamp');
+
   return (
     <div className="student-dash section">
       <div className="container">
@@ -405,8 +408,6 @@ export default function StudentDashboard() {
           <div className="sd-certs animate-fade-in-up">
             {(() => {
               const completedEnrollments = enrollments.filter(e => e.status === 'completed');
-              const eventCerts = certificates.filter(c => c.certificate_type === 'live');
-              const bootcampCerts = certificates.filter(c => c.certificate_type === 'live_bootcamp');
               const hasAnyCert = completedEnrollments.length > 0 || eventCerts.length > 0 || bootcampCerts.length > 0;
 
               if (!hasAnyCert) {
@@ -755,25 +756,26 @@ export default function StudentDashboard() {
                         </div>
                         <div className="sd-event-item-actions">
                           <span className="badge badge-success" style={{ fontSize: '0.75rem' }}>Attended</span>
-                          {ev.enable_certificate && (
-                            <button className="btn btn-primary btn-sm" onClick={async () => {
-                              try {
-                                const { createEventCertificate } = await import('../utils/certificateLogUtils');
-                                const certRecord = await createEventCertificate(user, ev.id, ev.title, ev.instructor_name, profile?.name);
-                                setActiveCert({
-                                  id: certRecord.certificate_id,
-                                  studentName: profile?.name || user.email,
-                                  courseTitle: ev.title,
-                                  issuedAt: certRecord.issued_at,
-                                  certificateType: 'live'
-                                });
-                              } catch (err) {
-                                console.error('Cert error:', err);
-                                await showAlert('Error generating certificate.', 'Error', 'error');
+                          {isAttended && ev.enable_certificate && (
+                            (() => {
+                              const cert = eventCerts.find(c => c.course_id === ev.id);
+                              if (cert) {
+                                return (
+                                  <button className="btn btn-primary btn-sm" onClick={() => {
+                                    setActiveCert({
+                                      id: cert.certificate_id,
+                                      studentName: profile?.name || user.email,
+                                      courseTitle: ev.title,
+                                      issuedAt: cert.issued_at,
+                                      certificateType: 'live'
+                                    });
+                                  }}>
+                                    <FiDownload style={{ marginRight: 4 }} /> View Certificate
+                                  </button>
+                                );
                               }
-                            }}>
-                              <FiDownload style={{ marginRight: 4 }} /> Certificate
-                            </button>
+                              return <span className="text-muted" style={{ fontSize: '0.75rem' }}>Certificate Pending...</span>;
+                            })()
                           )}
                         </div>
                       </div>
@@ -895,26 +897,27 @@ export default function StudentDashboard() {
                             </button>
                           )}
                           {isCompleted && bc.enable_certificate && (
-                            <button className="btn btn-primary btn-sm" style={{ background: '#008ad1', borderColor: '#008ad1' }} onClick={async () => {
-                              try {
-                                const { createLiveBootcampCertificate } = await import('../utils/certificateLogUtils');
-                                const certRecord = await createLiveBootcampCertificate(user, bc.id, bc.title, bc.instructor_name, profile?.name, bc.start_date, bc.end_date);
-                                setActiveCert({
-                                  id: certRecord.certificate_id,
-                                  studentName: profile?.name || user.email,
-                                  courseTitle: bc.title,
-                                  issuedAt: certRecord.issued_at,
-                                  certificateType: 'live_bootcamp',
-                                  startDate: bc.start_date,
-                                  endDate: bc.end_date
-                                });
-                              } catch (err) {
-                                console.error('Cert error:', err);
-                                await showAlert('Error generating certificate.', 'Error', 'error');
+                            (() => {
+                              const cert = bootcampCerts.find(c => c.course_id === bc.id);
+                              if (cert) {
+                                return (
+                                  <button className="btn btn-primary btn-sm" style={{ background: '#008ad1', borderColor: '#008ad1' }} onClick={() => {
+                                    setActiveCert({
+                                      id: cert.certificate_id,
+                                      studentName: profile?.name || user.email,
+                                      courseTitle: bc.title,
+                                      issuedAt: cert.issued_at,
+                                      certificateType: 'live_bootcamp',
+                                      startDate: bc.start_date,
+                                      endDate: bc.end_date
+                                    });
+                                  }}>
+                                    <FiDownload style={{ marginRight: 4 }} /> View Certificate
+                                  </button>
+                                );
                               }
-                            }}>
-                              <FiDownload style={{ marginRight: 4 }} /> Certificate
-                            </button>
+                              return <span className="text-muted" style={{ fontSize: '0.75rem' }}>Certificate Pending...</span>;
+                            })()
                           )}
                           <Link to={`/live-bootcamps/${bc.id}`} className="btn btn-outline btn-sm" style={{ fontSize: '0.75rem' }}>
                             View Bootcamp
