@@ -13,7 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    const { razorpay_payment_id, razorpay_order_id, razorpay_signature, course_id, event_id, amount } = await req.json()
+    const { razorpay_payment_id, razorpay_order_id, razorpay_signature, course_id, event_id, live_bootcamp_id, amount } = await req.json()
 
     // Need user context which is sent via Authorization header
     const authHeader = req.headers.get('Authorization')
@@ -49,6 +49,17 @@ serve(async (req) => {
       
       return new Response(
         JSON.stringify({ success: true, message: 'Event payment verified!' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+      )
+    }
+
+    if (live_bootcamp_id) {
+      // ── Live Bootcamp Payment Flow ──
+      // The frontend handles inserting the live_bootcamp_enrollments record after this succeeds
+      console.log(`Bootcamp payment verified for user ${user.id}, bootcamp ${live_bootcamp_id}`);
+      
+      return new Response(
+        JSON.stringify({ success: true, message: 'Bootcamp payment verified!' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
       )
     }

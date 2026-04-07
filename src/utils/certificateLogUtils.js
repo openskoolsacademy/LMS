@@ -134,6 +134,88 @@ export async function createEventCertificate(user, eventId, eventTitle, instruct
 }
 
 /**
+ * Create a certificate for live bootcamp completion
+ * @param {Object} user - Auth user object
+ * @param {string} bootcampId - Live Bootcamp UUID
+ * @param {string} bootcampTitle - Bootcamp title
+ * @param {string} instructorName - Instructor name
+ * @param {string} profileName - Student display name
+ * @param {string} startDate - Bootcamp start date (ISO string)
+ * @param {string} endDate - Bootcamp end date (ISO string)
+ * @returns {Object} Certificate log record
+ */
+export async function createLiveBootcampCertificate(user, bootcampId, bootcampTitle, instructorName, profileName, startDate, endDate) {
+  try {
+    // 1. Check if already generated
+    const { data: existingEnrollment } = await supabase
+      .from('live_bootcamp_enrollments')
+      .select('certificate_id')
+      .eq('user_id', user.id)
+      .eq('live_bootcamp_id', bootcampId)
+      .single();
+
+    if (existingEnrollment?.certificate_id) {
+      // Already has a certificate — fetch the log
+      const { data: existingLog } = await supabase
+        .from('certificate_logs')
+        .select('*')
+        .eq('certificate_id', existingEnrollment.certificate_id)
+        .single();
+      if (existingLog) return existingLog;
+    }
+
+    // 2. Generate new OPSK ID
+    const { data: logs } = await supabase.from('certificate_logs').select('certificate_id');
+    const existingIds = (logs || []).map(l => l.certificate_id);
+    const newOpskId = generateCertificateId(existingIds);
+
+    // 3. Insert into bulk_certificates for public verification
+    await supabase.from('bulk_certificates').insert([{
+      certificate_id: newOpskId,
+      student_name: profileName || user.email,
+      course_name: bootcampTitle,
+      certificate_type: 'live_bootcamp',
+      instructor_name: instructorName || 'Open Skools',
+      start_date: startDate || null,
+      end_date: endDate || null,
+      status: 'valid'
+    }]);
+
+    // 4. Insert into certificate_logs
+    const { data: newLog, error: logErr } = await supabase.from('certificate_logs').insert([{
+      certificate_id: newOpskId,
+      user_id: user.id,
+      student_name: profileName || user.email,
+      student_email: user.email,
+      course_name: bootcampTitle,
+      certificate_type: 'live_bootcamp',
+      status: 'active',
+      issued_by: instructorName || 'Open Skools',
+      start_date: startDate || null,
+      end_date: endDate || null,
+      issued_at: new Date().toISOString()
+    }]).select().single();
+
+    if (logErr) throw logErr;
+
+    // 5. Update live_bootcamp_enrollments with certificate info
+    await supabase
+      .from('live_bootcamp_enrollments')
+      .update({
+        certificate_issued: true,
+        certificate_id: newOpskId
+      })
+      .eq('user_id', user.id)
+      .eq('live_bootcamp_id', bootcampId);
+
+    return newLog;
+  } catch (err) {
+    console.error('Error creating live bootcamp certificate:', err);
+    throw err;
+  }
+}
+
+/**
  * Log a certificate generation event
  * @param {Object} data 
  */

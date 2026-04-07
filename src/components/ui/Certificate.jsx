@@ -19,7 +19,9 @@ export default function Certificate({ certificateData, onClose }) {
     student_name: certificateData.studentName,
     course_name: certificateData.courseTitle,
     certificate_type: certificateData.certificateType || 'course',
-    date_of_completion: certificateData.issuedAt || new Date().toISOString()
+    date_of_completion: certificateData.issuedAt || new Date().toISOString(),
+    start_date: certificateData.startDate || null,
+    end_date: certificateData.endDate || null
   };
 
   const downloadCertificate = async () => {

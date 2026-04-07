@@ -31,6 +31,8 @@ import DailyQuiz from './pages/DailyQuiz';
 import Leaderboard from './pages/Leaderboard';
 import Events from './pages/Events';
 import EventDetail from './pages/EventDetail';
+import LiveBootcamps from './pages/LiveBootcamps';
+import LiveBootcampDetail from './pages/LiveBootcampDetail';
 import ProtectedRoute from './components/layout/ProtectedRoute';
 import ScrollToTop from './components/layout/ScrollToTop';
 import WhatsAppButton from './components/ui/WhatsAppButton';
@@ -68,6 +70,8 @@ export default function App() {
           <Route path="/leaderboard" element={<Leaderboard />} />
           <Route path="/events" element={<Events />} />
           <Route path="/events/:id" element={<EventDetail />} />
+          <Route path="/live-bootcamps" element={<LiveBootcamps />} />
+          <Route path="/live-bootcamps/:id" element={<LiveBootcampDetail />} />
           <Route path="/instructor" element={<ProtectedRoute allowedRoles={['instructor', 'admin']}><InstructorDashboard /></ProtectedRoute>} />
           <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']}><AdminPanel /></ProtectedRoute>} />
           <Route path="/blog" element={<BlogList />} />

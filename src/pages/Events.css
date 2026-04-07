@@ -509,13 +509,15 @@
   }
 
   .events-hero-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
     gap: 12px;
-    flex-wrap: wrap;
   }
 
   .events-hero-stat {
-    min-width: 80px;
-    padding: 10px 14px;
+    min-width: 0;
+    width: 100%;
+    padding: 12px 10px;
   }
 
   .events-grid {

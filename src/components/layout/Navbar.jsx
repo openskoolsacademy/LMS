@@ -43,6 +43,7 @@ export default function Navbar() {
           <Link to="/about" className={`nav-link ${isActive('/about')}`} onClick={closeMobile}>About</Link>
           <Link to="/courses" className={`nav-link ${isActive('/courses')}`} onClick={closeMobile}>Courses</Link>
           <Link to="/events" className={`nav-link ${isActive('/events')}`} onClick={closeMobile}>Events</Link>
+          <Link to="/live-bootcamps" className={`nav-link ${isActive('/live-bootcamps')}`} onClick={closeMobile}>Bootcamp</Link>
           <Link to="/careers" className={`nav-link ${isActive('/careers')}`} onClick={closeMobile}>Careers</Link>
           <Link to="/daily-quiz" className={`nav-link ${isActive('/daily-quiz')}`} onClick={closeMobile}>Quiz</Link>
           <Link to="/contact" className={`nav-link ${isActive('/contact')}`} onClick={closeMobile}>Contact</Link>

@@ -63,6 +63,18 @@ export default function AdminPanel() {
   const [eventAttendeesLoading, setEventAttendeesLoading] = useState(false);
   const [eventSearchFilter, setEventSearchFilter] = useState('');
   const [eventStatusFilter, setEventStatusFilter] = useState('all');
+
+  // Live Bootcamp State
+  const [adminBootcamps, setAdminBootcamps] = useState([]);
+  const [showBootcampModal, setShowBootcampModal] = useState(false);
+  const [editingBootcamp, setEditingBootcamp] = useState(null);
+  const [bootcampForm, setBootcampForm] = useState({ title: '', description: '', category: 'Online Bootcamp', instructor_name: '', instructor_bio: '', instructor_image: '', start_date: '', end_date: '', schedule_info: '', total_sessions: 1, live_link: '', thumbnail_url: '', enable_certificate: false, price: 0, status: 'upcoming', learning_outcomes: '', max_students: '' });
+  const [bootcampSubmitting, setBootcampSubmitting] = useState(false);
+  const [bootcampEnrollees, setBootcampEnrollees] = useState([]);
+  const [selectedBootcampId, setSelectedBootcampId] = useState(null);
+  const [bootcampEnrolleesLoading, setBootcampEnrolleesLoading] = useState(false);
+  const [bootcampSearchFilter, setBootcampSearchFilter] = useState('');
+  const [bootcampStatusFilter, setBootcampStatusFilter] = useState('all');
   
   // Review Mode State
   const [reviewCourse, setReviewCourse] = useState(null);
@@ -202,6 +214,12 @@ export default function AdminPanel() {
         const { data: eventsData } = await supabase.from('events').select('*').order('event_date', { ascending: false });
         if (eventsData) setAdminEvents(eventsData);
       } catch { /* events table may not exist yet */ }
+
+      // Fetch live bootcamps
+      try {
+        const { data: bootcampsData } = await supabase.from('live_bootcamps').select('*').order('start_date', { ascending: false });
+        if (bootcampsData) setAdminBootcamps(bootcampsData);
+      } catch { /* live_bootcamps table may not exist yet */ }
       
       if (!paymentsRes.error && paymentsRes.data) {
         const total = paymentsRes.data.reduce((acc, p) => acc + Number(p.amount), 0);
@@ -636,6 +654,9 @@ export default function AdminPanel() {
                 <button className="action-pill" onClick={() => { setTab('events'); setShowEventModal(true); setEditingEvent(null); setEventForm({ title: '', description: '', instructor_name: '', event_date: '', duration_minutes: 60, live_link: '', thumbnail_url: '', enable_certificate: false, price: 0, status: 'upcoming' }); }}>
                    <FiVideo /> Create Event
                 </button>
+                <button className="action-pill" onClick={() => { setTab('bootcamps'); setShowBootcampModal(true); setEditingBootcamp(null); setBootcampForm({ title: '', description: '', category: 'Online Bootcamp', instructor_name: '', instructor_bio: '', instructor_image: '', start_date: '', end_date: '', schedule_info: '', total_sessions: 1, live_link: '', thumbnail_url: '', enable_certificate: false, price: 0, status: 'upcoming', learning_outcomes: '', max_students: '' }); }}>
+                   <FiBookOpen /> Create Bootcamp
+                </button>
               </div>
             </div>
             <div className="ap-hero-status">
@@ -663,6 +684,7 @@ export default function AdminPanel() {
           <button className={`ap-tab ${tab === 'reviews' ? 'active' : ''}`} onClick={() => setTab('reviews')}><FiStar style={{marginRight: 4}} /> Reviews <span className="ap-badge-count">{courseReviews.length || 0}</span></button>
           <button className={`ap-tab ${tab === 'certificates' ? 'active' : ''}`} onClick={() => setTab('certificates')}><FiAward style={{marginRight: 4}} /> Certificates</button>
           <button className={`ap-tab ${tab === 'events' ? 'active' : ''}`} onClick={() => setTab('events')}><FiVideo style={{marginRight: 4}} /> Events</button>
+          <button className={`ap-tab ${tab === 'bootcamps' ? 'active' : ''}`} onClick={() => setTab('bootcamps')}><FiBookOpen style={{marginRight: 4}} /> Bootcamps</button>
         </div>
 
         {loading ? (
@@ -2556,6 +2578,393 @@ My teaching style is simple: **no fluff, no wasted time.**`} value={eventForm.in
               <button type="button" className="btn-modern outline" onClick={() => setShowEventModal(false)}>Cancel</button>
               <button type="submit" className="btn-modern primary" disabled={eventSubmitting}>
                 {eventSubmitting ? 'Saving...' : editingEvent ? 'Update Event' : 'Create Event'}
+              </button>
+            </div>
+          </form>
+        </Modal>
+
+        {/* ===== Bootcamps Tab ===== */}
+        {tab === 'bootcamps' && (
+          <div className="ap-users animate-fade">
+            <div className="ap-search-row">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', flexWrap: 'wrap', gap: '12px' }}>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flex: 1 }}>
+                  <div className="ap-search" style={{ flex: 1 }}><FiSearch /><input placeholder="Search bootcamps..." value={bootcampSearchFilter} onChange={e => setBootcampSearchFilter(e.target.value)} /></div>
+                  <div className="ap-activity-filters">
+                    {['all', 'upcoming', 'active', 'completed'].map(s => (
+                      <button key={s} className={`ap-filter-pill ${bootcampStatusFilter === s ? 'active' : ''}`} onClick={() => setBootcampStatusFilter(s)}>
+                        {s === 'all' ? 'All' : s.charAt(0).toUpperCase() + s.slice(1)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <button className="btn btn-primary btn-sm" style={{ background: '#008ad1', borderColor: '#008ad1' }} onClick={() => { setEditingBootcamp(null); setBootcampForm({ title: '', description: '', category: 'Online Bootcamp', instructor_name: '', instructor_bio: '', instructor_image: '', start_date: '', end_date: '', schedule_info: '', total_sessions: 1, live_link: '', thumbnail_url: '', enable_certificate: false, price: 0, status: 'upcoming', learning_outcomes: '', max_students: '' }); setShowBootcampModal(true); }}>
+                  <FiBookOpen style={{ marginRight: 6 }} /> Create Bootcamp
+                </button>
+              </div>
+            </div>
+
+            {/* Bootcamps Table */}
+            <div className="id-table-wrap">
+              <table className="id-table">
+                <thead>
+                  <tr>
+                    <th>Bootcamp</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Status</th>
+                    <th>Price</th>
+                    <th>Certificate</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {adminBootcamps
+                    .filter(bc => {
+                      const q = bootcampSearchFilter.toLowerCase();
+                      const matchesSearch = !q || bc.title.toLowerCase().includes(q) || (bc.instructor_name || '').toLowerCase().includes(q);
+                      const matchesStatus = bootcampStatusFilter === 'all' || bc.status === bootcampStatusFilter;
+                      return matchesSearch && matchesStatus;
+                    })
+                    .map(bc => (
+                    <tr key={bc.id}>
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          {bc.thumbnail_url && <img src={bc.thumbnail_url} alt="" style={{ width: 48, height: 36, objectFit: 'cover', borderRadius: 6 }} />}
+                          <div>
+                            <strong style={{ display: 'block', fontSize: '0.9rem' }}>{bc.title}</strong>
+                            <span style={{ fontSize: '0.8rem', color: 'var(--gray-400)' }}>{bc.instructor_name}</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td style={{ fontSize: '0.85rem' }}>
+                        {new Date(bc.start_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </td>
+                      <td style={{ fontSize: '0.85rem' }}>
+                        {new Date(bc.end_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </td>
+                      <td>
+                        <span className={`badge badge-${bc.status === 'active' ? 'success' : bc.status === 'upcoming' ? 'primary' : 'info'}`} style={bc.status === 'upcoming' ? { background: '#008ad1', color: '#fff' } : {}}>
+                          {bc.status}
+                        </span>
+                      </td>
+                      <td style={{ fontWeight: 600 }}>{bc.price > 0 ? `₹${bc.price}` : 'Free'}</td>
+                      <td>
+                        {bc.enable_certificate ? (
+                          <span style={{ color: '#008ad1', fontWeight: 600, fontSize: '0.85rem' }}><FiAward style={{ marginRight: 4 }} /> Yes</span>
+                        ) : (
+                          <span style={{ color: 'var(--gray-400)', fontSize: '0.85rem' }}>No</span>
+                        )}
+                      </td>
+                      <td>
+                        <div style={{ display: 'flex', gap: '6px' }}>
+                          <button className="btn btn-outline btn-sm" onClick={async () => {
+                            setSelectedBootcampId(bc.id);
+                            setBootcampEnrolleesLoading(true);
+                            try {
+                              const { data } = await supabase.from('live_bootcamp_enrollments').select('*, user:users(name, email)').eq('live_bootcamp_id', bc.id);
+                              setBootcampEnrollees(data || []);
+                            } catch { setBootcampEnrollees([]); }
+                            finally { setBootcampEnrolleesLoading(false); }
+                          }}>
+                            <FiUsers style={{ marginRight: 4 }} /> Enrollees
+                          </button>
+                          <button className="btn btn-outline btn-sm" onClick={() => {
+                            setEditingBootcamp(bc);
+                            setBootcampForm({
+                              title: bc.title || '',
+                              description: bc.description || '',
+                              category: bc.category || 'Online Bootcamp',
+                              instructor_name: bc.instructor_name || '',
+                              instructor_bio: bc.instructor_bio || '',
+                              instructor_image: bc.instructor_image || '',
+                              start_date: bc.start_date ? new Date(bc.start_date).toISOString().slice(0, 16) : '',
+                              end_date: bc.end_date ? new Date(bc.end_date).toISOString().slice(0, 16) : '',
+                              schedule_info: bc.schedule_info || '',
+                              total_sessions: bc.total_sessions || 1,
+                              live_link: bc.live_link || '',
+                              thumbnail_url: bc.thumbnail_url || '',
+                              enable_certificate: bc.enable_certificate || false,
+                              price: bc.price || 0,
+                              status: bc.status || 'upcoming',
+                              learning_outcomes: (bc.learning_outcomes || []).join(', '),
+                              max_students: bc.max_students || ''
+                            });
+                            setShowBootcampModal(true);
+                          }}>
+                            <FiEye />
+                          </button>
+                          <button className="btn btn-outline btn-sm" style={{ color: 'var(--danger)', borderColor: 'var(--danger)' }} onClick={async () => {
+                            const confirmed = await showConfirm('Delete this bootcamp and all enrollment records?', undefined, 'Delete Bootcamp', 'Delete', 'Cancel');
+                            if (!confirmed) return;
+                            try {
+                              await supabase.from('live_bootcamp_enrollments').delete().eq('live_bootcamp_id', bc.id);
+                              const { error } = await supabase.from('live_bootcamps').delete().eq('id', bc.id);
+                              if (error) throw error;
+                              setAdminBootcamps(adminBootcamps.filter(b => b.id !== bc.id));
+                              await showAlert('Bootcamp deleted.', 'Deleted', 'success');
+                            } catch (err) {
+                              await showAlert('Error deleting bootcamp: ' + err.message, 'Error', 'error');
+                            }
+                          }}>
+                            <FiTrash2 />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  {adminBootcamps.length === 0 && (
+                    <tr><td colSpan="7" style={{ textAlign: 'center', padding: '40px', color: 'var(--gray-400)' }}>No bootcamps yet. Click "Create Bootcamp" to get started.</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Enrollees Panel */}
+            {selectedBootcampId && (
+              <div className="ap-card" style={{ marginTop: '24px' }}>
+                <div className="ap-card-header">
+                  <h3><FiUsers style={{ marginRight: 8 }} /> Enrollees — {adminBootcamps.find(b => b.id === selectedBootcampId)?.title}</h3>
+                  <button className="btn-text" onClick={() => setSelectedBootcampId(null)}>Close</button>
+                </div>
+                {bootcampEnrolleesLoading ? (
+                  <div style={{ padding: '24px', textAlign: 'center', color: 'var(--gray-400)' }}>Loading enrollees...</div>
+                ) : bootcampEnrollees.length === 0 ? (
+                  <div style={{ padding: '24px', textAlign: 'center', color: 'var(--gray-400)' }}>No enrollments yet.</div>
+                ) : (
+                  <div className="id-table-wrap">
+                    <table className="id-table">
+                      <thead><tr><th>Student</th><th>Email</th><th>Enrolled</th><th>Completed</th><th>Payment</th><th>Certificate</th><th>Actions</th></tr></thead>
+                      <tbody>
+                        {bootcampEnrollees.map(enr => (
+                          <tr key={enr.id}>
+                            <td style={{ fontWeight: 600 }}>{enr.user?.name || 'Unknown'}</td>
+                            <td style={{ fontSize: '0.85rem', color: 'var(--gray-500)' }}>{enr.user?.email || '-'}</td>
+                            <td>{enr.registered ? <span className="badge badge-success">Yes</span> : <span className="badge badge-info">No</span>}</td>
+                            <td>{enr.completed ? <span className="badge badge-success">Completed</span> : <span className="badge badge-danger">No</span>}</td>
+                            <td style={{ fontSize: '0.85rem' }}>{enr.amount_paid > 0 ? `₹${enr.amount_paid}` : 'Free'}</td>
+                            <td>{enr.certificate_issued ? <span style={{ color: '#008ad1', fontWeight: 600, fontSize: '0.8rem' }}>{enr.certificate_id}</span> : <span style={{ color: 'var(--gray-400)', fontSize: '0.8rem' }}>—</span>}</td>
+                            <td>
+                              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                                <button
+                                  className={`btn btn-sm ${enr.completed ? 'btn-outline' : 'btn-primary'}`}
+                                  style={{ fontSize: '0.75rem' }}
+                                  onClick={async () => {
+                                    try {
+                                      const newVal = !enr.completed;
+                                      await supabase.from('live_bootcamp_enrollments').update({ completed: newVal }).eq('id', enr.id);
+                                      setBootcampEnrollees(bootcampEnrollees.map(e => e.id === enr.id ? { ...e, completed: newVal } : e));
+                                    } catch (err) {
+                                      await showAlert('Error updating completion: ' + err.message, 'Error', 'error');
+                                    }
+                                  }}
+                                >
+                                  {enr.completed ? <><FiXCircle style={{ marginRight: 4 }} /> Unmark</> : <><FiCheckCircle style={{ marginRight: 4 }} /> Mark Completed</>}
+                                </button>
+                                {enr.completed && adminBootcamps.find(b => b.id === selectedBootcampId)?.enable_certificate && (
+                                  <button
+                                    className="btn btn-outline btn-sm"
+                                    style={{ fontSize: '0.75rem', color: '#008ad1', borderColor: '#008ad1' }}
+                                    onClick={async () => {
+                                      try {
+                                        const { createLiveBootcampCertificate } = await import('../utils/certificateLogUtils');
+                                        const bcData = adminBootcamps.find(b => b.id === selectedBootcampId);
+                                        await createLiveBootcampCertificate(
+                                          { id: enr.user_id, email: enr.user?.email },
+                                          selectedBootcampId,
+                                          bcData?.title,
+                                          bcData?.instructor_name,
+                                          enr.user?.name,
+                                          bcData?.start_date,
+                                          bcData?.end_date
+                                        );
+                                        // Refresh enrollees
+                                        const { data } = await supabase.from('live_bootcamp_enrollments').select('*, user:users(name, email)').eq('live_bootcamp_id', selectedBootcampId);
+                                        setBootcampEnrollees(data || []);
+                                        await showAlert('Certificate issued!', 'Success', 'success');
+                                      } catch (err) {
+                                        await showAlert('Error issuing certificate: ' + err.message, 'Error', 'error');
+                                      }
+                                    }}
+                                  >
+                                    <FiAward style={{ marginRight: 4 }} /> {enr.certificate_issued ? 'Re-issue' : 'Issue'} Cert
+                                  </button>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Bootcamp Create/Edit Modal */}
+        <Modal isOpen={showBootcampModal} onClose={() => setShowBootcampModal(false)} title={editingBootcamp ? 'Edit Bootcamp' : 'Create Bootcamp'}>
+          <form onSubmit={async (e) => {
+            e.preventDefault();
+            setBootcampSubmitting(true);
+            try {
+              const outcomes = bootcampForm.learning_outcomes
+                ? bootcampForm.learning_outcomes.split(',').map(s => s.trim()).filter(Boolean)
+                : [];
+              const payload = {
+                title: bootcampForm.title,
+                description: bootcampForm.description,
+                category: bootcampForm.category || 'Online Bootcamp',
+                instructor_name: bootcampForm.instructor_name,
+                instructor_bio: bootcampForm.instructor_bio || null,
+                instructor_image: bootcampForm.instructor_image || null,
+                start_date: bootcampForm.start_date,
+                end_date: bootcampForm.end_date,
+                schedule_info: bootcampForm.schedule_info || null,
+                total_sessions: parseInt(bootcampForm.total_sessions) || 1,
+                live_link: bootcampForm.live_link,
+                thumbnail_url: bootcampForm.thumbnail_url,
+                enable_certificate: bootcampForm.enable_certificate,
+                price: parseFloat(bootcampForm.price) || 0,
+                status: bootcampForm.status,
+                learning_outcomes: outcomes,
+                max_students: bootcampForm.max_students ? parseInt(bootcampForm.max_students) : null
+              };
+
+              if (editingBootcamp) {
+                const { data, error } = await supabase.from('live_bootcamps').update(payload).eq('id', editingBootcamp.id).select();
+                if (error) throw error;
+                setAdminBootcamps(adminBootcamps.map(bc => bc.id === editingBootcamp.id ? data[0] : bc));
+                await showAlert('Bootcamp updated.', 'Success', 'success');
+              } else {
+                payload.created_by = user.id;
+                const { data, error } = await supabase.from('live_bootcamps').insert([payload]).select();
+                if (error) throw error;
+                setAdminBootcamps([data[0], ...adminBootcamps]);
+                await showAlert('Bootcamp created!', 'Success', 'success');
+              }
+              setShowBootcampModal(false);
+              setEditingBootcamp(null);
+            } catch (err) {
+              await showAlert('Error saving bootcamp: ' + err.message, 'Error', 'error');
+            } finally {
+              setBootcampSubmitting(false);
+            }
+          }}>
+            <div className="modal-body-modern">
+              <div className="form-grid-modern">
+                <div className="form-group-modern full" style={{ gridColumn: '1 / -1' }}>
+                  <label>Bootcamp Title *</label>
+                  <div className="input-with-icon">
+                    <FiBookOpen />
+                    <input className="form-control-modern" placeholder="e.g. Full Stack Web Development Bootcamp" value={bootcampForm.title} onChange={e => setBootcampForm({...bootcampForm, title: e.target.value})} required />
+                  </div>
+                </div>
+                <div className="form-group-modern">
+                  <label>Instructor / Speaker *</label>
+                  <div className="input-with-icon">
+                    <FiUser />
+                    <input className="form-control-modern" placeholder="Instructor name" value={bootcampForm.instructor_name} onChange={e => setBootcampForm({...bootcampForm, instructor_name: e.target.value})} required />
+                  </div>
+                </div>
+                <div className="form-group-modern">
+                  <label>Instructor Photo URL</label>
+                  <div className="input-with-icon">
+                    <FiImage />
+                    <input className="form-control-modern" placeholder="https://example.com/photo.jpg" value={bootcampForm.instructor_image} onChange={e => setBootcampForm({...bootcampForm, instructor_image: e.target.value})} />
+                  </div>
+                </div>
+                <div className="form-group-modern">
+                  <label>Start Date & Time *</label>
+                  <div className="input-with-icon">
+                    <FiCalendar />
+                    <input type="datetime-local" className="form-control-modern" value={bootcampForm.start_date} onChange={e => setBootcampForm({...bootcampForm, start_date: e.target.value})} required />
+                  </div>
+                </div>
+                <div className="form-group-modern">
+                  <label>End Date & Time *</label>
+                  <div className="input-with-icon">
+                    <FiCalendar />
+                    <input type="datetime-local" className="form-control-modern" value={bootcampForm.end_date} onChange={e => setBootcampForm({...bootcampForm, end_date: e.target.value})} required />
+                  </div>
+                </div>
+                <div className="form-group-modern">
+                  <label>Schedule <span style={{ fontSize: '0.75rem', color: 'var(--gray-400)', fontWeight: 400 }}>e.g. Mon/Wed/Fri 7-8 PM</span></label>
+                  <div className="input-with-icon">
+                    <FiClock />
+                    <input className="form-control-modern" placeholder="Mon/Wed/Fri 7-8 PM" value={bootcampForm.schedule_info} onChange={e => setBootcampForm({...bootcampForm, schedule_info: e.target.value})} />
+                  </div>
+                </div>
+                <div className="form-group-modern">
+                  <label>Total Sessions</label>
+                  <div className="input-with-icon">
+                    <FiHash />
+                    <input type="number" className="form-control-modern" value={bootcampForm.total_sessions} onChange={e => setBootcampForm({...bootcampForm, total_sessions: e.target.value})} min="1" />
+                  </div>
+                </div>
+                <div className="form-group-modern">
+                  <label>Price (₹0 = Free)</label>
+                  <div className="input-with-icon">
+                    <FiDollarSign />
+                    <input type="number" className="form-control-modern" value={bootcampForm.price} onChange={e => setBootcampForm({...bootcampForm, price: e.target.value})} min="0" step="1" />
+                  </div>
+                </div>
+                <div className="form-group-modern">
+                  <label>Max Students <span style={{ fontSize: '0.75rem', color: 'var(--gray-400)', fontWeight: 400 }}>Leave empty for unlimited</span></label>
+                  <div className="input-with-icon">
+                    <FiUsers />
+                    <input type="number" className="form-control-modern" placeholder="Unlimited" value={bootcampForm.max_students} onChange={e => setBootcampForm({...bootcampForm, max_students: e.target.value})} min="1" />
+                  </div>
+                </div>
+                <div className="form-group-modern">
+                  <label>Live Session Link</label>
+                  <div className="input-with-icon">
+                    <FiExternalLink />
+                    <input className="form-control-modern" placeholder="Zoom / Meet / YouTube link" value={bootcampForm.live_link} onChange={e => setBootcampForm({...bootcampForm, live_link: e.target.value})} />
+                  </div>
+                </div>
+                <div className="form-group-modern">
+                  <label>Thumbnail URL</label>
+                  <div className="input-with-icon">
+                    <FiImage />
+                    <input className="form-control-modern" placeholder="External image URL" value={bootcampForm.thumbnail_url} onChange={e => setBootcampForm({...bootcampForm, thumbnail_url: e.target.value})} />
+                  </div>
+                </div>
+                <div className="form-group-modern">
+                  <label>Status</label>
+                  <select className="form-control-modern" value={bootcampForm.status} onChange={e => setBootcampForm({...bootcampForm, status: e.target.value})}>
+                    <option value="upcoming">Upcoming</option>
+                    <option value="active">Active</option>
+                    <option value="completed">Completed</option>
+                  </select>
+                </div>
+                <div className="form-group-modern" style={{ gridColumn: '1 / -1' }}>
+                  <label>Description</label>
+                  <textarea className="form-control-modern" rows={3} placeholder="Bootcamp description..." value={bootcampForm.description} onChange={e => setBootcampForm({...bootcampForm, description: e.target.value})} style={{ resize: 'vertical' }} />
+                </div>
+                <div className="form-group-modern" style={{ gridColumn: '1 / -1' }}>
+                  <label>Instructor Bio <span style={{ fontSize: '0.75rem', color: 'var(--gray-400)', fontWeight: 400 }}>Use **bold** for emphasis.</span></label>
+                  <textarea className="form-control-modern" rows={3} placeholder="Instructor biography..." value={bootcampForm.instructor_bio} onChange={e => setBootcampForm({...bootcampForm, instructor_bio: e.target.value})} style={{ resize: 'vertical' }} />
+                </div>
+                <div className="form-group-modern" style={{ gridColumn: '1 / -1' }}>
+                  <label>Learning Outcomes <span style={{ fontSize: '0.75rem', color: 'var(--gray-400)', fontWeight: 400 }}>Comma-separated list</span></label>
+                  <textarea className="form-control-modern" rows={2} placeholder="Build real projects, Master React, Learn Node.js, Deploy to cloud" value={bootcampForm.learning_outcomes} onChange={e => setBootcampForm({...bootcampForm, learning_outcomes: e.target.value})} style={{ resize: 'vertical' }} />
+                </div>
+                <div className="form-group-modern" style={{ gridColumn: '1 / -1' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}>
+                    <span onClick={() => setBootcampForm({...bootcampForm, enable_certificate: !bootcampForm.enable_certificate})} style={{ fontSize: '1.5rem', color: bootcampForm.enable_certificate ? '#008ad1' : 'var(--gray-300)', cursor: 'pointer', display: 'flex' }}>
+                      {bootcampForm.enable_certificate ? <FiToggleRight /> : <FiToggleLeft />}
+                    </span>
+                    Enable Certificate for this Bootcamp
+                  </label>
+                </div>
+              </div>
+            </div>
+            <div className="modal-footer-modern">
+              <button type="button" className="btn-modern outline" onClick={() => setShowBootcampModal(false)}>Cancel</button>
+              <button type="submit" className="btn-modern primary" style={{ background: '#008ad1', borderColor: '#008ad1' }} disabled={bootcampSubmitting}>
+                {bootcampSubmitting ? 'Saving...' : editingBootcamp ? 'Update Bootcamp' : 'Create Bootcamp'}
               </button>
             </div>
           </form>

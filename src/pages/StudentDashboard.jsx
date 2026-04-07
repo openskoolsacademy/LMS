@@ -45,12 +45,15 @@ export default function StudentDashboard() {
   // Events state
   const [userEvents, setUserEvents] = useState([]);
   const [userEventAttendance, setUserEventAttendance] = useState({});
+  // Bootcamp state
+  const [userBootcamps, setUserBootcamps] = useState([]);
+  const [userBootcampEnrollments, setUserBootcampEnrollments] = useState({});
   const [activeCertEvent, setActiveCertEvent] = useState(null);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const tabParam = params.get('tab');
-    if (tabParam && ['courses', 'progress', 'certificates', 'events', 'quiz', 'profile'].includes(tabParam)) {
+    if (tabParam && ['courses', 'progress', 'certificates', 'events', 'bootcamps', 'quiz', 'profile'].includes(tabParam)) {
       setTab(tabParam);
     }
   }, [location.search]);
@@ -63,6 +66,7 @@ export default function StudentDashboard() {
       fetchAssessmentStatus();
       fetchGamificationData();
       fetchUserEvents();
+      fetchUserBootcamps();
     }
   }, [user]);
 
@@ -124,6 +128,17 @@ export default function StudentDashboard() {
       (attData || []).forEach(a => { attMap[a.event_id] = a; });
       setUserEventAttendance(attMap);
     } catch { /* events table may not exist yet */ }
+  };
+
+  const fetchUserBootcamps = async () => {
+    try {
+      const { data: bootcampData } = await supabase.from('live_bootcamps').select('*').order('start_date', { ascending: false });
+      setUserBootcamps(bootcampData || []);
+      const { data: enrollData } = await supabase.from('live_bootcamp_enrollments').select('*').eq('user_id', user.id);
+      const enrollMap = {};
+      (enrollData || []).forEach(e => { enrollMap[e.live_bootcamp_id] = e; });
+      setUserBootcampEnrollments(enrollMap);
+    } catch { /* live_bootcamps table may not exist yet */ }
   };
 
   const formInitialized = useRef(false);
@@ -305,6 +320,7 @@ export default function StudentDashboard() {
           <button className={`sd-tab ${tab === 'progress' ? 'active' : ''}`} onClick={() => setTab('progress')}><FiBarChart2 /> Progress</button>
           <button className={`sd-tab ${tab === 'certificates' ? 'active' : ''}`} onClick={() => setTab('certificates')}><FiAward /> Certificates</button>
           <button className={`sd-tab ${tab === 'events' ? 'active' : ''}`} onClick={() => setTab('events')}><FiVideo /> Events</button>
+          <button className={`sd-tab ${tab === 'bootcamps' ? 'active' : ''}`} onClick={() => setTab('bootcamps')}><FiBookOpen /> Bootcamps</button>
           <button className={`sd-tab ${tab === 'quiz' ? 'active' : ''}`} onClick={() => setTab('quiz')}><FiZap /> Quiz & Rewards</button>
           <button className={`sd-tab ${tab === 'profile' ? 'active' : ''}`} onClick={() => setTab('profile')}><FiUser /> Profile</button>
         </div>
@@ -390,7 +406,8 @@ export default function StudentDashboard() {
             {(() => {
               const completedEnrollments = enrollments.filter(e => e.status === 'completed');
               const eventCerts = certificates.filter(c => c.certificate_type === 'live');
-              const hasAnyCert = completedEnrollments.length > 0 || eventCerts.length > 0;
+              const bootcampCerts = certificates.filter(c => c.certificate_type === 'live_bootcamp');
+              const hasAnyCert = completedEnrollments.length > 0 || eventCerts.length > 0 || bootcampCerts.length > 0;
 
               if (!hasAnyCert) {
                 return (
@@ -455,6 +472,38 @@ export default function StudentDashboard() {
                             courseTitle: cert.course_name,
                             issuedAt: cert.issued_at,
                             certificateType: 'live'
+                          });
+                        }}><FiDownload /> View & Download</button>
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* Bootcamp Certificates */}
+                  {bootcampCerts.map((cert, idx) => (
+                    <div key={`bootcamp-${idx}`} className="certificate-card">
+                      <div>
+                        <h4 style={{ margin: '0 0 5px 0' }}>{cert.course_name}</h4>
+                        <p style={{ margin: 0, color: '#64748b', fontSize: '14px' }}>
+                          Instructor: {cert.issued_by || 'Open Skools'}
+                          {cert.issued_at && <> &middot; {new Date(cert.issued_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</>}
+                        </p>
+                        <span style={{ display: 'inline-block', marginTop: 6, fontSize: '0.7rem', fontWeight: 700, padding: '2px 10px', borderRadius: 100, background: '#f5f3ff', color: '#7c3aed' }}>Bootcamp</span>
+                        {cert.start_date && cert.end_date && (
+                          <p style={{ margin: '6px 0 0', fontSize: '0.78rem', color: '#6b7280' }}>
+                            Duration: {new Date(cert.start_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })} - {new Date(cert.end_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          </p>
+                        )}
+                      </div>
+                      <div>
+                        <button className="btn btn-primary" onClick={() => {
+                          setActiveCert({
+                            id: cert.certificate_id,
+                            studentName: cert.student_name,
+                            courseTitle: cert.course_name,
+                            issuedAt: cert.issued_at,
+                            certificateType: 'live_bootcamp',
+                            startDate: cert.start_date,
+                            endDate: cert.end_date
                           });
                         }}><FiDownload /> View & Download</button>
                       </div>
@@ -777,6 +826,98 @@ export default function StudentDashboard() {
                           )}
                           <Link to={`/events/${ev.id}`} className="btn btn-outline btn-sm" style={{ fontSize: '0.75rem' }}>
                             View Event
+                          </Link>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
+          </div>
+        )}
+
+        {/* Bootcamps Tab */}
+        {tab === 'bootcamps' && (
+          <div className="sd-courses animate-fade-in-up">
+            {(() => {
+              const enrolledBootcamps = userBootcamps.filter(bc => userBootcampEnrollments[bc.id]?.registered);
+
+              if (enrolledBootcamps.length === 0) {
+                return (
+                  <div className="cert-empty">
+                    <p className="text-muted">No bootcamp enrollments yet. <a href="/live-bootcamps" style={{ color: '#008ad1' }}>Browse live bootcamps</a></p>
+                  </div>
+                );
+              }
+
+              return (
+                <div className="sd-events-list">
+                  {enrolledBootcamps.map(bc => {
+                    const enrollment = userBootcampEnrollments[bc.id];
+                    const now = new Date();
+                    const startDate = new Date(bc.start_date);
+                    const endDate = new Date(bc.end_date);
+                    const isActive = bc.status === 'active' || (now >= startDate && now <= endDate);
+                    const isUpcoming = !isActive && now < startDate;
+                    const isCompleted = enrollment?.completed;
+                    const isEnded = bc.status === 'completed' || now > endDate;
+
+                    return (
+                      <div key={bc.id} className="sd-event-item">
+                        <div className="sd-event-item-info">
+                          <h4><Link to={`/live-bootcamps/${bc.id}`} style={{ color: 'inherit', textDecoration: 'none' }}>{bc.title}</Link></h4>
+                          <p>
+                            <FiCalendar style={{ marginRight: 4 }} />
+                            {new Date(bc.start_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })} - {new Date(bc.end_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                            {' '} | <FiClock style={{ marginRight: 4, marginLeft: 4 }} /> {bc.total_sessions} Sessions
+                            {' '} | {bc.instructor_name}
+                          </p>
+                        </div>
+                        <div className="sd-event-item-actions">
+                          {isCompleted && (
+                            <span className="badge badge-success" style={{ fontSize: '0.75rem' }}>Completed</span>
+                          )}
+                          {!isCompleted && isEnded && (
+                            <span className="badge badge-info" style={{ fontSize: '0.75rem' }}>Ended</span>
+                          )}
+                          {isUpcoming && (
+                            <span className="badge" style={{ fontSize: '0.75rem', background: '#dbeafe', color: '#1d4ed8' }}>Upcoming</span>
+                          )}
+                          {isActive && (
+                            <span className="badge badge-success" style={{ fontSize: '0.75rem', animation: 'pulse-badge 2s infinite' }}>Active</span>
+                          )}
+                          {(isActive || isUpcoming) && bc.live_link && (
+                            <button className="btn btn-primary btn-sm" style={{ background: '#008ad1', borderColor: '#008ad1' }} onClick={() => {
+                              if (bc.live_link) window.open(bc.live_link, '_blank');
+                            }}>
+                              <FiExternalLink style={{ marginRight: 4 }} /> Join Now
+                            </button>
+                          )}
+                          {isCompleted && bc.enable_certificate && (
+                            <button className="btn btn-primary btn-sm" style={{ background: '#008ad1', borderColor: '#008ad1' }} onClick={async () => {
+                              try {
+                                const { createLiveBootcampCertificate } = await import('../utils/certificateLogUtils');
+                                const certRecord = await createLiveBootcampCertificate(user, bc.id, bc.title, bc.instructor_name, profile?.name, bc.start_date, bc.end_date);
+                                setActiveCert({
+                                  id: certRecord.certificate_id,
+                                  studentName: profile?.name || user.email,
+                                  courseTitle: bc.title,
+                                  issuedAt: certRecord.issued_at,
+                                  certificateType: 'live_bootcamp',
+                                  startDate: bc.start_date,
+                                  endDate: bc.end_date
+                                });
+                              } catch (err) {
+                                console.error('Cert error:', err);
+                                await showAlert('Error generating certificate.', 'Error', 'error');
+                              }
+                            }}>
+                              <FiDownload style={{ marginRight: 4 }} /> Certificate
+                            </button>
+                          )}
+                          <Link to={`/live-bootcamps/${bc.id}`} className="btn btn-outline btn-sm" style={{ fontSize: '0.75rem' }}>
+                            View Bootcamp
                           </Link>
                         </div>
                       </div>

@@ -12,8 +12,8 @@ serve(async (req) => {
   }
 
   try {
-    const { course_id, coupon_code, event_id, amount: eventAmount } = await req.json()
-    console.log(`Order Request: course=${course_id}, event=${event_id}, coupon=${coupon_code}`);
+    const { course_id, coupon_code, event_id, live_bootcamp_id, amount: requestedAmount } = await req.json()
+    console.log(`Order Request: course=${course_id}, event=${event_id}, bootcamp=${live_bootcamp_id}, coupon=${coupon_code}`);
 
     // Retrieve Razorpay keys from environment variables
     // Fallback to the public ID from the frontend if the environment variable is missing
@@ -46,16 +46,38 @@ serve(async (req) => {
         throw new Error(`Event not found: ${eventError?.message || 'unknown'}`);
       }
 
-      console.log(`Event found: "${event.title}" | Price: ${event.price} | Requested: ${eventAmount}`);
+      console.log(`Event found: "${event.title}" | Price: ${event.price} | Requested: ${requestedAmount}`);
       // Use the amount from the frontend (already coupon-adjusted) if provided,
       // but never allow it to exceed the actual event price (security check)
-      const requestedPrice = eventAmount ? Math.round(eventAmount / 100) : null;
+      const requestedPrice = requestedAmount ? Math.round(requestedAmount / 100) : null;
       if (requestedPrice !== null && requestedPrice <= Number(event.price ?? 0)) {
         finalPrice = requestedPrice;
       } else {
         finalPrice = Number(event.price ?? 0);
       }
       receiptId = `rcpt_evt_${event_id.substring(0, 8)}_${Date.now().toString().slice(-6)}`;
+
+    } else if (live_bootcamp_id) {
+      // ── Live Bootcamp Payment Flow ──
+      const { data: bootcamp, error: bootcampError } = await supabase
+        .from('live_bootcamps')
+        .select('id, title, price')
+        .eq('id', live_bootcamp_id)
+        .single()
+
+      if (bootcampError || !bootcamp) {
+        console.error('Bootcamp fetch error:', bootcampError);
+        throw new Error(`Bootcamp not found: ${bootcampError?.message || 'unknown'}`);
+      }
+
+      console.log(`Bootcamp found: "${bootcamp.title}" | Price: ${bootcamp.price} | Requested: ${requestedAmount}`);
+      const requestedPrice = requestedAmount ? Math.round(requestedAmount / 100) : null;
+      if (requestedPrice !== null && requestedPrice <= Number(bootcamp.price ?? 0)) {
+        finalPrice = requestedPrice;
+      } else {
+        finalPrice = Number(bootcamp.price ?? 0);
+      }
+      receiptId = `rcpt_bc_${live_bootcamp_id.substring(0, 8)}_${Date.now().toString().slice(-6)}`;
 
     } else if (course_id) {
       // ── Course Payment Flow (existing) ──
@@ -107,7 +129,7 @@ serve(async (req) => {
 
       receiptId = `rcpt_${course_id.substring(0, 8)}_${Date.now().toString().slice(-6)}`;
     } else {
-      throw new Error('Either course_id or event_id is required');
+      throw new Error('Either course_id, event_id, or live_bootcamp_id is required');
     }
 
     if (finalPrice <= 0) finalPrice = 1; 
