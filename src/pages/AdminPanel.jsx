@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { FiUsers, FiBookOpen, FiDollarSign, FiCheckCircle, FiSearch, FiMoreVertical, FiShield, FiTrendingUp, FiTrash2, FiEye, FiMapPin, FiPhone, FiLinkedin, FiAward, FiBriefcase, FiMail, FiCalendar, FiHash, FiClock, FiPercent, FiPlayCircle, FiInfo, FiMessageSquare, FiTag, FiFileText, FiLink, FiUser, FiImage, FiStar, FiZap, FiVideo, FiToggleLeft, FiToggleRight, FiExternalLink, FiDownload, FiXCircle } from 'react-icons/fi';
+import { FiUsers, FiBookOpen, FiDollarSign, FiCheckCircle, FiSearch, FiMoreVertical, FiShield, FiTrendingUp, FiTrash2, FiEye, FiMapPin, FiPhone, FiLinkedin, FiAward, FiBriefcase, FiMail, FiCalendar, FiHash, FiClock, FiPercent, FiPlayCircle, FiInfo, FiMessageSquare, FiTag, FiFileText, FiLink, FiUser, FiImage, FiStar, FiZap, FiVideo, FiToggleLeft, FiToggleRight, FiExternalLink, FiDownload, FiXCircle, FiGrid, FiChevronRight, FiActivity, FiCheckSquare } from 'react-icons/fi';
 import { supabase } from '../lib/supabase';
 import Skeleton from '../components/ui/Skeleton';
 import Modal from '../components/ui/Modal';
@@ -638,26 +638,6 @@ export default function AdminPanel() {
               <h1>Good {currentTime.getHours() < 12 ? 'Morning' : currentTime.getHours() < 17 ? 'Afternoon' : 'Evening'}, {profile?.name?.split(' ')[0] || 'Admin'}</h1>
               <p>Welcome back! Here's what's happening on <strong>Open Skools</strong> today.</p>
               
-              <div className="ap-hero-quick-actions">
-                <button className="action-pill" onClick={() => { setTab('jobs'); setShowJobModal(true); setEditingJob(null); }}>
-                   <FiBriefcase /> Post Job
-                </button>
-                <button className="action-pill" onClick={() => setTab('marketing')}>
-                   <FiImage /> Marketing
-                </button>
-                <button className="action-pill" onClick={() => setTab('messages')}>
-                   <FiMail /> Check Messages
-                </button>
-                <button className="action-pill" onClick={() => setTab('daily-quiz')}>
-                   <FiZap /> Daily Quiz
-                </button>
-                <button className="action-pill" onClick={() => { setTab('events'); setShowEventModal(true); setEditingEvent(null); setEventForm({ title: '', description: '', instructor_name: '', event_date: '', duration_minutes: 60, live_link: '', thumbnail_url: '', enable_certificate: false, price: 0, status: 'upcoming' }); }}>
-                   <FiVideo /> Create Event
-                </button>
-                <button className="action-pill" onClick={() => { setTab('bootcamps'); setShowBootcampModal(true); setEditingBootcamp(null); setBootcampForm({ title: '', description: '', category: 'Online Bootcamp', instructor_name: '', instructor_bio: '', instructor_image: '', start_date: '', end_date: '', schedule_info: '', total_sessions: 1, live_link: '', thumbnail_url: '', enable_certificate: false, price: 0, status: 'upcoming', learning_outcomes: '', max_students: '' }); }}>
-                   <FiBookOpen /> Create Bootcamp
-                </button>
-              </div>
             </div>
             <div className="ap-hero-status">
               <div className="status-date">
@@ -671,763 +651,1202 @@ export default function AdminPanel() {
           </div>
         </div>
 
-        {/* Tabs */}
-        <div className="ap-tabs">
-          <button className={`ap-tab ${tab === 'dashboard' ? 'active' : ''}`} onClick={() => setTab('dashboard')}>Dashboard</button>
-          <button className={`ap-tab ${tab === 'users' ? 'active' : ''}`} onClick={() => setTab('users')}>Users</button>
-          <button className={`ap-tab ${tab === 'courses' ? 'active' : ''}`} onClick={() => setTab('courses')}>Courses</button>
-          <button className={`ap-tab ${tab === 'revenue' ? 'active' : ''}`} onClick={() => setTab('revenue')}>Revenue</button>
-          <button className={`ap-tab ${tab === 'activities' ? 'active' : ''}`} onClick={() => setTab('activities')}>Activities</button>
-          <button className={`ap-tab ${tab === 'approvals' ? 'active' : ''}`} onClick={() => setTab('approvals')}>Requests <span className="ap-badge-count">{stats.totalPending || 0}</span></button>
-          <button className={`ap-tab ${tab === 'coupons' ? 'active' : ''}`} onClick={() => setTab('coupons')}>Coupons</button>
-          <button className={`ap-tab ${tab === 'messages' ? 'active' : ''}`} onClick={() => setTab('messages')}>Messages <span className="ap-badge-count">{stats.unreadMessages || 0}</span></button>
-          <button className={`ap-tab ${tab === 'reviews' ? 'active' : ''}`} onClick={() => setTab('reviews')}><FiStar style={{marginRight: 4}} /> Reviews <span className="ap-badge-count">{courseReviews.length || 0}</span></button>
-          <button className={`ap-tab ${tab === 'certificates' ? 'active' : ''}`} onClick={() => setTab('certificates')}><FiAward style={{marginRight: 4}} /> Certificates</button>
-          <button className={`ap-tab ${tab === 'events' ? 'active' : ''}`} onClick={() => setTab('events')}><FiVideo style={{marginRight: 4}} /> Events</button>
-          <button className={`ap-tab ${tab === 'bootcamps' ? 'active' : ''}`} onClick={() => setTab('bootcamps')}><FiBookOpen style={{marginRight: 4}} /> Bootcamps</button>
-        </div>
-
-        {loading ? (
-          <div className="animate-fade" style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginTop: '20px' }}>
-             <Skeleton height={100} />
-             <Skeleton height={300} />
+        {/* Main Layout Grid */}
+        <div className="ap-layout-main">
+          {/* Sidebar Area */}
+          <div className="ap-sidebar-column">
+            {/* Tabs */}
+            <div className="ap-tabs">
+              <button className={`ap-tab ${tab === 'dashboard' ? 'active' : ''}`} onClick={() => setTab('dashboard')}>
+                <div className="ap-tab-icon"><FiGrid /></div>
+                <div className="ap-tab-content">Dashboard <FiChevronRight className="ap-tab-arrow" /></div>
+              </button>
+              <button className={`ap-tab ${tab === 'users' ? 'active' : ''}`} onClick={() => setTab('users')}>
+                <div className="ap-tab-icon"><FiUsers /></div>
+                <div className="ap-tab-content">Users <FiChevronRight className="ap-tab-arrow" /></div>
+              </button>
+              <button className={`ap-tab ${tab === 'courses' ? 'active' : ''}`} onClick={() => setTab('courses')}>
+                <div className="ap-tab-icon"><FiBookOpen /></div>
+                <div className="ap-tab-content">Courses <FiChevronRight className="ap-tab-arrow" /></div>
+              </button>
+              <button className={`ap-tab ${tab === 'revenue' ? 'active' : ''}`} onClick={() => setTab('revenue')}>
+                <div className="ap-tab-icon"><FiDollarSign /></div>
+                <div className="ap-tab-content">Revenue <FiChevronRight className="ap-tab-arrow" /></div>
+              </button>
+              <button className={`ap-tab ${tab === 'activities' ? 'active' : ''}`} onClick={() => setTab('activities')}>
+                <div className="ap-tab-icon"><FiActivity /></div>
+                <div className="ap-tab-content">Activities <FiChevronRight className="ap-tab-arrow" /></div>
+              </button>
+              <button className={`ap-tab ${tab === 'approvals' ? 'active' : ''}`} onClick={() => setTab('approvals')}>
+                <div className="ap-tab-icon"><FiCheckSquare /></div>
+                <div className="ap-tab-content">Requests {stats.totalPending > 0 && <span className="ap-badge-count">{stats.totalPending}</span>} <FiChevronRight className="ap-tab-arrow" /></div>
+              </button>
+              <button className={`ap-tab ${tab === 'coupons' ? 'active' : ''}`} onClick={() => setTab('coupons')}>
+                <div className="ap-tab-icon"><FiTag /></div>
+                <div className="ap-tab-content">Coupons <FiChevronRight className="ap-tab-arrow" /></div>
+              </button>
+              <button className={`ap-tab ${tab === 'messages' ? 'active' : ''}`} onClick={() => setTab('messages')}>
+                <div className="ap-tab-icon"><FiMessageSquare /></div>
+                <div className="ap-tab-content">Messages {stats.unreadMessages > 0 && <span className="ap-badge-count">{stats.unreadMessages}</span>} <FiChevronRight className="ap-tab-arrow" /></div>
+              </button>
+              <button className={`ap-tab ${tab === 'reviews' ? 'active' : ''}`} onClick={() => setTab('reviews')}>
+                <div className="ap-tab-icon"><FiStar /></div>
+                <div className="ap-tab-content">Reviews {courseReviews.length > 0 && <span className="ap-badge-count">{courseReviews.length}</span>} <FiChevronRight className="ap-tab-arrow" /></div>
+              </button>
+              <button className={`ap-tab ${tab === 'certificates' ? 'active' : ''}`} onClick={() => setTab('certificates')}>
+                <div className="ap-tab-icon"><FiAward /></div>
+                <div className="ap-tab-content">Certificates <FiChevronRight className="ap-tab-arrow" /></div>
+              </button>
+              <button className={`ap-tab ${tab === 'events' ? 'active' : ''}`} onClick={() => setTab('events')}>
+                <div className="ap-tab-icon"><FiVideo /></div>
+                <div className="ap-tab-content">Events <FiChevronRight className="ap-tab-arrow" /></div>
+              </button>
+              <button className={`ap-tab ${tab === 'bootcamps' ? 'active' : ''}`} onClick={() => setTab('bootcamps')}>
+                <div className="ap-tab-icon"><FiPercent /></div>
+                <div className="ap-tab-content">Bootcamps <FiChevronRight className="ap-tab-arrow" /></div>
+              </button>
+              <button className={`ap-tab ${tab === 'jobs' ? 'active' : ''}`} onClick={() => setTab('jobs')}>
+                <div className="ap-tab-icon"><FiBriefcase /></div>
+                <div className="ap-tab-content">Jobs <FiChevronRight className="ap-tab-arrow" /></div>
+              </button>
+              <button className={`ap-tab ${tab === 'marketing' ? 'active' : ''}`} onClick={() => setTab('marketing')}>
+                <div className="ap-tab-icon"><FiImage /></div>
+                <div className="ap-tab-content">Marketing <FiChevronRight className="ap-tab-arrow" /></div>
+              </button>
+              <button className={`ap-tab ${tab === 'daily-quiz' ? 'active' : ''}`} onClick={() => setTab('daily-quiz')}>
+                <div className="ap-tab-icon"><FiZap /></div>
+                <div className="ap-tab-content">Daily Quiz <FiChevronRight className="ap-tab-arrow" /></div>
+              </button>
+            </div>
           </div>
-        ) : (
-          <>
-            {/* Dashboard Tab */}
-            {tab === 'dashboard' && (
-              <div className="ap-dashboard animate-fade">
-                <div className="ap-stats">
-                  <div className="ap-stat-card">
-                    <div className="stat-icon-wrap blue"><FiUsers /></div>
-                    <div className="ap-stat-info">
-                      <span>Total Users</span>
-                      <strong>{stats.users}</strong>
-                      <div className="stat-trend positive"><FiTrendingUp /> +{users.filter(u => new Date(u.created_at) > new Date(Date.now() - 7*24*60*60*1000)).length} this week</div>
-                    </div>
-                  </div>
-                  <div className="ap-stat-card">
-                    <div className="stat-icon-wrap purple"><FiBookOpen /></div>
-                    <div className="ap-stat-info">
-                      <span>Total Courses</span>
-                      <strong>{stats.courses}</strong>
-                      <div className="stat-trend"><FiCheckCircle /> {courses.filter(c => c.status === 'approved').length} Active</div>
-                    </div>
-                  </div>
-                  <div className="ap-stat-card">
-                    <div className="stat-icon-wrap green"><FiDollarSign /></div>
-                    <div className="ap-stat-info">
-                      <span>Total Revenue</span>
-                      <strong>{stats.revenue}</strong>
-                      <div className="stat-trend positive"><FiTrendingUp /> ₹{monthlyRevenue[new Date().getMonth()].toLocaleString()} this month</div>
-                    </div>
-                  </div>
-                  <div className="ap-stat-card">
-                    <div className="stat-icon-wrap orange"><FiHash /></div>
-                    <div className="ap-stat-info">
-                      <span>Pending Actions</span>
-                      <strong>{stats.pending + stats.requests + stats.unreadMessages}</strong>
-                      <div className="stat-trend alert">{stats.pending} Courses • {stats.requests} Requests</div>
-                    </div>
-                  </div>
-                </div>
 
-                <div className="ap-dashboard-grid">
-                  <div className="ap-card">
-                    <div className="ap-card-header">
-                      <h3><FiTrendingUp /> Recent Site Activity</h3>
-                      <button className="btn-text" onClick={() => setTab('activities')}>Full Log</button>
-                    </div>
-                    <div className="ap-activity-list mini">
-                      {recentActivities.slice(0, 5).map((act, i) => (
-                        <div key={act.id} className="ap-activity-item">
-                          <span className={`ap-activity-dot ${act.type}`} />
-                          <div className="ap-activity-text">
-                            <span className="ap-activity-desc" dangerouslySetInnerHTML={{ __html: act.message }} />
-                            <span className="ap-activity-time">{formatTimeAgo(act.time)}</span>
-                          </div>
+          {/* Content Area */}
+          <div className="ap-content-column">
+            {loading ? (
+              <div className="animate-fade" style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginTop: '20px' }}>
+                 <Skeleton height={100} />
+                 <Skeleton height={300} />
+              </div>
+            ) : (
+              <>
+                {/* Dashboard Tab */}
+                {tab === 'dashboard' && (
+                  <div className="ap-dashboard animate-fade">
+                    <div className="ap-stats">
+                      <div className="ap-stat-card">
+                        <div className="stat-icon-wrap blue"><FiUsers /></div>
+                        <div className="ap-stat-info">
+                          <span>Total Users</span>
+                          <strong>{stats.users}</strong>
+                          <div className="stat-trend positive"><FiTrendingUp /> +{users.filter(u => new Date(u.created_at) > new Date(Date.now() - 7*24*60*60*1000)).length} this week</div>
                         </div>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="ap-card">
-                    <div className="ap-card-header">
-                      <h3>Platform Overview</h3>
-                    </div>
-                    <div className="ap-overview-items">
-                      <div className="ap-overview-item">
-                        <div className="overview-label">Students</div>
-                        <strong>{users.filter(u => u.role === 'student').length}</strong>
                       </div>
-                      <div className="ap-overview-item">
-                        <div className="overview-label">Instructors</div>
-                        <strong>{users.filter(u => u.role === 'instructor').length}</strong>
+                      <div className="ap-stat-card">
+                        <div className="stat-icon-wrap purple"><FiBookOpen /></div>
+                        <div className="ap-stat-info">
+                          <span>Total Courses</span>
+                          <strong>{stats.courses}</strong>
+                          <div className="stat-trend"><FiCheckCircle /> {courses.filter(c => c.status === 'approved').length} Active</div>
+                        </div>
                       </div>
-                      <div className="ap-overview-item">
-                        <div className="overview-label">Admins</div>
-                        <strong>{users.filter(u => u.role === 'admin').length}</strong>
+                      <div className="ap-stat-card">
+                        <div className="stat-icon-wrap green"><FiDollarSign /></div>
+                        <div className="ap-stat-info">
+                          <span>Total Revenue</span>
+                          <strong>{stats.revenue}</strong>
+                          <div className="stat-trend positive"><FiTrendingUp /> ₹{monthlyRevenue[new Date().getMonth()].toLocaleString()} this month</div>
+                        </div>
                       </div>
-                      <div className="ap-overview-item">
-                        <div className="overview-label">Jobs Posted</div>
-                        <strong>{jobs.length}</strong>
-                      </div>
-                      <div className="progress-separator" />
-                      <div className="ap-overview-item">
-                        <div className="overview-label">Blog Posts</div>
-                        <strong>{blogs.length}</strong>
+                      <div className="ap-stat-card">
+                        <div className="stat-icon-wrap orange"><FiHash /></div>
+                        <div className="ap-stat-info">
+                          <span>Pending Actions</span>
+                          <strong>{stats.pending + stats.requests + stats.unreadMessages}</strong>
+                          <div className="stat-trend alert">{stats.pending} Courses • {stats.requests} Requests</div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </div>
-              </div>
-            )}
 
-            {/* Marketing Tab */}
-            {tab === 'marketing' && (
-              <MarketingBanners />
-            )}
-
-            {/* Users Tab */}
-            {tab === 'users' && (
-              <div className="ap-users animate-fade">
-                <div className="ap-search-row">
-                  <div className="ap-search"><FiSearch /><input placeholder="Search by name, email or User ID (OS-XXXX)..." value={searchUsers} onChange={e => setSearchUsers(e.target.value)} /></div>
-                  <div className="ap-activity-filters" style={{ marginTop: '16px' }}>
-                    {['all', 'student', 'instructor', 'admin', 'author'].map(role => (
-                      <button 
-                        key={role} 
-                        className={`ap-filter-pill ${userRoleFilter === role ? 'active' : ''}`}
-                        onClick={() => setUserRoleFilter(role)}
-                      >
-                        {role === 'all' ? 'All Roles' : role.charAt(0).toUpperCase() + role.slice(1)} ({users.filter(u => role === 'all' || u.role === role).length})
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div className="id-table-wrap" ref={dropdownRef}>
-                  <table className="id-table">
-                    <thead><tr><th>ID</th><th>User</th><th>Email</th><th>Role</th><th>Joined</th><th>Actions</th></tr></thead>
-                    <tbody>
-                      {filteredUsers.length > 0 ? filteredUsers.map(u => (
-                        <tr key={u.id}>
-                          <td><span className="ap-user-code">{generateUserCode(u.id)}</span></td>
-                          <td><div className="id-user-cell"><div className="avatar-circle" style={{width:32,height:32,borderRadius:'50%',backgroundColor:'#e0e0e0',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:'bold',color:'#666'}}>{u.name?.charAt(0) || 'U'}</div><span>{u.name || 'Unknown'}</span></div></td>
-                          <td>{u.email}</td>
-                          <td><span className={`badge badge-${u.role === 'admin' ? 'danger' : u.role === 'instructor' ? 'primary' : u.role === 'author' ? 'info' : 'success'}`}>{u.role}</span></td>
-                          <td>{new Date(u.created_at).toLocaleDateString()}</td>
-                          <td style={{ position: 'relative' }}>
-                            <button 
-                              className={`id-action-btn ${activeMenu?.id === u.id ? 'active' : ''}`} 
-                              onClick={(e) => handleMenuToggle(e, u.id, 'user')}
-                            >
-                              <FiMoreVertical />
-                            </button>
-                            {activeMenu?.id === u.id && activeMenu.type === 'user' && (
-                              <div 
-                                className="ap-dropdown-menu animate-scale fixed-menu"
-                                style={{ 
-                                  top: `${activeMenu.rect.bottom + 5}px`, 
-                                  left: `${activeMenu.rect.right - 180}px` 
-                                }}
-                              >
-                                <div className="dropdown-label">Change Role</div>
-                                <button className={u.role === 'student' ? 'active' : ''} onClick={() => handleRoleChange(u.id, 'student')}>Student</button>
-                                <button className={u.role === 'instructor' ? 'active' : ''} onClick={() => handleRoleChange(u.id, 'instructor')}>Instructor</button>
-                                <button className={u.role === 'admin' ? 'active' : ''} onClick={() => handleRoleChange(u.id, 'admin')}>Admin</button>
-                                <button className={u.role === 'author' ? 'active' : ''} onClick={() => handleRoleChange(u.id, 'author')}>Author</button>
-                                <div className="dropdown-divider" />
-                                <button onClick={() => openUserProfile(u)}><FiEye style={{marginRight: 8}} /> View Profile</button>
-                                <button className="danger" onClick={() => handleDeleteUser(u.id)}><FiTrash2 style={{marginRight: 8}} /> Delete User</button>
+                    <div className="ap-dashboard-grid">
+                      <div className="ap-card">
+                        <div className="ap-card-header">
+                          <h3><FiTrendingUp /> Recent Site Activity</h3>
+                          <button className="btn-text" onClick={() => setTab('activities')}>Full Log</button>
+                        </div>
+                        <div className="ap-activity-list mini">
+                          {recentActivities.slice(0, 5).map((act, i) => (
+                            <div key={act.id} className="ap-activity-item">
+                              <span className={`ap-activity-dot ${act.type}`} />
+                              <div className="ap-activity-text">
+                                <span className="ap-activity-desc" dangerouslySetInnerHTML={{ __html: act.message }} />
+                                <span className="ap-activity-time">{formatTimeAgo(act.time)}</span>
                               </div>
-                            )}
-                          </td>
-                        </tr>
-                      )) : <tr><td colSpan="6" style={{textAlign: 'center', padding: '20px'}}>No users found.</td></tr>}
-                    </tbody>
-                  </table>
-                </div>
-                <div className="ap-table-footer" style={{ marginTop: '16px', padding: '12px 20px', background: 'var(--gray-50)', borderTop: '1px solid var(--gray-200)', borderRadius: '0 0 8px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.875rem' }}>
-                  <div style={{ color: 'var(--gray-500)' }}>
-                    Showing <strong>{filteredUsers.length}</strong> users
-                  </div>
-                  {userRoleFilter !== 'all' && (
-                    <div className="badge badge-primary" style={{ fontSize: '0.75rem' }}>
-                      Role: {userRoleFilter.toUpperCase()}
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Courses Tab */}
-            {tab === 'courses' && (
-              <div className="ap-courses animate-fade">
-                <div className="ap-search-row">
-                  <div className="ap-search"><FiSearch /><input placeholder="Search courses..." value={searchCourses} onChange={e => setSearchCourses(e.target.value)} /></div>
-                  
-                  <div className="ap-filters-grid" style={{ marginTop: '16px', display: 'flex', flexWrap: 'wrap', gap: '20px' }}>
-                    <div className="ap-activity-filters">
-                      <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--gray-400)', marginRight: '10px' }}>STATUS:</span>
-                      {['all', 'pending', 'approved', 'rejected'].map(status => (
-                        <button 
-                          key={status} 
-                          className={`ap-filter-pill ${courseStatusFilter === status ? 'active' : ''}`}
-                          onClick={() => setCourseStatusFilter(status)}
-                        >
-                          {status.charAt(0).toUpperCase() + status.slice(1)}
-                        </button>
-                      ))}
-                    </div>
-
-                    <div className="ap-activity-filters">
-                      <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--gray-400)', marginRight: '10px' }}>CATEGORY:</span>
-                      {['all', 'Programming & Development', 'Artificial Intelligence & Automation', 'AI Productivity & Prompting', 'Design & Creativity'].map(cat => (
-                        <button 
-                          key={cat} 
-                          className={`ap-filter-pill ${courseCategoryFilter === cat ? 'active' : ''}`}
-                          onClick={() => setCourseCategoryFilter(cat)}
-                        >
-                          {cat}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-                <div className="id-table-wrap" ref={dropdownRef}>
-                  <table className="id-table">
-                    <thead><tr><th>Course</th><th>Instructor</th><th>Price</th><th>Created</th><th>Status</th><th>Actions</th></tr></thead>
-                    <tbody>
-                      {filteredCourses.length > 0 ? filteredCourses.map(c => (
-                        <tr key={c.id}>
-                          <td><div className="id-course-cell"><div style={{width:40,height:40,borderRadius:4,backgroundColor:'#ddd',flexShrink:0}} /><div><strong>{c.title}</strong></div></div></td>
-                          <td>{c.instructor?.name || 'Unknown'}</td>
-                          <td>₹{c.price || 0}</td>
-                          <td>{new Date(c.created_at).toLocaleDateString()}</td>
-                          <td>
-                            {c.status === 'approved' && <span className="badge badge-success" style={{padding: '4px 8px'}}>Approved</span>}
-                            {c.status === 'pending' && <span className="badge" style={{backgroundColor: '#f59e0b', color: '#fff', padding: '4px 8px'}}>Pending</span>}
-                            {c.status === 'rejected' && <span className="badge badge-danger" style={{padding: '4px 8px'}}>Rejected</span>}
-                          </td>
-                          <td style={{ position: 'relative' }}>
-                            <button 
-                              className={`id-action-btn ${activeMenu?.id === c.id ? 'active' : ''}`} 
-                              onClick={(e) => handleMenuToggle(e, c.id, 'course')}
-                            >
-                              <FiMoreVertical />
-                            </button>
-                            {activeMenu?.id === c.id && activeMenu.type === 'course' && (
-                              <div 
-                                className="ap-dropdown-menu animate-scale fixed-menu"
-                                style={{ 
-                                  top: `${activeMenu.rect.bottom + 5}px`, 
-                                  left: `${activeMenu.rect.right - 180}px` 
-                                }}
-                              >
-                                <div className="dropdown-label">Set Status</div>
-                                <button className={c.status === 'pending' ? 'active' : ''} onClick={() => handleApproval(c.id, 'pending')}>Pending</button>
-                                <button className={c.status === 'approved' ? 'active' : ''} onClick={() => handleApproval(c.id, 'approved')}>Approved</button>
-                                <button className={c.status === 'rejected' ? 'active' : ''} onClick={() => handleApproval(c.id, 'rejected')}>Rejected</button>
-                                <div className="dropdown-divider" />
-                                <button className="danger" onClick={() => handleDeleteCourse(c.id)}><FiTrash2 style={{marginRight: 8}} /> Delete Course</button>
-                              </div>
-                            )}
-                          </td>
-                        </tr>
-                      )) : <tr><td colSpan="6" style={{textAlign: 'center', padding: '20px'}}>No courses found.</td></tr>}
-                    </tbody>
-                  </table>
-                </div>
-                <div className="ap-table-footer" style={{ marginTop: '16px', padding: '12px 20px', background: 'var(--gray-50)', borderTop: '1px solid var(--gray-200)', borderRadius: '0 0 8px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.875rem' }}>
-                  <div style={{ color: 'var(--gray-500)' }}>
-                    Showing <strong>{filteredCourses.length}</strong> courses
-                  </div>
-                  {(courseStatusFilter !== 'all' || courseCategoryFilter !== 'all') && (
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                      {courseStatusFilter !== 'all' && <div className="badge badge-primary" style={{ fontSize: '0.75rem' }}>Status: {courseStatusFilter.toUpperCase()}</div>}
-                      {courseCategoryFilter !== 'all' && <div className="badge badge-info" style={{ fontSize: '0.75rem' }}>Category: {courseCategoryFilter}</div>}
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Revenue Analytics */}
-            {tab === 'revenue' && (
-              <RevenueAnalytics 
-                payments={payments} 
-                courses={courses} 
-                users={users} 
-              />
-            )}
-
-            {/* Activities Tab */}
-            {tab === 'activities' && (
-              <div className="ap-activities animate-fade">
-                <div className="ap-search-row">
-                  <div>
-                    <h3><FiTrendingUp style={{marginRight: 8, color: 'var(--primary)'}} /> Full Site Activities</h3>
-                    <p style={{fontSize: '.875rem', color: 'var(--gray-500)'}}>Chronological log of all major actions on the platform</p>
-                  </div>
-                  
-                  <div className="ap-activity-filters">
-                    {['all', 'user', 'course', 'enroll', 'payment'].map(f => (
-                      <button 
-                        key={f} 
-                        className={`ap-filter-pill ${activityFilter === f ? 'active' : ''}`}
-                        onClick={() => setActivityFilter(f)}
-                      >
-                        {f.charAt(0).toUpperCase() + f.slice(1)}s
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                
-                <div className="ap-activity-timeline">
-                  {recentActivities
-                    .filter(a => activityFilter === 'all' || a.type === activityFilter)
-                    .length > 0 ? (
-                    recentActivities
-                      .filter(a => activityFilter === 'all' || a.type === activityFilter)
-                      .map(act => (
-                        <div key={act.id} className="ap-timeline-item">
-                          <div className={`ap-timeline-dot ${act.type}`}>
-                            {act.type === 'user' && <FiUsers />}
-                            {act.type === 'course' && <FiBookOpen />}
-                            {act.type === 'enroll' && <FiCheckCircle />}
-                            {act.type === 'payment' && <FiDollarSign />}
-                          </div>
-                          <div className="ap-timeline-content">
-                            <div className="ap-timeline-header">
-                              <span className="ap-timeline-title">{act.title}</span>
-                              <span className="ap-timeline-time">{formatTimeAgo(act.time)}</span>
                             </div>
-                            <p className="ap-timeline-msg" dangerouslySetInnerHTML={{ __html: act.message }} />
-                            <span className="ap-timeline-date">{new Date(act.time).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</span>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="ap-card">
+                        <div className="ap-card-header">
+                          <h3>Platform Overview</h3>
+                        </div>
+                        <div className="ap-overview-items">
+                          <div className="ap-overview-item">
+                            <div className="overview-label">Students</div>
+                            <strong>{users.filter(u => u.role === 'student').length}</strong>
+                          </div>
+                          <div className="ap-overview-item">
+                            <div className="overview-label">Instructors</div>
+                            <strong>{users.filter(u => u.role === 'instructor').length}</strong>
+                          </div>
+                          <div className="ap-overview-item">
+                            <div className="overview-label">Admins</div>
+                            <strong>{users.filter(u => u.role === 'admin').length}</strong>
+                          </div>
+                          <div className="ap-overview-item">
+                            <div className="overview-label">Jobs Posted</div>
+                            <strong>{jobs.length}</strong>
+                          </div>
+                          <div className="progress-separator" />
+                          <div className="ap-overview-item">
+                            <div className="overview-label">Blog Posts</div>
+                            <strong>{blogs.length}</strong>
                           </div>
                         </div>
-                      ))
-                    ) : (
-                    <div className="ap-activity-empty">
-                      No activities recorded for this filter.
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Approvals Tab */}
-            {tab === 'approvals' && (
-              <div className="ap-approvals-center animate-fade">
-                <div className="ap-sub-tabs">
-                  <button className={`ap-sub-tab ${approvalSubTab === 'courses' ? 'active' : ''}`} onClick={() => setApprovalSubTab('courses')}>
-                    Course Requests {stats.pending > 0 && <span className="sub-badge">{stats.pending}</span>}
-                  </button>
-                  <button className={`ap-sub-tab ${approvalSubTab === 'instructors' ? 'active' : ''}`} onClick={() => setApprovalSubTab('instructors')}>
-                    Instructor Requests {stats.requests > 0 && <span className="sub-badge">{stats.requests}</span>}
-                  </button>
-                  <button className={`ap-sub-tab ${approvalSubTab === 'blogs' ? 'active' : ''}`} onClick={() => setApprovalSubTab('blogs')}>
-                    Blog Requests {stats.pendingBlogs > 0 && <span className="sub-badge">{stats.pendingBlogs}</span>}
-                  </button>
-                </div>
-
-                <div className="ap-approval-content">
-                  {/* Sub-tab 1: Courses */}
-                  {approvalSubTab === 'courses' && (
-                    <div className="animate-fade">
-                      {courses.filter(c => c.status === 'pending').length > 0 ? (
-                        <div className="id-table-wrap">
-                          <table className="id-table">
-                            <thead><tr><th>Course</th><th>Instructor</th><th>Submitted</th><th>Actions</th></tr></thead>
-                            <tbody>
-                              {courses.filter(c => c.status === 'pending').map(c => (
-                                <tr key={c.id}>
-                                  <td><strong>{c.title}</strong></td>
-                                  <td>{c.instructor?.name || 'Unknown'}</td>
-                                  <td>{new Date(c.created_at).toLocaleDateString()}</td>
-                                  <td>
-                                    <div style={{display: 'flex', gap: '8px'}}>
-                                      <button className="btn btn-outline btn-sm" onClick={() => openCourseReview(c)}><FiEye /> Review</button>
-                                      <button className="btn btn-primary btn-sm" onClick={() => handleApproval(c.id, 'approved')}>Approve</button>
-                                      <button className="btn btn-outline btn-sm danger" onClick={() => handleApproval(c.id, 'rejected')}>Reject</button>
-                                    </div>
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      ) : (
-                        <div className="empty-state">
-                          <FiCheckCircle size={48} color="var(--success)" />
-                          <h3>All Courses Reviewed</h3>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Sub-tab 2: Instructors */}
-                  {approvalSubTab === 'instructors' && (
-                    <div className="animate-fade">
-                      {requests.filter(r => r.status === 'pending').length > 0 ? (
-                        <div className="id-table-wrap">
-                          <table className="id-table">
-                            <thead><tr><th>Name</th><th>Email</th><th>Expertise</th><th>Submitted</th><th>Actions</th></tr></thead>
-                            <tbody>
-                              {requests.filter(r => r.status === 'pending').map(r => (
-                                <tr key={r.id}>
-                                  <td><strong>{r.name}</strong></td>
-                                  <td>{r.email}</td>
-                                  <td>{r.expertise}</td>
-                                  <td>{new Date(r.created_at).toLocaleDateString()}</td>
-                                  <td>
-                                    <div style={{display: 'flex', gap: '8px'}}>
-                                      <button className="btn btn-primary btn-sm" onClick={() => handleRequestAction(r.id, 'approved', r.user_id)}>Approve</button>
-                                      <button className="btn btn-outline btn-sm danger" onClick={() => handleRequestAction(r.id, 'rejected', null)}>Reject</button>
-                                    </div>
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      ) : (
-                        <div className="empty-state">
-                          <FiUsers size={48} color="var(--gray-300)" />
-                          <h3>No Pending Applications</h3>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Sub-tab 3: Blogs */}
-                  {approvalSubTab === 'blogs' && (
-                    <div className="animate-fade">
-                      <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                         <h4 style={{ margin: 0 }}>Blog Moderation & Management</h4>
                       </div>
-                      <div className="id-table-wrap">
-                        <table className="id-table">
-                          <thead><tr><th>Blog Title</th><th>Author</th><th>Status</th><th>Submitted</th><th>Actions</th></tr></thead>
-                          <tbody>
-                            {blogs.length > 0 ? blogs.map(b => (
-                              <tr key={b.id}>
-                                <td><strong>{b.title}</strong></td>
-                                <td>{b.author?.name || 'Unknown'}</td>
-                                <td>
-                                  <span className={`badge badge-${b.status === 'published' ? 'success' : b.status === 'pending' ? 'warning' : 'default'}`}>
-                                    {b.status}
-                                  </span>
-                                </td>
-                                <td>{new Date(b.created_at).toLocaleDateString()}</td>
-                                <td>
-                                  <div style={{display: 'flex', gap: '8px'}}>
-                                    {b.status !== 'published' ? (
-                                      <button className="btn btn-primary btn-sm" onClick={() => handleBlogStatus(b.id, 'published')}>Publish</button>
-                                    ) : (
-                                      <button className="btn btn-outline btn-sm" onClick={() => handleBlogStatus(b.id, 'pending')}>Unpublish</button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Marketing Tab */}
+                {tab === 'marketing' && (
+                  <MarketingBanners />
+                )}
+
+                {/* Users Tab */}
+                {tab === 'users' && (
+                  <div className="ap-users animate-fade">
+                    <div className="ap-search-row">
+                      <div className="ap-search"><FiSearch /><input placeholder="Search by name, email or User ID (OS-XXXX)..." value={searchUsers} onChange={e => setSearchUsers(e.target.value)} /></div>
+                      <div className="ap-activity-filters" style={{ marginTop: '16px' }}>
+                        {['all', 'student', 'instructor', 'admin', 'author'].map(role => (
+                          <button 
+                            key={role} 
+                            className={`ap-filter-pill ${userRoleFilter === role ? 'active' : ''}`}
+                            onClick={() => setUserRoleFilter(role)}
+                          >
+                            {role === 'all' ? 'All Roles' : role.charAt(0).toUpperCase() + role.slice(1)} ({users.filter(u => role === 'all' || u.role === role).length})
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="id-table-wrap" ref={dropdownRef}>
+                      <table className="id-table">
+                        <thead><tr><th>ID</th><th>User</th><th>Email</th><th>Role</th><th>Joined</th><th>Actions</th></tr></thead>
+                        <tbody>
+                          {filteredUsers.length > 0 ? filteredUsers.map(u => (
+                            <tr key={u.id}>
+                              <td><span className="ap-user-code">{generateUserCode(u.id)}</span></td>
+                              <td><div className="id-user-cell"><div className="avatar-circle" style={{width:32,height:32,borderRadius:'50%',backgroundColor:'#e0e0e0',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:'bold',color:'#666'}}>{u.name?.charAt(0) || 'U'}</div><span>{u.name || 'Unknown'}</span></div></td>
+                              <td>{u.email}</td>
+                              <td><span className={`badge badge-${u.role === 'admin' ? 'danger' : u.role === 'instructor' ? 'primary' : u.role === 'author' ? 'info' : 'success'}`}>{u.role}</span></td>
+                              <td>{new Date(u.created_at).toLocaleDateString()}</td>
+                              <td style={{ position: 'relative' }}>
+                                <button 
+                                  className={`id-action-btn ${activeMenu?.id === u.id ? 'active' : ''}`} 
+                                  onClick={(e) => handleMenuToggle(e, u.id, 'user')}
+                                >
+                                  <FiMoreVertical />
+                                </button>
+                                {activeMenu?.id === u.id && activeMenu.type === 'user' && (
+                                  <div 
+                                    className="ap-dropdown-menu animate-scale fixed-menu"
+                                    style={{ 
+                                      top: `${activeMenu.rect.bottom + 5}px`, 
+                                      left: `${activeMenu.rect.right - 180}px` 
+                                    }}
+                                  >
+                                    <div className="dropdown-label">Change Role</div>
+                                    <button className={u.role === 'student' ? 'active' : ''} onClick={() => handleRoleChange(u.id, 'student')}>Student</button>
+                                    <button className={u.role === 'instructor' ? 'active' : ''} onClick={() => handleRoleChange(u.id, 'instructor')}>Instructor</button>
+                                    <button className={u.role === 'admin' ? 'active' : ''} onClick={() => handleRoleChange(u.id, 'admin')}>Admin</button>
+                                    <button className={u.role === 'author' ? 'active' : ''} onClick={() => handleRoleChange(u.id, 'author')}>Author</button>
+                                    <div className="dropdown-divider" />
+                                    <button onClick={() => openUserProfile(u)}><FiEye style={{marginRight: 8}} /> View Profile</button>
+                                    <button className="danger" onClick={() => handleDeleteUser(u.id)}><FiTrash2 style={{marginRight: 8}} /> Delete User</button>
+                                  </div>
+                                )}
+                              </td>
+                            </tr>
+                          )) : <tr><td colSpan="6" style={{textAlign: 'center', padding: '20px'}}>No users found.</td></tr>}
+                        </tbody>
+                      </table>
+                    </div>
+                    <div className="ap-table-footer" style={{ marginTop: '16px', padding: '12px 20px', background: 'var(--gray-50)', borderTop: '1px solid var(--gray-200)', borderRadius: '0 0 8px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.875rem' }}>
+                      <div style={{ color: 'var(--gray-500)' }}>
+                        Showing <strong>{filteredUsers.length}</strong> users
+                      </div>
+                      {userRoleFilter !== 'all' && (
+                        <div className="badge badge-primary" style={{ fontSize: '0.75rem' }}>
+                          Role: {userRoleFilter.toUpperCase()}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Courses Tab */}
+                {tab === 'courses' && (
+                  <div className="ap-courses animate-fade">
+                    <div className="ap-search-row">
+                      <div className="ap-search"><FiSearch /><input placeholder="Search courses..." value={searchCourses} onChange={e => setSearchCourses(e.target.value)} /></div>
+                      
+                      <div className="ap-filters-grid" style={{ marginTop: '16px', display: 'flex', flexWrap: 'wrap', gap: '20px' }}>
+                        <div className="ap-activity-filters">
+                          <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--gray-400)', marginRight: '10px' }}>STATUS:</span>
+                          {['all', 'pending', 'approved', 'rejected'].map(status => (
+                            <button 
+                              key={status} 
+                              className={`ap-filter-pill ${courseStatusFilter === status ? 'active' : ''}`}
+                              onClick={() => setCourseStatusFilter(status)}
+                            >
+                              {status.charAt(0).toUpperCase() + status.slice(1)}
+                            </button>
+                          ))}
+                        </div>
+
+                        <div className="ap-activity-filters">
+                          <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--gray-400)', marginRight: '10px' }}>CATEGORY:</span>
+                          {['all', 'Programming & Development', 'Artificial Intelligence & Automation', 'AI Productivity & Prompting', 'Design & Creativity'].map(cat => (
+                            <button 
+                              key={cat} 
+                              className={`ap-filter-pill ${courseCategoryFilter === cat ? 'active' : ''}`}
+                              onClick={() => setCourseCategoryFilter(cat)}
+                            >
+                              {cat}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="id-table-wrap" ref={dropdownRef}>
+                      <table className="id-table">
+                        <thead><tr><th>Course</th><th>Instructor</th><th>Price</th><th>Created</th><th>Status</th><th>Actions</th></tr></thead>
+                        <tbody>
+                          {filteredCourses.length > 0 ? filteredCourses.map(c => (
+                            <tr key={c.id}>
+                              <td><div className="id-course-cell"><div style={{width:40,height:40,borderRadius:4,backgroundColor:'#ddd',flexShrink:0}} /><div><strong>{c.title}</strong></div></div></td>
+                              <td>{c.instructor?.name || 'Unknown'}</td>
+                              <td>₹{c.price || 0}</td>
+                              <td>{new Date(c.created_at).toLocaleDateString()}</td>
+                              <td>
+                                {c.status === 'approved' && <span className="badge badge-success" style={{padding: '4px 8px'}}>Approved</span>}
+                                {c.status === 'pending' && <span className="badge" style={{backgroundColor: '#f59e0b', color: '#fff', padding: '4px 8px'}}>Pending</span>}
+                                {c.status === 'rejected' && <span className="badge badge-danger" style={{padding: '4px 8px'}}>Rejected</span>}
+                              </td>
+                              <td style={{ position: 'relative' }}>
+                                <button 
+                                  className={`id-action-btn ${activeMenu?.id === c.id ? 'active' : ''}`} 
+                                  onClick={(e) => handleMenuToggle(e, c.id, 'course')}
+                                >
+                                  <FiMoreVertical />
+                                </button>
+                                {activeMenu?.id === c.id && activeMenu.type === 'course' && (
+                                  <div 
+                                    className="ap-dropdown-menu animate-scale fixed-menu"
+                                    style={{ 
+                                      top: `${activeMenu.rect.bottom + 5}px`, 
+                                      left: `${activeMenu.rect.right - 180}px` 
+                                    }}
+                                  >
+                                    <div className="dropdown-label">Set Status</div>
+                                    <button className={c.status === 'pending' ? 'active' : ''} onClick={() => handleApproval(c.id, 'pending')}>Pending</button>
+                                    <button className={c.status === 'approved' ? 'active' : ''} onClick={() => handleApproval(c.id, 'approved')}>Approved</button>
+                                    <button className={c.status === 'rejected' ? 'active' : ''} onClick={() => handleApproval(c.id, 'rejected')}>Rejected</button>
+                                    <div className="dropdown-divider" />
+                                    <button className="danger" onClick={() => handleDeleteCourse(c.id)}><FiTrash2 style={{marginRight: 8}} /> Delete Course</button>
+                                  </div>
+                                )}
+                              </td>
+                            </tr>
+                          )) : <tr><td colSpan="6" style={{textAlign: 'center', padding: '20px'}}>No courses found.</td></tr>}
+                        </tbody>
+                      </table>
+                    </div>
+                    <div className="ap-table-footer" style={{ marginTop: '16px', padding: '12px 20px', background: 'var(--gray-50)', borderTop: '1px solid var(--gray-200)', borderRadius: '0 0 8px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.875rem' }}>
+                      <div style={{ color: 'var(--gray-500)' }}>
+                        Showing <strong>{filteredCourses.length}</strong> courses
+                      </div>
+                      {(courseStatusFilter !== 'all' || courseCategoryFilter !== 'all') && (
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          {courseStatusFilter !== 'all' && <div className="badge badge-primary" style={{ fontSize: '0.75rem' }}>Status: {courseStatusFilter.toUpperCase()}</div>}
+                          {courseCategoryFilter !== 'all' && <div className="badge badge-info" style={{ fontSize: '0.75rem' }}>Category: {courseCategoryFilter}</div>}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Revenue Analytics */}
+                {tab === 'revenue' && (
+                  <RevenueAnalytics 
+                    payments={payments} 
+                    courses={courses} 
+                    users={users} 
+                  />
+                )}
+
+                {/* Activities Tab */}
+                {tab === 'activities' && (
+                  <div className="ap-activities animate-fade">
+                    <div className="ap-search-row">
+                      <div>
+                        <h3><FiTrendingUp style={{marginRight: 8, color: 'var(--primary)'}} /> Full Site Activities</h3>
+                        <p style={{fontSize: '.875rem', color: 'var(--gray-500)'}}>Chronological log of all major actions on the platform</p>
+                      </div>
+                      
+                      <div className="ap-activity-filters">
+                        {['all', 'user', 'course', 'enroll', 'payment'].map(f => (
+                          <button 
+                            key={f} 
+                            className={`ap-filter-pill ${activityFilter === f ? 'active' : ''}`}
+                            onClick={() => setActivityFilter(f)}
+                          >
+                            {f.charAt(0).toUpperCase() + f.slice(1)}s
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    <div className="ap-activity-timeline">
+                      {recentActivities
+                        .filter(a => activityFilter === 'all' || a.type === activityFilter)
+                        .length > 0 ? (
+                        recentActivities
+                          .filter(a => activityFilter === 'all' || a.type === activityFilter)
+                          .map(act => (
+                            <div key={act.id} className="ap-timeline-item">
+                              <div className={`ap-timeline-dot ${act.type}`}>
+                                {act.type === 'user' && <FiUsers />}
+                                {act.type === 'course' && <FiBookOpen />}
+                                {act.type === 'enroll' && <FiCheckCircle />}
+                                {act.type === 'payment' && <FiDollarSign />}
+                              </div>
+                              <div className="ap-timeline-content">
+                                <div className="ap-timeline-header">
+                                  <span className="ap-timeline-title">{act.title}</span>
+                                  <span className="ap-timeline-time">{formatTimeAgo(act.time)}</span>
+                                </div>
+                                <p className="ap-timeline-msg" dangerouslySetInnerHTML={{ __html: act.message }} />
+                                <span className="ap-timeline-date">{new Date(act.time).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</span>
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                        <div className="ap-activity-empty">
+                          No activities recorded for this filter.
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Approvals Tab */}
+                {tab === 'approvals' && (
+                  <div className="ap-approvals-center animate-fade">
+                    <div className="ap-sub-tabs">
+                      <button className={`ap-sub-tab ${approvalSubTab === 'courses' ? 'active' : ''}`} onClick={() => setApprovalSubTab('courses')}>
+                        Course Requests {stats.pending > 0 && <span className="sub-badge">{stats.pending}</span>}
+                      </button>
+                      <button className={`ap-sub-tab ${approvalSubTab === 'instructors' ? 'active' : ''}`} onClick={() => setApprovalSubTab('instructors')}>
+                        Instructor Requests {stats.requests > 0 && <span className="sub-badge">{stats.requests}</span>}
+                      </button>
+                      <button className={`ap-sub-tab ${approvalSubTab === 'blogs' ? 'active' : ''}`} onClick={() => setApprovalSubTab('blogs')}>
+                        Blog Requests {stats.pendingBlogs > 0 && <span className="sub-badge">{stats.pendingBlogs}</span>}
+                      </button>
+                    </div>
+
+                    <div className="ap-approval-content">
+                      {/* Sub-tab 1: Courses */}
+                      {approvalSubTab === 'courses' && (
+                        <div className="animate-fade">
+                          {courses.filter(c => c.status === 'pending').length > 0 ? (
+                            <div className="id-table-wrap">
+                              <table className="id-table">
+                                <thead><tr><th>Course</th><th>Instructor</th><th>Submitted</th><th>Actions</th></tr></thead>
+                                <tbody>
+                                  {courses.filter(c => c.status === 'pending').map(c => (
+                                    <tr key={c.id}>
+                                      <td><strong>{c.title}</strong></td>
+                                      <td>{c.instructor?.name || 'Unknown'}</td>
+                                      <td>{new Date(c.created_at).toLocaleDateString()}</td>
+                                      <td>
+                                        <div style={{display: 'flex', gap: '8px'}}>
+                                          <button className="btn btn-outline btn-sm" onClick={() => openCourseReview(c)}><FiEye /> Review</button>
+                                          <button className="btn btn-primary btn-sm" onClick={() => handleApproval(c.id, 'approved')}>Approve</button>
+                                          <button className="btn btn-outline btn-sm danger" onClick={() => handleApproval(c.id, 'rejected')}>Reject</button>
+                                        </div>
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          ) : (
+                            <div className="empty-state">
+                              <FiCheckCircle size={48} color="var(--success)" />
+                              <h3>All Courses Reviewed</h3>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Sub-tab 2: Instructors */}
+                      {approvalSubTab === 'instructors' && (
+                        <div className="animate-fade">
+                          {requests.filter(r => r.status === 'pending').length > 0 ? (
+                            <div className="id-table-wrap">
+                              <table className="id-table">
+                                <thead><tr><th>Name</th><th>Email</th><th>Expertise</th><th>Submitted</th><th>Actions</th></tr></thead>
+                                <tbody>
+                                  {requests.filter(r => r.status === 'pending').map(r => (
+                                    <tr key={r.id}>
+                                      <td><strong>{r.name}</strong></td>
+                                      <td>{r.email}</td>
+                                      <td>{r.expertise}</td>
+                                      <td>{new Date(r.created_at).toLocaleDateString()}</td>
+                                      <td>
+                                        <div style={{display: 'flex', gap: '8px'}}>
+                                          <button className="btn btn-primary btn-sm" onClick={() => handleRequestAction(r.id, 'approved', r.user_id)}>Approve</button>
+                                          <button className="btn btn-outline btn-sm danger" onClick={() => handleRequestAction(r.id, 'rejected', null)}>Reject</button>
+                                        </div>
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          ) : (
+                            <div className="empty-state">
+                              <FiUsers size={48} color="var(--gray-300)" />
+                              <h3>No Pending Applications</h3>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Sub-tab 3: Blogs */}
+                      {approvalSubTab === 'blogs' && (
+                        <div className="animate-fade">
+                          <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                             <h4 style={{ margin: 0 }}>Blog Moderation & Management</h4>
+                          </div>
+                          <div className="id-table-wrap">
+                            <table className="id-table">
+                              <thead><tr><th>Blog Title</th><th>Author</th><th>Status</th><th>Submitted</th><th>Actions</th></tr></thead>
+                              <tbody>
+                                {blogs.length > 0 ? blogs.map(b => (
+                                  <tr key={b.id}>
+                                    <td><strong>{b.title}</strong></td>
+                                    <td>{b.author?.name || 'Unknown'}</td>
+                                    <td>
+                                      <span className={`badge badge-${b.status === 'published' ? 'success' : b.status === 'pending' ? 'warning' : 'default'}`}>
+                                        {b.status}
+                                      </span>
+                                    </td>
+                                    <td>{new Date(b.created_at).toLocaleDateString()}</td>
+                                    <td>
+                                      <div style={{display: 'flex', gap: '8px'}}>
+                                        {b.status !== 'published' ? (
+                                          <button className="btn btn-primary btn-sm" onClick={() => handleBlogStatus(b.id, 'published')}>Publish</button>
+                                        ) : (
+                                          <button className="btn btn-outline btn-sm" onClick={() => handleBlogStatus(b.id, 'pending')}>Unpublish</button>
+                                        )}
+                                        <button className="btn btn-outline btn-sm danger" onClick={() => handleDeleteBlog(b.id)}>Delete</button>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                )) : (
+                                  <tr><td colSpan="5" style={{ textAlign: 'center', padding: '20px', color: 'var(--gray-400)' }}>No blogs found.</td></tr>
+                                )}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Jobs Tab */}
+                {tab === 'jobs' && (
+                  <div className="ap-approvals animate-fade">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                      <h3>Manage Jobs</h3>
+                      <button className="btn btn-primary btn-sm" onClick={() => { setEditingJob(null); setJobForm({ company_name: '', role: '', category: 'Freshers', salary: '', location: '', job_type: 'Full-time', qualification: '', vacancies: '', description: '', venue: '', contact_details: '', date_time: '', apply_link: '', expiry_date: '', is_urgent: false, job_mode: 'apply_link' }); setShowJobModal(true); }}>
+                        + Add Job
+                      </button>
+                    </div>
+                    <div className="id-table-wrap" ref={dropdownRef}>
+                      <table className="id-table">
+                        <thead><tr><th>Company</th><th>Role</th><th>Category</th><th>Expiry</th><th>Status</th><th>Actions</th></tr></thead>
+                        <tbody>
+                          {jobs.length > 0 ? jobs.map(j => (
+                            <tr key={j.id}>
+                              <td><strong>{j.company_name}</strong></td>
+                              <td>{j.role}</td>
+                              <td><span className="badge badge-info">{j.category}</span></td>
+                              <td>{j.expiry_date ? new Date(j.expiry_date).toLocaleDateString() : 'N/A'}</td>
+                              <td>
+                                {j.is_urgent && <span className="badge badge-danger" style={{marginRight: 4}}>Urgent</span>}
+                                {j.expiry_date && new Date(j.expiry_date) < new Date() ? <span className="badge badge-default">Expired</span> : <span className="badge badge-success">Active</span>}
+                              </td>
+                              <td style={{ position: 'relative' }}>
+                                <button className={`id-action-btn ${activeMenu?.id === j.id ? 'active' : ''}`} onClick={(e) => handleMenuToggle(e, j.id, 'job')}>
+                                  <FiMoreVertical />
+                                </button>
+                                {activeMenu?.id === j.id && activeMenu.type === 'job' && (
+                                  <div className="ap-dropdown-menu animate-scale fixed-menu" style={{ top: `${activeMenu.rect.bottom + 5}px`, left: `${activeMenu.rect.right - 180}px` }}>
+                                    <button onClick={() => handleEditJob(j)}>Edit Job</button>
+                                    <button className="danger" onClick={() => handleDeleteJob(j.id)}>Delete Job</button>
+                                  </div>
+                                )}
+                              </td>
+                            </tr>
+                          )) : <tr><td colSpan="6" style={{textAlign: 'center', padding: '20px'}}>No jobs found.</td></tr>}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+
+                {/* Coupons Tab */}
+                {tab === 'coupons' && (
+                  <div className="ap-approvals animate-fade">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                      <h3>Coupon Management</h3>
+                      <button className="btn btn-primary btn-sm" onClick={() => { setEditingCoupon(null); setCouponForm({ code: '', discount_type: 'percentage', discount_value: '', course_id: '', event_id: '', expiry_date: '', usage_limit: '' }); setShowCouponModal(true); }}>
+                        + Create Coupon
+                      </button>
+                    </div>
+                    <div className="id-table-wrap" ref={dropdownRef}>
+                      <table className="id-table">
+                        <thead><tr><th>Code</th><th>Discount</th><th>Applies To</th><th>Expiry</th><th>Usage</th><th>Status</th><th>Actions</th></tr></thead>
+                        <tbody>
+                          {coupons.length > 0 ? coupons.map(c => (
+                            <tr key={c.id}>
+                              <td><strong style={{ fontFamily: 'monospace', fontSize: '1.1rem', letterSpacing: '1px' }}>{c.code}</strong></td>
+                              <td>
+                                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                  <strong>{c.discount_type === 'percentage' ? `${c.discount_value}%` : `₹${c.discount_value}`}</strong>
+                                  <span style={{ fontSize: '0.75rem', color: 'var(--gray-500)' }}>{c.discount_type === 'percentage' ? 'Percentage' : 'Flat Discount'}</span>
+                                </div>
+                              </td>
+                              <td>
+                                <div style={{ maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={c.course?.title || 'Global'}>
+                                  {c.course?.title ? <span className="badge badge-info">{c.course.title}</span> : <span className="badge badge-primary">All Courses</span>}
+                                </div>
+                              </td>
+                              <td>{c.expiry_date ? new Date(c.expiry_date).toLocaleDateString() : 'Never'}</td>
+                              <td>{c.used_count} / {c.usage_limit || '∞'}</td>
+                              <td>
+                                <span className={`badge badge-${c.is_active ? 'success' : 'default'}`}>{c.is_active ? 'Active' : 'Disabled'}</span>
+                              </td>
+                              <td style={{ position: 'relative' }}>
+                                <button className={`id-action-btn ${activeMenu?.id === c.id ? 'active' : ''}`} onClick={(e) => handleMenuToggle(e, c.id, 'coupon')}>
+                                  <FiMoreVertical />
+                                </button>
+                                {activeMenu?.id === c.id && activeMenu.type === 'coupon' && (
+                                  <div className="ap-dropdown-menu animate-scale fixed-menu" style={{ top: `${activeMenu.rect.bottom + 5}px`, left: `${activeMenu.rect.right - 180}px` }}>
+                                    <button onClick={() => { setEditingCoupon(c); setCouponForm({ ...c, event_id: c.event_id || '', expiry_date: c.expiry_date ? c.expiry_date.split('T')[0] : '' }); setShowCouponModal(true); setActiveMenu(null); }}>Edit Coupon</button>
+                                    <button onClick={() => { handleCouponStatusToggle(c.id, c.is_active); setActiveMenu(null); }}>{c.is_active ? 'Disable' : 'Enable'}</button>
+                                    <div className="dropdown-divider" />
+                                    <button className="danger" onClick={() => { handleDeleteCoupon(c.id); setActiveMenu(null); }}>Delete Coupon</button>
+                                  </div>
+                                )}
+                              </td>
+                            </tr>
+                          )) : <tr><td colSpan="7" style={{textAlign: 'center', padding: '20px'}}>No coupons found.</td></tr>}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+
+                {/* Messages Tab */}
+                {tab === 'messages' && (
+                  <div className="ap-messages animate-fade">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                      <h3>Contact Messages</h3>
+                    </div>
+                    <div className="id-table-wrap" ref={dropdownRef}>
+                      <table className="id-table">
+                        <thead><tr><th>Name</th><th>Email</th><th>Subject</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead>
+                        <tbody>
+                          {messages.length > 0 ? messages.map(m => (
+                            <tr key={m.id} style={{ fontWeight: m.status === 'unread' ? '600' : 'normal', backgroundColor: m.status === 'unread' ? 'var(--primary-50)' : 'transparent' }}>
+                              <td><strong>{m.name}</strong></td>
+                              <td>{m.email}</td>
+                              <td>
+                                <div style={{ maxWidth: '250px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                  {m.subject}
+                                </div>
+                              </td>
+                              <td>{new Date(m.created_at).toLocaleDateString()}</td>
+                              <td>
+                                {m.status === 'unread' ? <span className="badge badge-warning" style={{ backgroundColor: '#f59e0b', color: 'white' }}>Unread</span> : <span className="badge badge-default">Read</span>}
+                              </td>
+                              <td style={{ position: 'relative' }}>
+                                <button className={`id-action-btn ${activeMenu?.id === m.id ? 'active' : ''}`} onClick={(e) => handleMenuToggle(e, m.id, 'message')}>
+                                  <FiMoreVertical />
+                                </button>
+                                {activeMenu?.id === m.id && activeMenu.type === 'message' && (
+                                  <div className="ap-dropdown-menu animate-scale fixed-menu" style={{ top: `${activeMenu.rect.bottom + 5}px`, left: `${activeMenu.rect.right - 180}px`, zIndex: 100 }}>
+                                    <button onClick={() => { 
+                                      setSelectedMessage(m); 
+                                      if(m.status === 'unread') handleMessageStatus(m.id, 'read');
+                                      setActiveMenu(null); 
+                                    }}>
+                                      <FiEye style={{marginRight: 8}} /> Read Message
+                                    </button>
+                                    {m.status === 'read' && (
+                                      <button onClick={() => { handleMessageStatus(m.id, 'unread'); setActiveMenu(null); }}>
+                                        <FiMail style={{marginRight: 8}} /> Mark as Unread
+                                      </button>
                                     )}
-                                    <button className="btn btn-outline btn-sm danger" onClick={() => handleDeleteBlog(b.id)}>Delete</button>
+                                    <div className="dropdown-divider" />
+                                    <button className="danger" onClick={() => { handleDeleteMessage(m.id); setActiveMenu(null); }}>
+                                      <FiTrash2 style={{marginRight: 8}} /> Delete Message
+                                    </button>
+                                  </div>
+                                )}
+                              </td>
+                            </tr>
+                          )) : <tr><td colSpan="6" style={{textAlign: 'center', padding: '20px'}}>No messages found.</td></tr>}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+
+                {/* Course Reviews Tab */}
+                {tab === 'reviews' && (
+                  <div className="ap-approvals animate-fade">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                      <h3><FiStar style={{ marginRight: 8 }} /> Course Reviews ({courseReviews.length})</h3>
+                    </div>
+                    <div className="ap-search-row" style={{ marginBottom: 16 }}>
+                      <div className="ap-search"><FiSearch /><input placeholder="Search by course, student, or comment..." value={searchReviews} onChange={e => setSearchReviews(e.target.value)} /></div>
+                    </div>
+                    <div className="id-table-wrap" ref={dropdownRef}>
+                      <table className="id-table">
+                        <thead><tr><th>Student</th><th>Course</th><th>Rating</th><th>Comment</th><th>Date</th><th>Actions</th></tr></thead>
+                        <tbody>
+                          {(() => {
+                            const q = searchReviews.toLowerCase();
+                            const filtered = courseReviews.filter(r => 
+                              (r.user?.name || '').toLowerCase().includes(q) ||
+                              (r.course?.title || '').toLowerCase().includes(q) ||
+                              (r.comment || '').toLowerCase().includes(q)
+                            );
+                            return filtered.length > 0 ? filtered.map(r => (
+                              <tr key={r.id}>
+                                <td>
+                                  <div className="id-user-cell">
+                                    <div className="avatar-circle" style={{width:32,height:32,borderRadius:'50%',backgroundColor:'#e0e0e0',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:'bold',color:'#666'}}>{r.user?.name?.charAt(0) || 'U'}</div>
+                                    <span>{r.user?.name || 'Unknown'}</span>
                                   </div>
                                 </td>
+                                <td>
+                                  <div style={{ maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={r.course?.title}>
+                                    {r.course?.title || 'Unknown Course'}
+                                  </div>
+                                </td>
+                                <td>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                    {[1,2,3,4,5].map(star => (
+                                      <FiStar key={star} style={{ color: star <= r.rating ? '#f59e0b' : '#d1d5db', fill: star <= r.rating ? '#f59e0b' : 'none', fontSize: '0.875rem' }} />
+                                    ))}
+                                    <span style={{ marginLeft: '4px', fontWeight: 600, fontSize: '0.875rem' }}>{r.rating}</span>
+                                  </div>
+                                </td>
+                                <td>
+                                  <div style={{ maxWidth: '250px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={r.comment}>
+                                    {r.comment || '—'}
+                                  </div>
+                                </td>
+                                <td>{new Date(r.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
+                                <td>
+                                  <button
+                                    className="id-action-btn"
+                                    style={{ color: 'var(--danger)' }}
+                                    title="Delete Review"
+                                    onClick={() => handleDeleteReview(r.id)}
+                                  >
+                                    <FiTrash2 />
+                                  </button>
+                                </td>
                               </tr>
-                            )) : (
-                              <tr><td colSpan="5" style={{ textAlign: 'center', padding: '20px', color: 'var(--gray-400)' }}>No blogs found.</td></tr>
-                            )}
-                          </tbody>
-                        </table>
+                            )) : <tr><td colSpan="6" style={{textAlign: 'center', padding: '20px'}}>No reviews found.</td></tr>;
+                          })()}
+                        </tbody>
+                      </table>
+                    </div>
+                    <div className="ap-table-footer" style={{ marginTop: '16px', padding: '12px 20px', background: 'var(--gray-50)', borderTop: '1px solid var(--gray-200)', borderRadius: '0 0 8px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.875rem' }}>
+                      <div style={{ color: 'var(--gray-500)' }}>
+                        Showing <strong>{courseReviews.filter(r => {
+                          const q = searchReviews.toLowerCase();
+                          return (r.user?.name || '').toLowerCase().includes(q) || (r.course?.title || '').toLowerCase().includes(q) || (r.comment || '').toLowerCase().includes(q);
+                        }).length}</strong> of <strong>{courseReviews.length}</strong> reviews
                       </div>
                     </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Instructor Requests Tab */}
-            {tab === 'requests' && (
-              <div className="ap-requests animate-fade">
-                {stats.requests > 0 || requests.length > 0 ? (
-                  <>
-                    <div className="id-table-wrap">
-                    <table className="id-table">
-                      <thead><tr><th>Name</th><th>Contact info</th><th>ID Proof</th><th>Expertise</th><th>Experience</th><th>Status</th><th>Submitted</th><th>Actions</th></tr></thead>
-                      <tbody>
-                        {requests.map(r => (
-                          <tr key={r.id}>
-                            <td><strong>{r.name}</strong></td>
-                            <td>
-                              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                                <span style={{ fontSize: '0.875rem' }}>{r.email}</span>
-                                <span style={{ fontSize: '0.85rem', color: 'var(--gray-600)' }}>{r.phone || 'N/A'}</span>
-                              </div>
-                            </td>
-                            <td><span style={{ fontSize: '0.875rem' }}>{r.id_proof || 'N/A'}</span></td>
-                            <td>{r.expertise}</td>
-                            <td><div style={{ maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={r.experience}>{r.experience}</div></td>
-                            <td>
-                              {r.status === 'approved' && <span className="badge badge-success">Approved</span>}
-                              {r.status === 'pending' && <span className="badge" style={{backgroundColor: '#f59e0b', color: '#fff'}}>Pending</span>}
-                              {r.status === 'rejected' && <span className="badge badge-danger">Rejected</span>}
-                            </td>
-                            <td>{new Date(r.created_at).toLocaleDateString()}</td>
-                            <td>
-                              {r.status === 'pending' && (
-                                <div style={{display: 'flex', gap: '8px'}}>
-                                  <button className="btn btn-primary btn-sm" onClick={() => handleRequestAction(r.id, 'approved', r.user_id)}>Approve</button>
-                                  <button className="btn btn-outline btn-sm" style={{borderColor: 'var(--danger)', color: 'var(--danger)'}} onClick={() => handleRequestAction(r.id, 'rejected', null)}>Reject</button>
-                                </div>
-                              )}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
                   </div>
-                  <div className="ap-table-footer" style={{ marginTop: '16px', padding: '12px 20px', background: 'var(--gray-50)', borderTop: '1px solid var(--gray-200)', borderRadius: '0 0 8px 8px', display: 'flex', justifyContent: 'flex-end', fontSize: '0.875rem', color: 'var(--gray-500)', fontWeight: 600 }}>
-                    Total Requests: {requests.length}
-                  </div>
-                </>
-              ) : (
-                <div className="empty-state">
-                  <FiUsers size={48} color="var(--gray-400)" style={{marginBottom: '1rem'}} />
-                  <h3>No Requests Yet</h3>
-                  <p>There are no pending instructor applications right now.</p>
-                </div>
-              )}
-            </div>
-          )}
+                )}
 
+                {/* Certificates Tab */}
+                {tab === 'certificates' && (
+                  <CertificateGenerator />
+                )}
 
-            {/* Jobs Tab */}
-            {tab === 'jobs' && (
-              <div className="ap-approvals animate-fade">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-                  <h3>Manage Jobs</h3>
-                  <button className="btn btn-primary btn-sm" onClick={() => { setEditingJob(null); setJobForm({ company_name: '', role: '', category: 'Freshers', salary: '', location: '', job_type: 'Full-time', qualification: '', vacancies: '', description: '', venue: '', contact_details: '', date_time: '', apply_link: '', expiry_date: '', is_urgent: false, job_mode: 'apply_link' }); setShowJobModal(true); }}>
-                    + Add Job
-                  </button>
-                </div>
-                <div className="id-table-wrap" ref={dropdownRef}>
-                  <table className="id-table">
-                    <thead><tr><th>Company</th><th>Role</th><th>Category</th><th>Expiry</th><th>Status</th><th>Actions</th></tr></thead>
-                    <tbody>
-                      {jobs.length > 0 ? jobs.map(j => (
-                        <tr key={j.id}>
-                          <td><strong>{j.company_name}</strong></td>
-                          <td>{j.role}</td>
-                          <td><span className="badge badge-info">{j.category}</span></td>
-                          <td>{j.expiry_date ? new Date(j.expiry_date).toLocaleDateString() : 'N/A'}</td>
-                          <td>
-                            {j.is_urgent && <span className="badge badge-danger" style={{marginRight: 4}}>Urgent</span>}
-                            {j.expiry_date && new Date(j.expiry_date) < new Date() ? <span className="badge badge-default">Expired</span> : <span className="badge badge-success">Active</span>}
-                          </td>
-                          <td style={{ position: 'relative' }}>
-                            <button className={`id-action-btn ${activeMenu?.id === j.id ? 'active' : ''}`} onClick={(e) => handleMenuToggle(e, j.id, 'job')}>
-                              <FiMoreVertical />
-                            </button>
-                            {activeMenu?.id === j.id && activeMenu.type === 'job' && (
-                              <div className="ap-dropdown-menu animate-scale fixed-menu" style={{ top: `${activeMenu.rect.bottom + 5}px`, left: `${activeMenu.rect.right - 180}px` }}>
-                                <button onClick={() => handleEditJob(j)}>Edit Job</button>
-                                <button className="danger" onClick={() => handleDeleteJob(j.id)}>Delete Job</button>
-                              </div>
-                            )}
-                          </td>
-                        </tr>
-                      )) : <tr><td colSpan="6" style={{textAlign: 'center', padding: '20px'}}>No jobs found.</td></tr>}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
+                {/* Daily Quiz Tab */}
+                {tab === 'daily-quiz' && (
+                  <DailyQuizManager />
+                )}
 
-            {/* Coupons Tab */}
-            {tab === 'coupons' && (
-              <div className="ap-approvals animate-fade">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-                  <h3>Coupon Management</h3>
-                  <button className="btn btn-primary btn-sm" onClick={() => { setEditingCoupon(null); setCouponForm({ code: '', discount_type: 'percentage', discount_value: '', course_id: '', event_id: '', expiry_date: '', usage_limit: '' }); setShowCouponModal(true); }}>
-                    + Create Coupon
-                  </button>
-                </div>
-                <div className="id-table-wrap" ref={dropdownRef}>
-                  <table className="id-table">
-                    <thead><tr><th>Code</th><th>Discount</th><th>Applies To</th><th>Expiry</th><th>Usage</th><th>Status</th><th>Actions</th></tr></thead>
-                    <tbody>
-                      {coupons.length > 0 ? coupons.map(c => (
-                        <tr key={c.id}>
-                          <td><strong style={{ fontFamily: 'monospace', fontSize: '1.1rem', letterSpacing: '1px' }}>{c.code}</strong></td>
-                          <td>
-                            <div style={{ display: 'flex', flexDirection: 'column' }}>
-                              <strong>{c.discount_type === 'percentage' ? `${c.discount_value}%` : `₹${c.discount_value}`}</strong>
-                              <span style={{ fontSize: '0.75rem', color: 'var(--gray-500)' }}>{c.discount_type === 'percentage' ? 'Percentage' : 'Flat Discount'}</span>
-                            </div>
-                          </td>
-                          <td>
-                            <div style={{ maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={c.course?.title || 'Global'}>
-                              {c.course?.title ? <span className="badge badge-info">{c.course.title}</span> : <span className="badge badge-primary">All Courses</span>}
-                            </div>
-                          </td>
-                          <td>{c.expiry_date ? new Date(c.expiry_date).toLocaleDateString() : 'Never'}</td>
-                          <td>{c.used_count} / {c.usage_limit || '∞'}</td>
-                          <td>
-                            <span className={`badge badge-${c.is_active ? 'success' : 'default'}`}>{c.is_active ? 'Active' : 'Disabled'}</span>
-                          </td>
-                          <td style={{ position: 'relative' }}>
-                            <button className={`id-action-btn ${activeMenu?.id === c.id ? 'active' : ''}`} onClick={(e) => handleMenuToggle(e, c.id, 'coupon')}>
-                              <FiMoreVertical />
-                            </button>
-                            {activeMenu?.id === c.id && activeMenu.type === 'coupon' && (
-                              <div className="ap-dropdown-menu animate-scale fixed-menu" style={{ top: `${activeMenu.rect.bottom + 5}px`, left: `${activeMenu.rect.right - 180}px` }}>
-                                <button onClick={() => { setEditingCoupon(c); setCouponForm({ ...c, event_id: c.event_id || '', expiry_date: c.expiry_date ? c.expiry_date.split('T')[0] : '' }); setShowCouponModal(true); setActiveMenu(null); }}>Edit Coupon</button>
-                                <button onClick={() => { handleCouponStatusToggle(c.id, c.is_active); setActiveMenu(null); }}>{c.is_active ? 'Disable' : 'Enable'}</button>
-                                <div className="dropdown-divider" />
-                                <button className="danger" onClick={() => { handleDeleteCoupon(c.id); setActiveMenu(null); }}>Delete Coupon</button>
-                              </div>
-                            )}
-                          </td>
-                        </tr>
-                      )) : <tr><td colSpan="7" style={{textAlign: 'center', padding: '20px'}}>No coupons found.</td></tr>}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
-
-            {/* Messages Tab */}
-            {tab === 'messages' && (
-              <div className="ap-messages animate-fade">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-                  <h3>Contact Messages</h3>
-                </div>
-                <div className="id-table-wrap" ref={dropdownRef}>
-                  <table className="id-table">
-                    <thead><tr><th>Name</th><th>Email</th><th>Subject</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead>
-                    <tbody>
-                      {messages.length > 0 ? messages.map(m => (
-                        <tr key={m.id} style={{ fontWeight: m.status === 'unread' ? '600' : 'normal', backgroundColor: m.status === 'unread' ? 'var(--primary-50)' : 'transparent' }}>
-                          <td><strong>{m.name}</strong></td>
-                          <td>{m.email}</td>
-                          <td>
-                            <div style={{ maxWidth: '250px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                              {m.subject}
-                            </div>
-                          </td>
-                          <td>{new Date(m.created_at).toLocaleDateString()}</td>
-                          <td>
-                            {m.status === 'unread' ? <span className="badge badge-warning" style={{ backgroundColor: '#f59e0b', color: 'white' }}>Unread</span> : <span className="badge badge-default">Read</span>}
-                          </td>
-                          <td style={{ position: 'relative' }}>
-                            <button className={`id-action-btn ${activeMenu?.id === m.id ? 'active' : ''}`} onClick={(e) => handleMenuToggle(e, m.id, 'message')}>
-                              <FiMoreVertical />
-                            </button>
-                            {activeMenu?.id === m.id && activeMenu.type === 'message' && (
-                              <div className="ap-dropdown-menu animate-scale fixed-menu" style={{ top: `${activeMenu.rect.bottom + 5}px`, left: `${activeMenu.rect.right - 180}px`, zIndex: 100 }}>
-                                <button onClick={() => { 
-                                  setSelectedMessage(m); 
-                                  if(m.status === 'unread') handleMessageStatus(m.id, 'read');
-                                  setActiveMenu(null); 
-                                }}>
-                                  <FiEye style={{marginRight: 8}} /> Read Message
-                                </button>
-                                {m.status === 'read' && (
-                                  <button onClick={() => { handleMessageStatus(m.id, 'unread'); setActiveMenu(null); }}>
-                                    <FiMail style={{marginRight: 8}} /> Mark as Unread
-                                  </button>
-                                )}
-                                <div className="dropdown-divider" />
-                                <button className="danger" onClick={() => { handleDeleteMessage(m.id); setActiveMenu(null); }}>
-                                  <FiTrash2 style={{marginRight: 8}} /> Delete Message
-                                </button>
-                              </div>
-                            )}
-                          </td>
-                        </tr>
-                      )) : <tr><td colSpan="6" style={{textAlign: 'center', padding: '20px'}}>No messages found.</td></tr>}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
-
-            {/* Course Reviews Tab */}
-            {tab === 'reviews' && (
-              <div className="ap-approvals animate-fade">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-                  <h3><FiStar style={{ marginRight: 8 }} /> Course Reviews ({courseReviews.length})</h3>
-                </div>
-                <div className="ap-search-row" style={{ marginBottom: 16 }}>
-                  <div className="ap-search"><FiSearch /><input placeholder="Search by course, student, or comment..." value={searchReviews} onChange={e => setSearchReviews(e.target.value)} /></div>
-                </div>
-                <div className="id-table-wrap" ref={dropdownRef}>
-                  <table className="id-table">
-                    <thead><tr><th>Student</th><th>Course</th><th>Rating</th><th>Comment</th><th>Date</th><th>Actions</th></tr></thead>
-                    <tbody>
-                      {(() => {
-                        const q = searchReviews.toLowerCase();
-                        const filtered = courseReviews.filter(r => 
-                          (r.user?.name || '').toLowerCase().includes(q) ||
-                          (r.course?.title || '').toLowerCase().includes(q) ||
-                          (r.comment || '').toLowerCase().includes(q)
-                        );
-                        return filtered.length > 0 ? filtered.map(r => (
-                          <tr key={r.id}>
-                            <td>
-                              <div className="id-user-cell">
-                                <div className="avatar-circle" style={{width:32,height:32,borderRadius:'50%',backgroundColor:'#e0e0e0',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:'bold',color:'#666'}}>{r.user?.name?.charAt(0) || 'U'}</div>
-                                <span>{r.user?.name || 'Unknown'}</span>
-                              </div>
-                            </td>
-                            <td>
-                              <div style={{ maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={r.course?.title}>
-                                {r.course?.title || 'Unknown Course'}
-                              </div>
-                            </td>
-                            <td>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                {[1,2,3,4,5].map(star => (
-                                  <FiStar key={star} style={{ color: star <= r.rating ? '#f59e0b' : '#d1d5db', fill: star <= r.rating ? '#f59e0b' : 'none', fontSize: '0.875rem' }} />
-                                ))}
-                                <span style={{ marginLeft: '4px', fontWeight: 600, fontSize: '0.875rem' }}>{r.rating}</span>
-                              </div>
-                            </td>
-                            <td>
-                              <div style={{ maxWidth: '250px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={r.comment}>
-                                {r.comment || '—'}
-                              </div>
-                            </td>
-                            <td>{new Date(r.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
-                            <td>
-                              <button
-                                className="id-action-btn"
-                                style={{ color: 'var(--danger)' }}
-                                title="Delete Review"
-                                onClick={() => handleDeleteReview(r.id)}
-                              >
-                                <FiTrash2 />
+                {/* Events Tab */}
+                {tab === 'events' && (
+                  <div className="ap-users animate-fade">
+                    <div className="ap-search-row">
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', flexWrap: 'wrap', gap: '12px' }}>
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flex: 1 }}>
+                          <div className="ap-search" style={{ flex: 1 }}><FiSearch /><input placeholder="Search events..." value={eventSearchFilter} onChange={e => setEventSearchFilter(e.target.value)} /></div>
+                          <div className="ap-activity-filters">
+                            {['all', 'upcoming', 'live', 'completed'].map(s => (
+                              <button key={s} className={`ap-filter-pill ${eventStatusFilter === s ? 'active' : ''}`} onClick={() => setEventStatusFilter(s)}>
+                                {s === 'all' ? 'All' : s.charAt(0).toUpperCase() + s.slice(1)}
                               </button>
-                            </td>
-                          </tr>
-                        )) : <tr><td colSpan="6" style={{textAlign: 'center', padding: '20px'}}>No reviews found.</td></tr>;
-                      })()}
-                    </tbody>
-                  </table>
-                </div>
-                <div className="ap-table-footer" style={{ marginTop: '16px', padding: '12px 20px', background: 'var(--gray-50)', borderTop: '1px solid var(--gray-200)', borderRadius: '0 0 8px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.875rem' }}>
-                  <div style={{ color: 'var(--gray-500)' }}>
-                    Showing <strong>{courseReviews.filter(r => {
-                      const q = searchReviews.toLowerCase();
-                      return (r.user?.name || '').toLowerCase().includes(q) || (r.course?.title || '').toLowerCase().includes(q) || (r.comment || '').toLowerCase().includes(q);
-                    }).length}</strong> of <strong>{courseReviews.length}</strong> reviews
-                  </div>
-                </div>
-              </div>
-            )}
+                            ))}
+                          </div>
+                        </div>
+                        <button className="btn btn-primary btn-sm" onClick={() => { setEditingEvent(null); setEventForm({ title: '', description: '', instructor_name: '', instructor_bio: '', instructor_image: '', event_date: '', duration_minutes: 60, live_link: '', thumbnail_url: '', enable_certificate: false, price: 0, status: 'upcoming' }); setShowEventModal(true); }}>
+                          <FiVideo style={{ marginRight: 6 }} /> Create Event
+                        </button>
+                      </div>
+                    </div>
 
-            {/* Certificates Tab */}
-            {tab === 'certificates' && (
-              <CertificateGenerator />
+                    {/* Events Table */}
+                    <div className="id-table-wrap">
+                      <table className="id-table">
+                        <thead>
+                          <tr>
+                            <th>Event</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Price</th>
+                            <th>Certificate</th>
+                            <th>Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {adminEvents
+                            .filter(ev => {
+                              const q = eventSearchFilter.toLowerCase();
+                              const matchesSearch = !q || ev.title.toLowerCase().includes(q) || (ev.instructor_name || '').toLowerCase().includes(q);
+                              const matchesStatus = eventStatusFilter === 'all' || ev.status === eventStatusFilter;
+                              return matchesSearch && matchesStatus;
+                            })
+                            .map(ev => (
+                            <tr key={ev.id}>
+                              <td>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                  {ev.thumbnail_url && <img src={ev.thumbnail_url} alt="" style={{ width: 48, height: 36, objectFit: 'cover', borderRadius: 6 }} />}
+                                  <div>
+                                    <strong style={{ display: 'block', fontSize: '0.9rem' }}>{ev.title}</strong>
+                                    <span style={{ fontSize: '0.8rem', color: 'var(--gray-400)' }}>{ev.instructor_name}</span>
+                                  </div>
+                                </div>
+                              </td>
+                              <td style={{ fontSize: '0.85rem' }}>
+                                {new Date(ev.event_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                <br />
+                                <span style={{ fontSize: '0.75rem', color: 'var(--gray-400)' }}>{ev.duration_minutes} min</span>
+                              </td>
+                              <td>
+                                <span className={`badge badge-${ev.status === 'live' ? 'success' : ev.status === 'upcoming' ? 'primary' : 'info'}`}>
+                                  {ev.status}
+                                </span>
+                              </td>
+                              <td style={{ fontWeight: 600 }}>{ev.price > 0 ? `₹${ev.price}` : 'Free'}</td>
+                              <td>
+                                {ev.enable_certificate ? (
+                                  <span style={{ color: '#8b5cf6', fontWeight: 600, fontSize: '0.85rem' }}><FiAward style={{ marginRight: 4 }} /> Yes</span>
+                                ) : (
+                                  <span style={{ color: 'var(--gray-400)', fontSize: '0.85rem' }}>No</span>
+                                )}
+                              </td>
+                              <td>
+                                <div style={{ display: 'flex', gap: '6px' }}>
+                                  <button className="btn btn-outline btn-sm" onClick={async () => {
+                                    setSelectedEventId(ev.id);
+                                    setEventAttendeesLoading(true);
+                                    try {
+                                      const { data } = await supabase.from('event_attendance').select('*, user:users(name, email)').eq('event_id', ev.id);
+                                      setEventAttendees(data || []);
+                                    } catch { setEventAttendees([]); }
+                                    finally { setEventAttendeesLoading(false); }
+                                  }}>
+                                    <FiUsers style={{ marginRight: 4 }} /> Attendees
+                                  </button>
+                                  <button className="btn btn-outline btn-sm" onClick={() => {
+                                    setEditingEvent(ev);
+                                    setEventForm({
+                                      title: ev.title || '',
+                                      description: ev.description || '',
+                                      instructor_name: ev.instructor_name || '',
+                                      instructor_bio: ev.instructor_bio || '',
+                                      instructor_image: ev.instructor_image || '',
+                                      event_date: ev.event_date ? new Date(ev.event_date).toISOString().slice(0, 16) : '',
+                                      duration_minutes: ev.duration_minutes || 60,
+                                      live_link: ev.live_link || '',
+                                      thumbnail_url: ev.thumbnail_url || '',
+                                      enable_certificate: ev.enable_certificate || false,
+                                      price: ev.price || 0,
+                                      status: ev.status || 'upcoming'
+                                    });
+                                    setShowEventModal(true);
+                                  }}>
+                                    <FiEye />
+                                  </button>
+                                  <button className="btn btn-outline btn-sm" style={{ color: 'var(--danger)', borderColor: 'var(--danger)' }} onClick={async () => {
+                                    const confirmed = await showConfirm('Delete this event and all attendance records?', undefined, 'Delete Event', 'Delete', 'Cancel');
+                                    if (!confirmed) return;
+                                    try {
+                                      await supabase.from('event_attendance').delete().eq('event_id', ev.id);
+                                      const { error } = await supabase.from('events').delete().eq('id', ev.id);
+                                      if (error) throw error;
+                                      setAdminEvents(adminEvents.filter(e => e.id !== ev.id));
+                                      await showAlert('Event deleted.', 'Deleted', 'success');
+                                    } catch (err) {
+                                      await showAlert('Error deleting event: ' + err.message, 'Error', 'error');
+                                    }
+                                  }}>
+                                    <FiTrash2 />
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                          {adminEvents.length === 0 && (
+                            <tr><td colSpan="6" style={{ textAlign: 'center', padding: '40px', color: 'var(--gray-400)' }}>No events created yet. Click "Create Event" to get started.</td></tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* Attendees Panel */}
+                    {selectedEventId && (
+                      <div className="ap-card" style={{ marginTop: '24px' }}>
+                        <div className="ap-card-header">
+                          <h3><FiUsers style={{ marginRight: 8 }} /> Attendees — {adminEvents.find(e => e.id === selectedEventId)?.title}</h3>
+                          <button className="btn-text" onClick={() => setSelectedEventId(null)}>Close</button>
+                        </div>
+                        {eventAttendeesLoading ? (
+                          <div style={{ padding: '24px', textAlign: 'center', color: 'var(--gray-400)' }}>Loading attendees...</div>
+                        ) : eventAttendees.length === 0 ? (
+                          <div style={{ padding: '24px', textAlign: 'center', color: 'var(--gray-400)' }}>No registrations yet.</div>
+                        ) : (
+                          <div className="id-table-wrap">
+                            <table className="id-table">
+                              <thead><tr><th>Student</th><th>Email</th><th>Registered</th><th>Attended</th><th>Payment</th><th>Certificate</th><th>Actions</th></tr></thead>
+                              <tbody>
+                                {eventAttendees.map(att => (
+                                  <tr key={att.id}>
+                                    <td style={{ fontWeight: 600 }}>{att.user?.name || 'Unknown'}</td>
+                                    <td style={{ fontSize: '0.85rem', color: 'var(--gray-500)' }}>{att.user?.email || '-'}</td>
+                                    <td>{att.registered ? <span className="badge badge-success">Yes</span> : <span className="badge badge-info">No</span>}</td>
+                                    <td>{att.attended ? <span className="badge badge-success">Attended</span> : <span className="badge badge-danger">No</span>}</td>
+                                    <td style={{ fontSize: '0.85rem' }}>{att.amount_paid > 0 ? `₹${att.amount_paid}` : 'Free'}</td>
+                                    <td>{att.certificate_issued ? <span style={{ color: '#8b5cf6', fontWeight: 600, fontSize: '0.8rem' }}>{att.certificate_id}</span> : <span style={{ color: 'var(--gray-400)', fontSize: '0.8rem' }}>—</span>}</td>
+                                    <td>
+                                      <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                                        <button
+                                          className={`btn btn-sm ${att.attended ? 'btn-outline' : 'btn-primary'}`}
+                                          style={{ fontSize: '0.75rem' }}
+                                          onClick={async () => {
+                                            try {
+                                              const newVal = !att.attended;
+                                              await supabase.from('event_attendance').update({ attended: newVal, join_time: newVal ? new Date().toISOString() : null }).eq('id', att.id);
+                                              setEventAttendees(eventAttendees.map(a => a.id === att.id ? { ...a, attended: newVal } : a));
+                                            } catch (err) {
+                                              await showAlert('Error updating attendance: ' + err.message, 'Error', 'error');
+                                            }
+                                          }}
+                                        >
+                                          {att.attended ? <><FiXCircle style={{ marginRight: 4 }} /> Unmark</> : <><FiCheckCircle style={{ marginRight: 4 }} /> Mark Attended</>}
+                                        </button>
+                                        {att.attended && adminEvents.find(e => e.id === selectedEventId)?.enable_certificate && (
+                                          <button
+                                            className="btn btn-outline btn-sm"
+                                            style={{ fontSize: '0.75rem', color: '#8b5cf6', borderColor: '#8b5cf6' }}
+                                            onClick={async () => {
+                                              try {
+                                                const { createEventCertificate } = await import('../utils/certificateLogUtils');
+                                                const eventData = adminEvents.find(e => e.id === selectedEventId);
+                                                await createEventCertificate(
+                                                  { id: att.user_id, email: att.user?.email },
+                                                  selectedEventId,
+                                                  eventData?.title,
+                                                  eventData?.instructor_name,
+                                                  att.user?.name
+                                                );
+                                                // Refresh attendees
+                                                const { data } = await supabase.from('event_attendance').select('*, user:users(name, email)').eq('event_id', selectedEventId);
+                                                setEventAttendees(data || []);
+                                                await showAlert('Certificate issued!', 'Success', 'success');
+                                              } catch (err) {
+                                                await showAlert('Error issuing certificate: ' + err.message, 'Error', 'error');
+                                              }
+                                            }}
+                                          >
+                                            <FiAward style={{ marginRight: 4 }} /> {att.certificate_issued ? 'Re-issue' : 'Issue'} Cert
+                                          </button>
+                                        )}
+                                      </div>
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* ===== Bootcamps Tab ===== */}
+                {tab === 'bootcamps' && (
+                  <div className="ap-users animate-fade">
+                    <div className="ap-search-row">
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', flexWrap: 'wrap', gap: '12px' }}>
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flex: 1 }}>
+                          <div className="ap-search" style={{ flex: 1 }}><FiSearch /><input placeholder="Search bootcamps..." value={bootcampSearchFilter} onChange={e => setBootcampSearchFilter(e.target.value)} /></div>
+                          <div className="ap-activity-filters">
+                            {['all', 'upcoming', 'active', 'completed'].map(s => (
+                              <button key={s} className={`ap-filter-pill ${bootcampStatusFilter === s ? 'active' : ''}`} onClick={() => setBootcampStatusFilter(s)}>
+                                {s === 'all' ? 'All' : s.charAt(0).toUpperCase() + s.slice(1)}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                        <button className="btn btn-primary btn-sm" style={{ background: '#008ad1', borderColor: '#008ad1' }} onClick={() => { setEditingBootcamp(null); setBootcampForm({ title: '', description: '', category: 'Online Bootcamp', instructor_name: '', instructor_bio: '', instructor_image: '', start_date: '', end_date: '', schedule_info: '', total_sessions: 1, live_link: '', thumbnail_url: '', enable_certificate: false, price: 0, status: 'upcoming', learning_outcomes: '', max_students: '' }); setShowBootcampModal(true); }}>
+                          <FiBookOpen style={{ marginRight: 6 }} /> Create Bootcamp
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Bootcamps Table */}
+                    <div className="id-table-wrap">
+                      <table className="id-table">
+                        <thead>
+                          <tr>
+                            <th>Bootcamp</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Status</th>
+                            <th>Price</th>
+                            <th>Certificate</th>
+                            <th>Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {adminBootcamps
+                            .filter(bc => {
+                              const q = bootcampSearchFilter.toLowerCase();
+                              const matchesSearch = !q || bc.title.toLowerCase().includes(q) || (bc.instructor_name || '').toLowerCase().includes(q);
+                              const matchesStatus = bootcampStatusFilter === 'all' || bc.status === bootcampStatusFilter;
+                              return matchesSearch && matchesStatus;
+                            })
+                            .map(bc => (
+                            <tr key={bc.id}>
+                              <td>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                  {bc.thumbnail_url && <img src={bc.thumbnail_url} alt="" style={{ width: 48, height: 36, objectFit: 'cover', borderRadius: 6 }} />}
+                                  <div>
+                                    <strong style={{ display: 'block', fontSize: '0.9rem' }}>{bc.title}</strong>
+                                    <span style={{ fontSize: '0.8rem', color: 'var(--gray-400)' }}>{bc.instructor_name}</span>
+                                  </div>
+                                </div>
+                              </td>
+                              <td style={{ fontSize: '0.85rem' }}>
+                                {new Date(bc.start_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                              </td>
+                              <td style={{ fontSize: '0.85rem' }}>
+                                {new Date(bc.end_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                              </td>
+                              <td>
+                                <span className={`badge badge-${bc.status === 'active' ? 'success' : bc.status === 'upcoming' ? 'primary' : 'info'}`} style={bc.status === 'upcoming' ? { background: '#008ad1', color: '#fff' } : {}}>
+                                  {bc.status}
+                                </span>
+                              </td>
+                              <td style={{ fontWeight: 600 }}>{bc.price > 0 ? `₹${bc.price}` : 'Free'}</td>
+                              <td>
+                                {bc.enable_certificate ? (
+                                  <span style={{ color: '#008ad1', fontWeight: 600, fontSize: '0.85rem' }}><FiAward style={{ marginRight: 4 }} /> Yes</span>
+                                ) : (
+                                  <span style={{ color: 'var(--gray-400)', fontSize: '0.85rem' }}>No</span>
+                                )}
+                              </td>
+                              <td>
+                                <div style={{ display: 'flex', gap: '6px' }}>
+                                  <button className="btn btn-outline btn-sm" onClick={async () => {
+                                    setSelectedBootcampId(bc.id);
+                                    setBootcampEnrolleesLoading(true);
+                                    try {
+                                      const { data } = await supabase.from('live_bootcamp_enrollments').select('*, user:users(name, email)').eq('live_bootcamp_id', bc.id);
+                                      setBootcampEnrollees(data || []);
+                                    } catch { setBootcampEnrollees([]); }
+                                    finally { setBootcampEnrolleesLoading(false); }
+                                  }}>
+                                    <FiUsers style={{ marginRight: 4 }} /> Enrollees
+                                  </button>
+                                  <button className="btn btn-outline btn-sm" onClick={() => {
+                                    setEditingBootcamp(bc);
+                                    setBootcampForm({
+                                      title: bc.title || '',
+                                      description: bc.description || '',
+                                      category: bc.category || 'Online Bootcamp',
+                                      instructor_name: bc.instructor_name || '',
+                                      instructor_bio: bc.instructor_bio || '',
+                                      instructor_image: bc.instructor_image || '',
+                                      start_date: bc.start_date ? new Date(bc.start_date).toISOString().slice(0, 16) : '',
+                                      end_date: bc.end_date ? new Date(bc.end_date).toISOString().slice(0, 16) : '',
+                                      schedule_info: bc.schedule_info || '',
+                                      total_sessions: bc.total_sessions || 1,
+                                      live_link: bc.live_link || '',
+                                      thumbnail_url: bc.thumbnail_url || '',
+                                      enable_certificate: bc.enable_certificate || false,
+                                      price: bc.price || 0,
+                                      status: bc.status || 'upcoming',
+                                      learning_outcomes: (bc.learning_outcomes || []).join(', '),
+                                      max_students: bc.max_students || ''
+                                    });
+                                    setShowBootcampModal(true);
+                                  }}>
+                                    <FiEye />
+                                  </button>
+                                  <button className="btn btn-outline btn-sm" style={{ color: 'var(--danger)', borderColor: 'var(--danger)' }} onClick={async () => {
+                                    const confirmed = await showConfirm('Delete this bootcamp and all enrollment records?', undefined, 'Delete Bootcamp', 'Delete', 'Cancel');
+                                    if (!confirmed) return;
+                                    try {
+                                      await supabase.from('live_bootcamp_enrollments').delete().eq('live_bootcamp_id', bc.id);
+                                      const { error } = await supabase.from('live_bootcamps').delete().eq('id', bc.id);
+                                      if (error) throw error;
+                                      setAdminBootcamps(adminBootcamps.filter(b => b.id !== bc.id));
+                                      await showAlert('Bootcamp deleted.', 'Deleted', 'success');
+                                    } catch (err) {
+                                      await showAlert('Error deleting bootcamp: ' + err.message, 'Error', 'error');
+                                    }
+                                  }}>
+                                    <FiTrash2 />
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                          {adminBootcamps.length === 0 && (
+                            <tr><td colSpan="7" style={{ textAlign: 'center', padding: '40px', color: 'var(--gray-400)' }}>No bootcamps yet. Click "Create Bootcamp" to get started.</td></tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* Enrollees Panel */}
+                    {selectedBootcampId && (
+                      <div className="ap-card" style={{ marginTop: '24px' }}>
+                        <div className="ap-card-header">
+                          <h3><FiUsers style={{ marginRight: 8 }} /> Enrollees — {adminBootcamps.find(b => b.id === selectedBootcampId)?.title}</h3>
+                          <button className="btn-text" onClick={() => setSelectedBootcampId(null)}>Close</button>
+                        </div>
+                        {bootcampEnrolleesLoading ? (
+                          <div style={{ padding: '24px', textAlign: 'center', color: 'var(--gray-400)' }}>Loading enrollees...</div>
+                        ) : bootcampEnrollees.length === 0 ? (
+                          <div style={{ padding: '24px', textAlign: 'center', color: 'var(--gray-400)' }}>No enrollments yet.</div>
+                        ) : (
+                          <div className="id-table-wrap">
+                            <table className="id-table">
+                              <thead><tr><th>Student</th><th>Email</th><th>Enrolled</th><th>Completed</th><th>Payment</th><th>Certificate</th><th>Actions</th></tr></thead>
+                              <tbody>
+                                {bootcampEnrollees.map(enr => (
+                                  <tr key={enr.id}>
+                                    <td style={{ fontWeight: 600 }}>{enr.user?.name || 'Unknown'}</td>
+                                    <td style={{ fontSize: '0.85rem', color: 'var(--gray-500)' }}>{enr.user?.email || '-'}</td>
+                                    <td>{enr.registered ? <span className="badge badge-success">Yes</span> : <span className="badge badge-info">No</span>}</td>
+                                    <td>{enr.completed ? <span className="badge badge-success">Completed</span> : <span className="badge badge-danger">No</span>}</td>
+                                    <td style={{ fontSize: '0.85rem' }}>{enr.amount_paid > 0 ? `₹${enr.amount_paid}` : 'Free'}</td>
+                                    <td>{enr.certificate_issued ? <span style={{ color: '#008ad1', fontWeight: 600, fontSize: '0.8rem' }}>{enr.certificate_id}</span> : <span style={{ color: 'var(--gray-400)', fontSize: '0.8rem' }}>—</span>}</td>
+                                    <td>
+                                      <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                                        <button
+                                          className={`btn btn-sm ${enr.completed ? 'btn-outline' : 'btn-primary'}`}
+                                          style={{ fontSize: '0.75rem' }}
+                                          onClick={async () => {
+                                            try {
+                                              const newVal = !enr.completed;
+                                              await supabase.from('live_bootcamp_enrollments').update({ completed: newVal }).eq('id', enr.id);
+                                              setBootcampEnrollees(bootcampEnrollees.map(e => e.id === enr.id ? { ...e, completed: newVal } : e));
+                                            } catch (err) {
+                                              await showAlert('Error updating completion: ' + err.message, 'Error', 'error');
+                                            }
+                                          }}
+                                        >
+                                          {enr.completed ? <><FiXCircle style={{ marginRight: 4 }} /> Unmark</> : <><FiCheckCircle style={{ marginRight: 4 }} /> Mark Completed</>}
+                                        </button>
+                                        {enr.completed && adminBootcamps.find(b => b.id === selectedBootcampId)?.enable_certificate && (
+                                          <button
+                                            className="btn btn-outline btn-sm"
+                                            style={{ fontSize: '0.75rem', color: '#008ad1', borderColor: '#008ad1' }}
+                                            onClick={async () => {
+                                              try {
+                                                const { createLiveBootcampCertificate } = await import('../utils/certificateLogUtils');
+                                                const bcData = adminBootcamps.find(b => b.id === selectedBootcampId);
+                                                await createLiveBootcampCertificate(
+                                                  { id: enr.user_id, email: enr.user?.email },
+                                                  selectedBootcampId,
+                                                  bcData?.title,
+                                                  bcData?.instructor_name,
+                                                  enr.user?.name,
+                                                  bcData?.start_date,
+                                                  bcData?.end_date
+                                                );
+                                                // Refresh enrollees
+                                                const { data } = await supabase.from('live_bootcamp_enrollments').select('*, user:users(name, email)').eq('live_bootcamp_id', selectedBootcampId);
+                                                setBootcampEnrollees(data || []);
+                                                await showAlert('Certificate issued!', 'Success', 'success');
+                                              } catch (err) {
+                                                await showAlert('Error issuing certificate: ' + err.message, 'Error', 'error');
+                                              }
+                                            }}
+                                          >
+                                            <FiAward style={{ marginRight: 4 }} /> {enr.certificate_issued ? 'Re-issue' : 'Issue'} Cert
+                                          </button>
+                                        )}
+                                      </div>
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </>
             )}
-          </>
-        )}
+          </div> {/* End ap-content-column */}
+        </div> {/* End ap-layout-main */}
+
         {/* User Profile Modal */}
         <Modal isOpen={!!profileUser} onClose={() => setProfileUser(null)} title="User Profile" size="lg">
           {profileUser && (
@@ -2230,578 +2649,6 @@ export default function AdminPanel() {
             </div>
           </form>
         </Modal>
-
-        {/* Daily Quiz Tab */}
-        {tab === 'daily-quiz' && (
-          <DailyQuizManager />
-        )}
-
-        {/* Events Tab */}
-        {tab === 'events' && (
-          <div className="ap-users animate-fade">
-            <div className="ap-search-row">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', flexWrap: 'wrap', gap: '12px' }}>
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flex: 1 }}>
-                  <div className="ap-search" style={{ flex: 1 }}><FiSearch /><input placeholder="Search events..." value={eventSearchFilter} onChange={e => setEventSearchFilter(e.target.value)} /></div>
-                  <div className="ap-activity-filters">
-                    {['all', 'upcoming', 'live', 'completed'].map(s => (
-                      <button key={s} className={`ap-filter-pill ${eventStatusFilter === s ? 'active' : ''}`} onClick={() => setEventStatusFilter(s)}>
-                        {s === 'all' ? 'All' : s.charAt(0).toUpperCase() + s.slice(1)}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <button className="btn btn-primary btn-sm" onClick={() => { setEditingEvent(null); setEventForm({ title: '', description: '', instructor_name: '', instructor_bio: '', instructor_image: '', event_date: '', duration_minutes: 60, live_link: '', thumbnail_url: '', enable_certificate: false, price: 0, status: 'upcoming' }); setShowEventModal(true); }}>
-                  <FiVideo style={{ marginRight: 6 }} /> Create Event
-                </button>
-              </div>
-            </div>
-
-            {/* Events Table */}
-            <div className="id-table-wrap">
-              <table className="id-table">
-                <thead>
-                  <tr>
-                    <th>Event</th>
-                    <th>Date</th>
-                    <th>Status</th>
-                    <th>Price</th>
-                    <th>Certificate</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {adminEvents
-                    .filter(ev => {
-                      const q = eventSearchFilter.toLowerCase();
-                      const matchesSearch = !q || ev.title.toLowerCase().includes(q) || (ev.instructor_name || '').toLowerCase().includes(q);
-                      const matchesStatus = eventStatusFilter === 'all' || ev.status === eventStatusFilter;
-                      return matchesSearch && matchesStatus;
-                    })
-                    .map(ev => (
-                    <tr key={ev.id}>
-                      <td>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                          {ev.thumbnail_url && <img src={ev.thumbnail_url} alt="" style={{ width: 48, height: 36, objectFit: 'cover', borderRadius: 6 }} />}
-                          <div>
-                            <strong style={{ display: 'block', fontSize: '0.9rem' }}>{ev.title}</strong>
-                            <span style={{ fontSize: '0.8rem', color: 'var(--gray-400)' }}>{ev.instructor_name}</span>
-                          </div>
-                        </div>
-                      </td>
-                      <td style={{ fontSize: '0.85rem' }}>
-                        {new Date(ev.event_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
-                        <br />
-                        <span style={{ fontSize: '0.75rem', color: 'var(--gray-400)' }}>{ev.duration_minutes} min</span>
-                      </td>
-                      <td>
-                        <span className={`badge badge-${ev.status === 'live' ? 'success' : ev.status === 'upcoming' ? 'primary' : 'info'}`}>
-                          {ev.status}
-                        </span>
-                      </td>
-                      <td style={{ fontWeight: 600 }}>{ev.price > 0 ? `₹${ev.price}` : 'Free'}</td>
-                      <td>
-                        {ev.enable_certificate ? (
-                          <span style={{ color: '#8b5cf6', fontWeight: 600, fontSize: '0.85rem' }}><FiAward style={{ marginRight: 4 }} /> Yes</span>
-                        ) : (
-                          <span style={{ color: 'var(--gray-400)', fontSize: '0.85rem' }}>No</span>
-                        )}
-                      </td>
-                      <td>
-                        <div style={{ display: 'flex', gap: '6px' }}>
-                          <button className="btn btn-outline btn-sm" onClick={async () => {
-                            setSelectedEventId(ev.id);
-                            setEventAttendeesLoading(true);
-                            try {
-                              const { data } = await supabase.from('event_attendance').select('*, user:users(name, email)').eq('event_id', ev.id);
-                              setEventAttendees(data || []);
-                            } catch { setEventAttendees([]); }
-                            finally { setEventAttendeesLoading(false); }
-                          }}>
-                            <FiUsers style={{ marginRight: 4 }} /> Attendees
-                          </button>
-                          <button className="btn btn-outline btn-sm" onClick={() => {
-                            setEditingEvent(ev);
-                            setEventForm({
-                              title: ev.title || '',
-                              description: ev.description || '',
-                              instructor_name: ev.instructor_name || '',
-                              instructor_bio: ev.instructor_bio || '',
-                              instructor_image: ev.instructor_image || '',
-                              event_date: ev.event_date ? new Date(ev.event_date).toISOString().slice(0, 16) : '',
-                              duration_minutes: ev.duration_minutes || 60,
-                              live_link: ev.live_link || '',
-                              thumbnail_url: ev.thumbnail_url || '',
-                              enable_certificate: ev.enable_certificate || false,
-                              price: ev.price || 0,
-                              status: ev.status || 'upcoming'
-                            });
-                            setShowEventModal(true);
-                          }}>
-                            <FiEye />
-                          </button>
-                          <button className="btn btn-outline btn-sm" style={{ color: 'var(--danger)', borderColor: 'var(--danger)' }} onClick={async () => {
-                            const confirmed = await showConfirm('Delete this event and all attendance records?', undefined, 'Delete Event', 'Delete', 'Cancel');
-                            if (!confirmed) return;
-                            try {
-                              await supabase.from('event_attendance').delete().eq('event_id', ev.id);
-                              const { error } = await supabase.from('events').delete().eq('id', ev.id);
-                              if (error) throw error;
-                              setAdminEvents(adminEvents.filter(e => e.id !== ev.id));
-                              await showAlert('Event deleted.', 'Deleted', 'success');
-                            } catch (err) {
-                              await showAlert('Error deleting event: ' + err.message, 'Error', 'error');
-                            }
-                          }}>
-                            <FiTrash2 />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                  {adminEvents.length === 0 && (
-                    <tr><td colSpan="6" style={{ textAlign: 'center', padding: '40px', color: 'var(--gray-400)' }}>No events created yet. Click "Create Event" to get started.</td></tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Attendees Panel */}
-            {selectedEventId && (
-              <div className="ap-card" style={{ marginTop: '24px' }}>
-                <div className="ap-card-header">
-                  <h3><FiUsers style={{ marginRight: 8 }} /> Attendees — {adminEvents.find(e => e.id === selectedEventId)?.title}</h3>
-                  <button className="btn-text" onClick={() => setSelectedEventId(null)}>Close</button>
-                </div>
-                {eventAttendeesLoading ? (
-                  <div style={{ padding: '24px', textAlign: 'center', color: 'var(--gray-400)' }}>Loading attendees...</div>
-                ) : eventAttendees.length === 0 ? (
-                  <div style={{ padding: '24px', textAlign: 'center', color: 'var(--gray-400)' }}>No registrations yet.</div>
-                ) : (
-                  <div className="id-table-wrap">
-                    <table className="id-table">
-                      <thead><tr><th>Student</th><th>Email</th><th>Registered</th><th>Attended</th><th>Payment</th><th>Certificate</th><th>Actions</th></tr></thead>
-                      <tbody>
-                        {eventAttendees.map(att => (
-                          <tr key={att.id}>
-                            <td style={{ fontWeight: 600 }}>{att.user?.name || 'Unknown'}</td>
-                            <td style={{ fontSize: '0.85rem', color: 'var(--gray-500)' }}>{att.user?.email || '-'}</td>
-                            <td>{att.registered ? <span className="badge badge-success">Yes</span> : <span className="badge badge-info">No</span>}</td>
-                            <td>{att.attended ? <span className="badge badge-success">Attended</span> : <span className="badge badge-danger">No</span>}</td>
-                            <td style={{ fontSize: '0.85rem' }}>{att.amount_paid > 0 ? `₹${att.amount_paid}` : 'Free'}</td>
-                            <td>{att.certificate_issued ? <span style={{ color: '#8b5cf6', fontWeight: 600, fontSize: '0.8rem' }}>{att.certificate_id}</span> : <span style={{ color: 'var(--gray-400)', fontSize: '0.8rem' }}>—</span>}</td>
-                            <td>
-                              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                                <button
-                                  className={`btn btn-sm ${att.attended ? 'btn-outline' : 'btn-primary'}`}
-                                  style={{ fontSize: '0.75rem' }}
-                                  onClick={async () => {
-                                    try {
-                                      const newVal = !att.attended;
-                                      await supabase.from('event_attendance').update({ attended: newVal, join_time: newVal ? new Date().toISOString() : null }).eq('id', att.id);
-                                      setEventAttendees(eventAttendees.map(a => a.id === att.id ? { ...a, attended: newVal } : a));
-                                    } catch (err) {
-                                      await showAlert('Error updating attendance: ' + err.message, 'Error', 'error');
-                                    }
-                                  }}
-                                >
-                                  {att.attended ? <><FiXCircle style={{ marginRight: 4 }} /> Unmark</> : <><FiCheckCircle style={{ marginRight: 4 }} /> Mark Attended</>}
-                                </button>
-                                {att.attended && adminEvents.find(e => e.id === selectedEventId)?.enable_certificate && (
-                                  <button
-                                    className="btn btn-outline btn-sm"
-                                    style={{ fontSize: '0.75rem', color: '#8b5cf6', borderColor: '#8b5cf6' }}
-                                    onClick={async () => {
-                                      try {
-                                        const { createEventCertificate } = await import('../utils/certificateLogUtils');
-                                        const eventData = adminEvents.find(e => e.id === selectedEventId);
-                                        await createEventCertificate(
-                                          { id: att.user_id, email: att.user?.email },
-                                          selectedEventId,
-                                          eventData?.title,
-                                          eventData?.instructor_name,
-                                          att.user?.name
-                                        );
-                                        // Refresh attendees
-                                        const { data } = await supabase.from('event_attendance').select('*, user:users(name, email)').eq('event_id', selectedEventId);
-                                        setEventAttendees(data || []);
-                                        await showAlert('Certificate issued!', 'Success', 'success');
-                                      } catch (err) {
-                                        await showAlert('Error issuing certificate: ' + err.message, 'Error', 'error');
-                                      }
-                                    }}
-                                  >
-                                    <FiAward style={{ marginRight: 4 }} /> {att.certificate_issued ? 'Re-issue' : 'Issue'} Cert
-                                  </button>
-                                )}
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Event Create/Edit Modal */}
-        <Modal isOpen={showEventModal} onClose={() => setShowEventModal(false)} title={editingEvent ? 'Edit Event' : 'Create Event'}>
-          <form onSubmit={async (e) => {
-            e.preventDefault();
-            setEventSubmitting(true);
-            try {
-              const payload = {
-                title: eventForm.title,
-                description: eventForm.description,
-                instructor_name: eventForm.instructor_name,
-                instructor_bio: eventForm.instructor_bio || null,
-                instructor_image: eventForm.instructor_image || null,
-                event_date: eventForm.event_date,
-                duration_minutes: parseInt(eventForm.duration_minutes) || 60,
-                live_link: eventForm.live_link,
-                thumbnail_url: eventForm.thumbnail_url,
-                enable_certificate: eventForm.enable_certificate,
-                price: parseFloat(eventForm.price) || 0,
-                status: eventForm.status
-              };
-
-              if (editingEvent) {
-                const { data, error } = await supabase.from('events').update(payload).eq('id', editingEvent.id).select();
-                if (error) throw error;
-                setAdminEvents(adminEvents.map(ev => ev.id === editingEvent.id ? data[0] : ev));
-                await showAlert('Event updated.', 'Success', 'success');
-              } else {
-                payload.created_by = user.id;
-                const { data, error } = await supabase.from('events').insert([payload]).select();
-                if (error) throw error;
-                setAdminEvents([data[0], ...adminEvents]);
-                await showAlert('Event created!', 'Success', 'success');
-              }
-              setShowEventModal(false);
-              setEditingEvent(null);
-            } catch (err) {
-              await showAlert('Error saving event: ' + err.message, 'Error', 'error');
-            } finally {
-              setEventSubmitting(false);
-            }
-          }}>
-            <div className="modal-body-modern">
-              <div className="form-grid-modern">
-                <div className="form-group-modern full" style={{ gridColumn: '1 / -1' }}>
-                  <label>Event Title *</label>
-                  <div className="input-with-icon">
-                    <FiVideo />
-                    <input className="form-control-modern" placeholder="e.g. Web Development Masterclass" value={eventForm.title} onChange={e => setEventForm({...eventForm, title: e.target.value})} required />
-                  </div>
-                </div>
-                <div className="form-group-modern">
-                  <label>Instructor / Speaker *</label>
-                  <div className="input-with-icon">
-                    <FiUser />
-                    <input className="form-control-modern" placeholder="Speaker name" value={eventForm.instructor_name} onChange={e => setEventForm({...eventForm, instructor_name: e.target.value})} required />
-                  </div>
-                </div>
-                <div className="form-group-modern">
-                  <label>Instructor Photo URL</label>
-                  <div className="input-with-icon">
-                    <FiImage />
-                    <input className="form-control-modern" placeholder="https://example.com/photo.jpg" value={eventForm.instructor_image} onChange={e => setEventForm({...eventForm, instructor_image: e.target.value})} />
-                  </div>
-                </div>
-                <div className="form-group-modern">
-                  <label>Date & Time *</label>
-                  <div className="input-with-icon">
-                    <FiCalendar />
-                    <input type="datetime-local" className="form-control-modern" value={eventForm.event_date} onChange={e => setEventForm({...eventForm, event_date: e.target.value})} required />
-                  </div>
-                </div>
-                <div className="form-group-modern">
-                  <label>Duration (minutes)</label>
-                  <div className="input-with-icon">
-                    <FiClock />
-                    <input type="number" className="form-control-modern" value={eventForm.duration_minutes} onChange={e => setEventForm({...eventForm, duration_minutes: e.target.value})} min="5" />
-                  </div>
-                </div>
-                <div className="form-group-modern">
-                  <label>Price (₹0 = Free)</label>
-                  <div className="input-with-icon">
-                    <FiDollarSign />
-                    <input type="number" className="form-control-modern" value={eventForm.price} onChange={e => setEventForm({...eventForm, price: e.target.value})} min="0" step="1" />
-                  </div>
-                </div>
-                <div className="form-group-modern">
-                  <label>Live Session Link</label>
-                  <div className="input-with-icon">
-                    <FiExternalLink />
-                    <input className="form-control-modern" placeholder="Zoom / Meet / YouTube link" value={eventForm.live_link} onChange={e => setEventForm({...eventForm, live_link: e.target.value})} />
-                  </div>
-                </div>
-                <div className="form-group-modern">
-                  <label>Thumbnail URL</label>
-                  <div className="input-with-icon">
-                    <FiImage />
-                    <input className="form-control-modern" placeholder="External image URL" value={eventForm.thumbnail_url} onChange={e => setEventForm({...eventForm, thumbnail_url: e.target.value})} />
-                  </div>
-                </div>
-                <div className="form-group-modern">
-                  <label>Status</label>
-                  <select className="form-control-modern" value={eventForm.status} onChange={e => setEventForm({...eventForm, status: e.target.value})}>
-                    <option value="upcoming">Upcoming</option>
-                    <option value="live">Live</option>
-                    <option value="completed">Completed</option>
-                  </select>
-                </div>
-                <div className="form-group-modern" style={{ gridColumn: '1 / -1' }}>
-                  <label>Description</label>
-                  <textarea className="form-control-modern" rows={3} placeholder="Event description..." value={eventForm.description} onChange={e => setEventForm({...eventForm, description: e.target.value})} style={{ resize: 'vertical' }} />
-                </div>
-                <div className="form-group-modern" style={{ gridColumn: '1 / -1' }}>
-                  <label>Instructor Bio <span style={{ fontSize: '0.75rem', color: 'var(--gray-400)', fontWeight: 400 }}>Use **bold** for emphasis. Separate paragraphs with Enter.</span></label>
-                  <textarea className="form-control-modern" rows={4} placeholder={`Hi! I'm [Name], a software architect with 10+ years of experience.
-
-My teaching style is simple: **no fluff, no wasted time.**`} value={eventForm.instructor_bio} onChange={e => setEventForm({...eventForm, instructor_bio: e.target.value})} style={{ resize: 'vertical' }} />
-                </div>
-                <div className="form-group-modern" style={{ gridColumn: '1 / -1' }}>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}>
-                    <span onClick={() => setEventForm({...eventForm, enable_certificate: !eventForm.enable_certificate})} style={{ fontSize: '1.5rem', color: eventForm.enable_certificate ? '#8b5cf6' : 'var(--gray-300)', cursor: 'pointer', display: 'flex' }}>
-                      {eventForm.enable_certificate ? <FiToggleRight /> : <FiToggleLeft />}
-                    </span>
-                    Enable Certificate for this Event
-                  </label>
-                </div>
-              </div>
-            </div>
-            <div className="modal-footer-modern">
-              <button type="button" className="btn-modern outline" onClick={() => setShowEventModal(false)}>Cancel</button>
-              <button type="submit" className="btn-modern primary" disabled={eventSubmitting}>
-                {eventSubmitting ? 'Saving...' : editingEvent ? 'Update Event' : 'Create Event'}
-              </button>
-            </div>
-          </form>
-        </Modal>
-
-        {/* ===== Bootcamps Tab ===== */}
-        {tab === 'bootcamps' && (
-          <div className="ap-users animate-fade">
-            <div className="ap-search-row">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', flexWrap: 'wrap', gap: '12px' }}>
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flex: 1 }}>
-                  <div className="ap-search" style={{ flex: 1 }}><FiSearch /><input placeholder="Search bootcamps..." value={bootcampSearchFilter} onChange={e => setBootcampSearchFilter(e.target.value)} /></div>
-                  <div className="ap-activity-filters">
-                    {['all', 'upcoming', 'active', 'completed'].map(s => (
-                      <button key={s} className={`ap-filter-pill ${bootcampStatusFilter === s ? 'active' : ''}`} onClick={() => setBootcampStatusFilter(s)}>
-                        {s === 'all' ? 'All' : s.charAt(0).toUpperCase() + s.slice(1)}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <button className="btn btn-primary btn-sm" style={{ background: '#008ad1', borderColor: '#008ad1' }} onClick={() => { setEditingBootcamp(null); setBootcampForm({ title: '', description: '', category: 'Online Bootcamp', instructor_name: '', instructor_bio: '', instructor_image: '', start_date: '', end_date: '', schedule_info: '', total_sessions: 1, live_link: '', thumbnail_url: '', enable_certificate: false, price: 0, status: 'upcoming', learning_outcomes: '', max_students: '' }); setShowBootcampModal(true); }}>
-                  <FiBookOpen style={{ marginRight: 6 }} /> Create Bootcamp
-                </button>
-              </div>
-            </div>
-
-            {/* Bootcamps Table */}
-            <div className="id-table-wrap">
-              <table className="id-table">
-                <thead>
-                  <tr>
-                    <th>Bootcamp</th>
-                    <th>Start Date</th>
-                    <th>End Date</th>
-                    <th>Status</th>
-                    <th>Price</th>
-                    <th>Certificate</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {adminBootcamps
-                    .filter(bc => {
-                      const q = bootcampSearchFilter.toLowerCase();
-                      const matchesSearch = !q || bc.title.toLowerCase().includes(q) || (bc.instructor_name || '').toLowerCase().includes(q);
-                      const matchesStatus = bootcampStatusFilter === 'all' || bc.status === bootcampStatusFilter;
-                      return matchesSearch && matchesStatus;
-                    })
-                    .map(bc => (
-                    <tr key={bc.id}>
-                      <td>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                          {bc.thumbnail_url && <img src={bc.thumbnail_url} alt="" style={{ width: 48, height: 36, objectFit: 'cover', borderRadius: 6 }} />}
-                          <div>
-                            <strong style={{ display: 'block', fontSize: '0.9rem' }}>{bc.title}</strong>
-                            <span style={{ fontSize: '0.8rem', color: 'var(--gray-400)' }}>{bc.instructor_name}</span>
-                          </div>
-                        </div>
-                      </td>
-                      <td style={{ fontSize: '0.85rem' }}>
-                        {new Date(bc.start_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
-                      </td>
-                      <td style={{ fontSize: '0.85rem' }}>
-                        {new Date(bc.end_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
-                      </td>
-                      <td>
-                        <span className={`badge badge-${bc.status === 'active' ? 'success' : bc.status === 'upcoming' ? 'primary' : 'info'}`} style={bc.status === 'upcoming' ? { background: '#008ad1', color: '#fff' } : {}}>
-                          {bc.status}
-                        </span>
-                      </td>
-                      <td style={{ fontWeight: 600 }}>{bc.price > 0 ? `₹${bc.price}` : 'Free'}</td>
-                      <td>
-                        {bc.enable_certificate ? (
-                          <span style={{ color: '#008ad1', fontWeight: 600, fontSize: '0.85rem' }}><FiAward style={{ marginRight: 4 }} /> Yes</span>
-                        ) : (
-                          <span style={{ color: 'var(--gray-400)', fontSize: '0.85rem' }}>No</span>
-                        )}
-                      </td>
-                      <td>
-                        <div style={{ display: 'flex', gap: '6px' }}>
-                          <button className="btn btn-outline btn-sm" onClick={async () => {
-                            setSelectedBootcampId(bc.id);
-                            setBootcampEnrolleesLoading(true);
-                            try {
-                              const { data } = await supabase.from('live_bootcamp_enrollments').select('*, user:users(name, email)').eq('live_bootcamp_id', bc.id);
-                              setBootcampEnrollees(data || []);
-                            } catch { setBootcampEnrollees([]); }
-                            finally { setBootcampEnrolleesLoading(false); }
-                          }}>
-                            <FiUsers style={{ marginRight: 4 }} /> Enrollees
-                          </button>
-                          <button className="btn btn-outline btn-sm" onClick={() => {
-                            setEditingBootcamp(bc);
-                            setBootcampForm({
-                              title: bc.title || '',
-                              description: bc.description || '',
-                              category: bc.category || 'Online Bootcamp',
-                              instructor_name: bc.instructor_name || '',
-                              instructor_bio: bc.instructor_bio || '',
-                              instructor_image: bc.instructor_image || '',
-                              start_date: bc.start_date ? new Date(bc.start_date).toISOString().slice(0, 16) : '',
-                              end_date: bc.end_date ? new Date(bc.end_date).toISOString().slice(0, 16) : '',
-                              schedule_info: bc.schedule_info || '',
-                              total_sessions: bc.total_sessions || 1,
-                              live_link: bc.live_link || '',
-                              thumbnail_url: bc.thumbnail_url || '',
-                              enable_certificate: bc.enable_certificate || false,
-                              price: bc.price || 0,
-                              status: bc.status || 'upcoming',
-                              learning_outcomes: (bc.learning_outcomes || []).join(', '),
-                              max_students: bc.max_students || ''
-                            });
-                            setShowBootcampModal(true);
-                          }}>
-                            <FiEye />
-                          </button>
-                          <button className="btn btn-outline btn-sm" style={{ color: 'var(--danger)', borderColor: 'var(--danger)' }} onClick={async () => {
-                            const confirmed = await showConfirm('Delete this bootcamp and all enrollment records?', undefined, 'Delete Bootcamp', 'Delete', 'Cancel');
-                            if (!confirmed) return;
-                            try {
-                              await supabase.from('live_bootcamp_enrollments').delete().eq('live_bootcamp_id', bc.id);
-                              const { error } = await supabase.from('live_bootcamps').delete().eq('id', bc.id);
-                              if (error) throw error;
-                              setAdminBootcamps(adminBootcamps.filter(b => b.id !== bc.id));
-                              await showAlert('Bootcamp deleted.', 'Deleted', 'success');
-                            } catch (err) {
-                              await showAlert('Error deleting bootcamp: ' + err.message, 'Error', 'error');
-                            }
-                          }}>
-                            <FiTrash2 />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                  {adminBootcamps.length === 0 && (
-                    <tr><td colSpan="7" style={{ textAlign: 'center', padding: '40px', color: 'var(--gray-400)' }}>No bootcamps yet. Click "Create Bootcamp" to get started.</td></tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Enrollees Panel */}
-            {selectedBootcampId && (
-              <div className="ap-card" style={{ marginTop: '24px' }}>
-                <div className="ap-card-header">
-                  <h3><FiUsers style={{ marginRight: 8 }} /> Enrollees — {adminBootcamps.find(b => b.id === selectedBootcampId)?.title}</h3>
-                  <button className="btn-text" onClick={() => setSelectedBootcampId(null)}>Close</button>
-                </div>
-                {bootcampEnrolleesLoading ? (
-                  <div style={{ padding: '24px', textAlign: 'center', color: 'var(--gray-400)' }}>Loading enrollees...</div>
-                ) : bootcampEnrollees.length === 0 ? (
-                  <div style={{ padding: '24px', textAlign: 'center', color: 'var(--gray-400)' }}>No enrollments yet.</div>
-                ) : (
-                  <div className="id-table-wrap">
-                    <table className="id-table">
-                      <thead><tr><th>Student</th><th>Email</th><th>Enrolled</th><th>Completed</th><th>Payment</th><th>Certificate</th><th>Actions</th></tr></thead>
-                      <tbody>
-                        {bootcampEnrollees.map(enr => (
-                          <tr key={enr.id}>
-                            <td style={{ fontWeight: 600 }}>{enr.user?.name || 'Unknown'}</td>
-                            <td style={{ fontSize: '0.85rem', color: 'var(--gray-500)' }}>{enr.user?.email || '-'}</td>
-                            <td>{enr.registered ? <span className="badge badge-success">Yes</span> : <span className="badge badge-info">No</span>}</td>
-                            <td>{enr.completed ? <span className="badge badge-success">Completed</span> : <span className="badge badge-danger">No</span>}</td>
-                            <td style={{ fontSize: '0.85rem' }}>{enr.amount_paid > 0 ? `₹${enr.amount_paid}` : 'Free'}</td>
-                            <td>{enr.certificate_issued ? <span style={{ color: '#008ad1', fontWeight: 600, fontSize: '0.8rem' }}>{enr.certificate_id}</span> : <span style={{ color: 'var(--gray-400)', fontSize: '0.8rem' }}>—</span>}</td>
-                            <td>
-                              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                                <button
-                                  className={`btn btn-sm ${enr.completed ? 'btn-outline' : 'btn-primary'}`}
-                                  style={{ fontSize: '0.75rem' }}
-                                  onClick={async () => {
-                                    try {
-                                      const newVal = !enr.completed;
-                                      await supabase.from('live_bootcamp_enrollments').update({ completed: newVal }).eq('id', enr.id);
-                                      setBootcampEnrollees(bootcampEnrollees.map(e => e.id === enr.id ? { ...e, completed: newVal } : e));
-                                    } catch (err) {
-                                      await showAlert('Error updating completion: ' + err.message, 'Error', 'error');
-                                    }
-                                  }}
-                                >
-                                  {enr.completed ? <><FiXCircle style={{ marginRight: 4 }} /> Unmark</> : <><FiCheckCircle style={{ marginRight: 4 }} /> Mark Completed</>}
-                                </button>
-                                {enr.completed && adminBootcamps.find(b => b.id === selectedBootcampId)?.enable_certificate && (
-                                  <button
-                                    className="btn btn-outline btn-sm"
-                                    style={{ fontSize: '0.75rem', color: '#008ad1', borderColor: '#008ad1' }}
-                                    onClick={async () => {
-                                      try {
-                                        const { createLiveBootcampCertificate } = await import('../utils/certificateLogUtils');
-                                        const bcData = adminBootcamps.find(b => b.id === selectedBootcampId);
-                                        await createLiveBootcampCertificate(
-                                          { id: enr.user_id, email: enr.user?.email },
-                                          selectedBootcampId,
-                                          bcData?.title,
-                                          bcData?.instructor_name,
-                                          enr.user?.name,
-                                          bcData?.start_date,
-                                          bcData?.end_date
-                                        );
-                                        // Refresh enrollees
-                                        const { data } = await supabase.from('live_bootcamp_enrollments').select('*, user:users(name, email)').eq('live_bootcamp_id', selectedBootcampId);
-                                        setBootcampEnrollees(data || []);
-                                        await showAlert('Certificate issued!', 'Success', 'success');
-                                      } catch (err) {
-                                        await showAlert('Error issuing certificate: ' + err.message, 'Error', 'error');
-                                      }
-                                    }}
-                                  >
-                                    <FiAward style={{ marginRight: 4 }} /> {enr.certificate_issued ? 'Re-issue' : 'Issue'} Cert
-                                  </button>
-                                )}
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        )}
 
         {/* Bootcamp Create/Edit Modal */}
         <Modal isOpen={showBootcampModal} onClose={() => setShowBootcampModal(false)} title={editingBootcamp ? 'Edit Bootcamp' : 'Create Bootcamp'}>

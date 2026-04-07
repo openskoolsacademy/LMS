@@ -120,27 +120,158 @@
   font-weight: 700;
 }
 
+.ap-layout-main {
+  display: flex;
+  gap: 32px;
+  align-items: flex-start;
+}
+.ap-sidebar-column {
+  width: 240px;
+  flex-shrink: 0;
+}
+.ap-content-column {
+  flex: 1;
+  min-width: 0;
+}
+
+@media (max-width: 1024px) {
+  .ap-layout-main {
+    flex-direction: column;
+    gap: 24px;
+  }
+  .ap-sidebar-column {
+    width: 100%;
+  }
+}
+
 .ap-tabs { 
   display: flex; 
-  gap: 8px; 
-  flex-wrap: wrap;
-  border-bottom: 2px solid var(--gray-200); 
-  padding-bottom: 12px;
-  margin-bottom: 28px; 
+  flex-direction: column;
+  background: var(--white);
+  border-radius: var(--radius-md);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  border: 1px solid var(--gray-100);
 }
+@media (max-width: 1024px) {
+  .ap-tabs {
+    flex-direction: row;
+    overflow-x: auto;
+    border-radius: 0;
+    box-shadow: none;
+    border: none;
+    border-bottom: 2px solid var(--gray-200);
+  }
+}
+
 .ap-tabs::-webkit-scrollbar {
   display: none; /* Chrome, Safari, Opera */
 }
+
 .ap-tab {
-  padding: 12px 20px; border: none; background: none; font-size: .875rem; font-weight: 600;
-  color: var(--gray-500); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px;
-  white-space: nowrap; display: flex; align-items: center; gap: 6px;
+  padding: 0;
+  border: none; 
+  background: transparent; 
+  cursor: pointer; 
+  display: flex; 
+  align-items: stretch;
+  width: 100%;
+  border-bottom: 1px solid #f1f5f9;
+  transition: all 0.2s ease;
 }
-.ap-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
-.ap-badge-count {
-  background: var(--danger); color: #fff; font-size: .625rem; font-weight: 700;
-  min-width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center;
+.ap-tab:last-child {
+  border-bottom: none;
+}
+.ap-tab:hover .ap-tab-content {
+  background: var(--gray-50);
+}
+
+.ap-tab-icon {
+  width: 50px;
+  display: flex;
+  align-items: center;
   justify-content: center;
+  background: var(--primary);
+  color: var(--white);
+  font-size: 1.1rem;
+  transition: all 0.2s ease;
+}
+
+.ap-tab-content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background: var(--white);
+  color: var(--gray-600);
+  font-size: .875rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.ap-tab-arrow {
+  font-size: 1rem;
+  color: var(--gray-300);
+  margin-left: 8px;
+  transition: transform 0.2s ease;
+}
+
+/* Active State */
+.ap-tab.active .ap-tab-icon {
+  background: #005a8d; /* Darker primary */
+}
+
+.ap-tab.active .ap-tab-content {
+  background: #006da3; /* Slightly lighter than icon, darker than base */
+  color: var(--white);
+}
+
+.ap-tab.active .ap-tab-arrow {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.ap-tab.active .ap-badge-count {
+  background: rgba(255, 255, 255, 0.2);
+  color: var(--white);
+}
+
+.ap-badge-count {
+  background: var(--danger); 
+  color: #fff; 
+  font-size: .625rem; 
+  font-weight: 700;
+  min-width: 20px; 
+  height: 20px; 
+  border-radius: 10px; 
+  display: flex; 
+  align-items: center;
+  justify-content: center; 
+  padding: 0 6px; 
+  margin-left: auto;
+}
+
+@media (max-width: 1024px) {
+  .ap-tab {
+    width: auto;
+    border-bottom: none;
+    border-right: 1px solid rgba(255,255,255,0.1);
+  }
+  .ap-tab-icon {
+    display: none; /* Hide icons entirely on mobile to save space, or style differently */
+  }
+  .ap-tab-content {
+    background: transparent !important;
+    padding: 14px 20px;
+  }
+  .ap-tab.active {
+    border-bottom: 2px solid var(--primary);
+  }
+  .ap-tab.active .ap-tab-content {
+    color: var(--primary);
+  }
+  .ap-tab-arrow { display: none; }
 }
 
 /* Stats */
