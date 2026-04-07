@@ -171,9 +171,7 @@ export default function LiveBootcamps() {
     return getBootcampStatus(bc) === filter;
   });
 
-  const upcomingCount = bootcamps.filter(bc => getBootcampStatus(bc) === 'upcoming').length;
-  const activeCount = bootcamps.filter(bc => getBootcampStatus(bc) === 'active').length;
-  const completedCount = bootcamps.filter(bc => getBootcampStatus(bc) === 'completed').length;
+
 
   if (loading) return (
     <div className="container section" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', gap: '20px' }}>
@@ -190,24 +188,7 @@ export default function LiveBootcamps() {
           <span className="lb-hero-label">Online Bootcamp</span>
           <h1>Bootcamps</h1>
           <p>Master in-demand skills with intensive, instructor-led live sessions. Get certified and job-ready.</p>
-          <div className="lb-hero-stats">
-            <div className="lb-hero-stat">
-              <strong>{upcomingCount}</strong>
-              <span>Upcoming</span>
-            </div>
-            <div className="lb-hero-stat">
-              <strong>{activeCount}</strong>
-              <span>Active Now</span>
-            </div>
-            <div className="lb-hero-stat">
-              <strong>{completedCount}</strong>
-              <span>Completed</span>
-            </div>
-            <div className="lb-hero-stat">
-              <strong>{Object.values(enrollments).filter(e => e.registered).length}</strong>
-              <span>Enrolled</span>
-            </div>
-          </div>
+
         </div>
 
         {/* Filters */}

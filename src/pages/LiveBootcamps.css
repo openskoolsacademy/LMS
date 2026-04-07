@@ -74,35 +74,7 @@
   z-index: 1;
 }
 
-.lb-hero-stats {
-  display: flex;
-  gap: 24px;
-  margin-top: 24px;
-  position: relative;
-  z-index: 1;
-}
 
-.lb-hero-stat {
-  background: rgba(255,255,255,0.15);
-  backdrop-filter: blur(10px);
-  border-radius: 12px;
-  padding: 14px 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-width: 100px;
-}
-
-.lb-hero-stat strong {
-  font-size: 1.5rem;
-  font-weight: 800;
-}
-
-.lb-hero-stat span {
-  font-size: 0.8rem;
-  opacity: 0.85;
-  margin-top: 2px;
-}
 
 /* Filters */
 .lb-filters {
@@ -332,21 +304,7 @@
     font-size: 1.6rem;
   }
 
-  .lb-hero-stats {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-  }
 
-  .lb-hero-stat {
-    min-width: 0;
-    width: 100%;
-    padding: 12px 10px;
-  }
-
-  .lb-hero-stat strong {
-    font-size: 1.4rem;
-  }
 
   .lb-grid {
     grid-template-columns: 1fr;

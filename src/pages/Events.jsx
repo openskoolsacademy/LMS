@@ -248,9 +248,7 @@ export default function Events() {
     return getEventStatus(e) === filter;
   });
 
-  const upcomingCount = events.filter(e => getEventStatus(e) === 'upcoming').length;
-  const liveCount = events.filter(e => getEventStatus(e) === 'live').length;
-  const completedCount = events.filter(e => getEventStatus(e) === 'completed').length;
+
 
   if (loading) return (
     <div className="container section" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', gap: '20px' }}>
@@ -266,24 +264,7 @@ export default function Events() {
         <div className="events-hero animate-fade">
           <h1>Live Events & Webinars</h1>
           <p>Join interactive live sessions, earn certificates, and grow your skills with industry experts.</p>
-          <div className="events-hero-stats">
-            <div className="events-hero-stat">
-              <strong>{upcomingCount}</strong>
-              <span>Upcoming</span>
-            </div>
-            <div className="events-hero-stat">
-              <strong>{liveCount}</strong>
-              <span>Live Now</span>
-            </div>
-            <div className="events-hero-stat">
-              <strong>{completedCount}</strong>
-              <span>Completed</span>
-            </div>
-            <div className="events-hero-stat">
-              <strong>{Object.values(attendance).filter(a => a.attended).length}</strong>
-              <span>Attended</span>
-            </div>
-          </div>
+
         </div>
 
         {/* Filters */}
