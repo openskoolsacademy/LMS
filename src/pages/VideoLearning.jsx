@@ -343,25 +343,7 @@ export default function VideoLearning() {
           </div>
         </div>
 
-        {/* Assessment Banner */}
-        {progress === 100 && hasAssessment && (
-          <Link to={`/assessment/${course.id}`} className="vl-assessment-banner">
-            <FiAward className="vl-assess-icon" />
-            <div>
-              <strong>Take Assessment</strong>
-              <span>Pass to unlock your certificate</span>
-            </div>
-          </Link>
-        )}
-        {progress === 100 && !hasAssessment && (
-          <Link to={`/dashboard?tab=certificates`} className="vl-assessment-banner vl-complete-banner">
-            <FiCheckCircle className="vl-assess-icon" />
-            <div>
-              <strong>Course Completed!</strong>
-              <span>View your certificate</span>
-            </div>
-          </Link>
-        )}
+
 
         <div className="vl-sidebar__lessons">
           {curriculum.map((section, si) => (
@@ -384,6 +366,25 @@ export default function VideoLearning() {
               ))}
             </div>
           ))}
+          {/* Assessment Banner */}
+          {progress === 100 && hasAssessment && (
+            <Link to={`/assessment/${course.id}`} className="vl-assessment-banner">
+              <FiAward className="vl-assess-icon" />
+              <div>
+                <strong>Take Assessment</strong>
+                <span>Pass to unlock your certificate</span>
+              </div>
+            </Link>
+          )}
+          {progress === 100 && !hasAssessment && (
+            <Link to={`/dashboard?tab=certificates`} className="vl-assessment-banner vl-complete-banner">
+              <FiCheckCircle className="vl-assess-icon" />
+              <div>
+                <strong>Course Completed!</strong>
+                <span>View your certificate</span>
+              </div>
+            </Link>
+          )}
         </div>
       </aside>
     </div>
