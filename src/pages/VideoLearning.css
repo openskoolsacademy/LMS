@@ -15,9 +15,40 @@
 }
 
 .vl-video { background: #000; width: 100%; max-width: 100vw; overflow: hidden; }
-.vl-video__screen { width: 100%; max-width: 100vw; aspect-ratio: 16/9; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
-.vl-video__screen iframe, .vl-video__screen video { width: 100% !important; max-width: 100% !important; height: 100% !important; }
-.vl-video__placeholder { text-align: center; color: var(--gray-400); }
+.vl-video__screen {
+  position: relative;
+  width: 100%;
+  max-width: 100vw;
+  padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+  height: 0;
+  overflow: hidden;
+  background: #000;
+}
+
+.vl-video__screen > div {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.vl-video__screen iframe, .vl-video__screen video { 
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100% !important; 
+  max-width: 100% !important; 
+  height: 100% !important; 
+}
+.vl-video__placeholder { 
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center; 
+  color: var(--gray-400); 
+}
 .vl-play-icon { font-size: 4rem; color: var(--primary); margin-bottom: 16px; opacity: .6; }
 .vl-video__placeholder h3 { color: var(--white); margin-bottom: 8px; }
 .vl-video__placeholder p { font-size: .875rem; }
