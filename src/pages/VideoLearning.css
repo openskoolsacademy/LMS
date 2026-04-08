@@ -129,11 +129,18 @@
 .vl-lesson-btn .vl-lesson-dur { font-size: .75rem; color: var(--gray-400); }
 
 /* Assessment/Completion Banner */
+.vl-sidebar__footer {
+  border-top: 1px solid var(--gray-200);
+  background: var(--white);
+  padding: 8px 0;
+  flex-shrink: 0;
+  box-shadow: 0 -4px 10px rgba(0,0,0,0.02);
+}
 .vl-assessment-banner {
   display: flex;
   align-items: center;
   gap: 14px;
-  margin: 16px 20px;
+  margin: 8px 20px 16px 20px;
   padding: 16px 20px;
   background: linear-gradient(135deg, var(--primary), #06b6d4);
   border-radius: 12px;

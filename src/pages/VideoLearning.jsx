@@ -271,6 +271,29 @@ export default function VideoLearning() {
                   ))}
                 </div>
               ))}
+              
+              {/* Mobile Assessment Banner */}
+              {progress === 100 && (
+                <div style={{ marginTop: '24px' }}>
+                  {hasAssessment ? (
+                    <Link to={`/assessment/${course.id}`} className="vl-assessment-banner" style={{ margin: '0' }}>
+                      <FiAward className="vl-assess-icon" />
+                      <div>
+                        <strong>Take Assessment</strong>
+                        <span>Pass to unlock your certificate</span>
+                      </div>
+                    </Link>
+                  ) : (
+                    <Link to={`/dashboard?tab=certificates`} className="vl-assessment-banner vl-complete-banner" style={{ margin: '0' }}>
+                      <FiCheckCircle className="vl-assess-icon" />
+                      <div>
+                        <strong>Course Completed!</strong>
+                        <span>View your certificate</span>
+                      </div>
+                    </Link>
+                  )}
+                </div>
+              )}
             </div>
           )}
 
@@ -366,26 +389,30 @@ export default function VideoLearning() {
               ))}
             </div>
           ))}
-          {/* Assessment Banner */}
-          {progress === 100 && hasAssessment && (
-            <Link to={`/assessment/${course.id}`} className="vl-assessment-banner">
-              <FiAward className="vl-assess-icon" />
-              <div>
-                <strong>Take Assessment</strong>
-                <span>Pass to unlock your certificate</span>
-              </div>
-            </Link>
-          )}
-          {progress === 100 && !hasAssessment && (
-            <Link to={`/dashboard?tab=certificates`} className="vl-assessment-banner vl-complete-banner">
-              <FiCheckCircle className="vl-assess-icon" />
-              <div>
-                <strong>Course Completed!</strong>
-                <span>View your certificate</span>
-              </div>
-            </Link>
-          )}
         </div>
+        
+        {/* Sidebar Footer - Assessment/Certificate */}
+        {(progress === 100) && (
+          <div className="vl-sidebar__footer">
+            {hasAssessment ? (
+              <Link to={`/assessment/${course.id}`} className="vl-assessment-banner">
+                <FiAward className="vl-assess-icon" />
+                <div>
+                  <strong>Take Assessment</strong>
+                  <span>Pass to unlock your certificate</span>
+                </div>
+              </Link>
+            ) : (
+              <Link to={`/dashboard?tab=certificates`} className="vl-assessment-banner vl-complete-banner">
+                <FiCheckCircle className="vl-assess-icon" />
+                <div>
+                  <strong>Course Completed!</strong>
+                  <span>View your certificate</span>
+                </div>
+              </Link>
+            )}
+          </div>
+        )}
       </aside>
     </div>
   );
