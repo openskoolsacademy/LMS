@@ -1855,7 +1855,7 @@ export default function AdminPanel() {
               <div className="ap-profile-hero">
                 <div className="ap-profile-avatar">
                   {profileUser.avatar_url ? (
-                    <img src={profileUser.avatar_url} alt={profileUser.name} />
+                    <img src={resolveImageUrl(profileUser.avatar_url)} alt={profileUser.name} />
                   ) : (
                     <span>{profileUser.name?.charAt(0)?.toUpperCase() || 'U'}</span>
                   )}

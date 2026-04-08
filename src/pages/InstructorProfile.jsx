@@ -122,7 +122,7 @@ export default function InstructorProfile() {
             <div className="ipg-hero-main">
               <div className="ipg-avatar">
                 {instructor.avatar_url ? (
-                  <img src={instructor.avatar_url} alt={instructor.name} />
+                  <img src={resolveImageUrl(instructor.avatar_url)} alt={instructor.name} />
                 ) : (
                   <span>{instructor.name?.charAt(0)?.toUpperCase() || 'I'}</span>
                 )}

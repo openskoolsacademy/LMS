@@ -375,7 +375,7 @@ export default function EventDetail() {
               <h2 className="ed-section-title">Why Learn From {event.instructor_name.split(' ')[0]}?</h2>
               <div className="ed-instructor-card">
                 <img
-                  src={event.instructor_image || `https://ui-avatars.com/api/?name=${encodeURIComponent(event.instructor_name)}&size=200&background=e0f2fe&color=008ad1&bold=true&font-size=0.4`}
+                  src={resolveImageUrl(event.instructor_image) || `https://ui-avatars.com/api/?name=${encodeURIComponent(event.instructor_name)}&size=200&background=e0f2fe&color=008ad1&bold=true&font-size=0.4`}
                   alt={event.instructor_name}
                   className="ed-instructor-avatar"
                 />

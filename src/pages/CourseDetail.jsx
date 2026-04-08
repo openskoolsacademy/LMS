@@ -74,7 +74,7 @@ export default function CourseDetail() {
         ...courseData,
         instructorId: courseData.instructor_id,
         instructorName: courseData.instructor?.name || 'Unknown',
-        instructorAvatar: courseData.instructor?.avatar_url || 'https://i.pravatar.cc/150?img=11',
+        instructorAvatar: resolveImageUrl(courseData.instructor?.avatar_url) || 'https://i.pravatar.cc/150?img=11',
         rating: stats.average_rating || 0,
         reviewsCount: stats.review_count || 0,
         studentsEnrolled: stats.student_count || 0,

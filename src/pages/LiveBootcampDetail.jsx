@@ -407,7 +407,7 @@ export default function LiveBootcampDetail() {
               <h2 className="lbd-section-title">Why Learn From {bootcamp.instructor_name.split(' ')[0]}?</h2>
               <div className="lbd-instructor-card">
                 <img
-                  src={bootcamp.instructor_image || `https://ui-avatars.com/api/?name=${encodeURIComponent(bootcamp.instructor_name)}&size=200&background=e0f2fe&color=008ad1&bold=true&font-size=0.4`}
+                  src={resolveImageUrl(bootcamp.instructor_image) || `https://ui-avatars.com/api/?name=${encodeURIComponent(bootcamp.instructor_name)}&size=200&background=e0f2fe&color=008ad1&bold=true&font-size=0.4`}
                   alt={bootcamp.instructor_name}
                   className="lbd-instructor-avatar"
                 />

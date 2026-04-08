@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FiBookOpen, FiBarChart2, FiAward, FiUser, FiLogOut, FiChevronDown, FiEdit, FiBookmark } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
+import { resolveImageUrl } from '../../utils/imageUtils';
 import './ProfileDropdown.css';
 
 export default function ProfileDropdown() {
@@ -44,7 +45,7 @@ export default function ProfileDropdown() {
       <button className="profile-dropdown__trigger" onClick={() => setOpen(!open)}>
         <div className="profile-dropdown__avatar">
           {profile?.avatar_url ? (
-            <img src={profile.avatar_url} alt={profile?.name} />
+            <img src={resolveImageUrl(profile.avatar_url)} alt={profile?.name} />
           ) : (
             <FiUser />
           )}
@@ -59,7 +60,7 @@ export default function ProfileDropdown() {
           <div className="profile-dropdown__header">
             <div className="profile-dropdown__header-avatar">
               {profile?.avatar_url ? (
-                <img src={profile.avatar_url} alt={profile?.name} />
+                <img src={resolveImageUrl(profile.avatar_url)} alt={profile?.name} />
               ) : (
                 <FiUser size={20} />
               )}
