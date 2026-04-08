@@ -183,7 +183,7 @@ export default function VideoLearning() {
       {/* Video Area */}
       <div className="vl-player">
         <div className="vl-player__header">
-          <Link to={`/courses/${course.id}`} className="vl-back"><FiChevronLeft /> Back to course</Link>
+          <Link to={`/courses/${course.id}`} className="vl-back"><FiChevronLeft /> Back</Link>
           <span className="vl-course-title">{course.title}</span>
         </div>
         <div className="vl-video">
