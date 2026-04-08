@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { FiPlay, FiClock, FiBookOpen, FiUsers, FiGlobe, FiAward, FiChevronDown, FiChevronUp, FiCheck, FiStar, FiTag, FiFileText, FiTrash2, FiEdit2 } from 'react-icons/fi';
+import ReactPlayer from 'react-player';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { useAlert } from '../context/AlertContext';
@@ -23,7 +24,6 @@ export default function CourseDetail() {
   const [coupon, setCoupon] = useState('');
   const [couponApplied, setCouponApplied] = useState(null); // Now stores the coupon object
   const [isEnrolled, setIsEnrolled] = useState(false);
-  const [isPlayingPreview, setIsPlayingPreview] = useState(false);
   const [lessons, setLessons] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [userReview, setUserReview] = useState(null);
@@ -481,7 +481,6 @@ export default function CourseDetail() {
   const ratingBars = calculateRatingBars();
 
   const promoVideo = lessons.find(l => l.title === 'Course Introduction' || l.order_index === 0)?.video_url;
-  const embedUrl = promoVideo ? promoVideo.replace('watch?v=', 'embed/').replace('/view?usp=sharing', '/preview').replace('/view', '/preview') : '';
 
   return (
     <div className="course-detail">
@@ -534,24 +533,20 @@ export default function CourseDetail() {
         <div className="cd-main">
           {/* Mobile Video Preview (Only shows on mobile) */}
           <div className="cd-video-preview animate-fade md-hide">
-            {isPlayingPreview && promoVideo ? (
-              <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-                <iframe 
-                  src={embedUrl}
-                  style={{ width: '100%', height: '100%', border: 'none', borderRadius: 'var(--radius-lg)' }}
-                  allowFullScreen
-                />
-                <div style={{ position: 'absolute', top: 0, right: 0, width: '60px', height: '60px', background: 'transparent', zIndex: 10, cursor: 'default' }} title="Pop-out disabled" />
-              </div>
-            ) : (
-              <>
-                <img src={course.thumbnail} alt={course.title} />
-                <div className="cd-play-overlay" onClick={() => promoVideo ? setIsPlayingPreview(true) : showAlert('No promo video available.', 'Unavailable', 'info')}>
+            <ReactPlayer 
+              url={promoVideo}
+              light={course.thumbnail}
+              playing={true}
+              controls={true}
+              width="100%"
+              height="100%"
+              playIcon={
+                <div className="cd-play-overlay">
                   <button className="cd-play-btn"><FiPlay /></button>
                   <span>Preview this course</span>
                 </div>
-              </>
-            )}
+              }
+            />
           </div>
 
           {/* Tabs */}
@@ -806,24 +801,20 @@ export default function CourseDetail() {
           <div className="cd-price-card">
             {/* Desktop Video Preview */}
             <div className="cd-video-preview animate-fade desk-only">
-              {isPlayingPreview && promoVideo ? (
-                <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-                  <iframe 
-                    src={embedUrl}
-                    style={{ width: '100%', height: '100%', border: 'none', borderRadius: 'var(--radius-lg)' }}
-                    allowFullScreen
-                  />
-                  <div style={{ position: 'absolute', top: 0, right: 0, width: '60px', height: '60px', background: 'transparent', zIndex: 10, cursor: 'default' }} title="Pop-out disabled" />
-                </div>
-              ) : (
-                <>
-                  <img src={course.thumbnail} alt={course.title} />
-                  <div className="cd-play-overlay" onClick={() => promoVideo ? setIsPlayingPreview(true) : showAlert('No promo video available.', 'Unavailable', 'info')}>
+              <ReactPlayer 
+                url={promoVideo}
+                light={course.thumbnail}
+                playing={true}
+                controls={true}
+                width="100%"
+                height="100%"
+                playIcon={
+                  <div className="cd-play-overlay">
                     <button className="cd-play-btn"><FiPlay /></button>
                     <span>Preview this course</span>
                   </div>
-                </>
-              )}
+                }
+              />
             </div>
 
             <div className="cd-price-content">
