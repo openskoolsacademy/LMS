@@ -23,7 +23,6 @@ export default function CourseDetail() {
   const [coupon, setCoupon] = useState('');
   const [couponApplied, setCouponApplied] = useState(null); // Now stores the coupon object
   const [isEnrolled, setIsEnrolled] = useState(false);
-  const [isPlayingPreview, setIsPlayingPreview] = useState(false);
   const [lessons, setLessons] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [userReview, setUserReview] = useState(null);
@@ -533,7 +532,7 @@ export default function CourseDetail() {
         <div className="cd-main">
           {/* Mobile Video Preview (Only shows on mobile) */}
           <div className="cd-video-preview animate-fade md-hide">
-            {isPlayingPreview && promoVideo ? (
+            {promoVideo ? (
               <iframe 
                 src={resolveVideoUrl(promoVideo)}
                 style={{ width: '100%', height: '100%', border: 'none' }}
@@ -541,15 +540,7 @@ export default function CourseDetail() {
                 allow="autoplay"
               />
             ) : (
-              <>
-                <img src={course.thumbnail} alt={course.title} />
-                {promoVideo && (
-                  <div className="cd-play-overlay" onClick={() => setIsPlayingPreview(true)}>
-                    <button className="cd-play-btn"><FiPlay /></button>
-                    <span>Preview this course</span>
-                  </div>
-                )}
-              </>
+              <img src={course.thumbnail} alt={course.title} />
             )}
           </div>
 
@@ -805,7 +796,7 @@ export default function CourseDetail() {
           <div className="cd-price-card">
             {/* Desktop Video Preview */}
             <div className="cd-video-preview animate-fade desk-only">
-              {isPlayingPreview && promoVideo ? (
+              {promoVideo ? (
                 <iframe 
                   src={resolveVideoUrl(promoVideo)}
                   style={{ width: '100%', height: '100%', border: 'none' }}
@@ -813,15 +804,7 @@ export default function CourseDetail() {
                   allow="autoplay"
                 />
               ) : (
-                <>
-                  <img src={course.thumbnail} alt={course.title} />
-                  {promoVideo && (
-                    <div className="cd-play-overlay" onClick={() => setIsPlayingPreview(true)}>
-                      <button className="cd-play-btn"><FiPlay /></button>
-                      <span>Preview this course</span>
-                    </div>
-                  )}
-                </>
+                <img src={course.thumbnail} alt={course.title} />
               )}
             </div>
 
