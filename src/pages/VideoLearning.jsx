@@ -265,7 +265,7 @@ export default function VideoLearning() {
                         {completed.includes(lesson.id) ? <FiCheckCircle className="completed" /> : <FiCircle />}
                       </span>
                       <span className="vl-lesson-title">{lesson.title}</span>
-                      <span className="vl-lesson-dur">{lesson.duration}</span>
+                      <span className="vl-lesson-dur">{lesson.duration ? `${lesson.duration}m` : ''}</span>
                     </button>
                   ))}
                 </div>
@@ -377,7 +377,7 @@ export default function VideoLearning() {
                   </span>
                   <div className="vl-sidebar-lesson-info">
                     <span className="vl-sidebar-lesson-name">{lesson.title}</span>
-                    <span className="vl-sidebar-lesson-meta"><FiPlay /> {lesson.duration}</span>
+                    <span className="vl-sidebar-lesson-meta"><FiPlay /> {lesson.duration ? `${lesson.duration}m` : ''}</span>
                   </div>
                 </button>
               ))}
