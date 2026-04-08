@@ -67,7 +67,13 @@ export const AuthProvider = ({ children }) => {
         });
       }
       
-      setProfile(profileData);
+      // Only overwrite if we got valid data, to prevent transient network errors 
+      // from wiping out the active profile (which makes admins suddenly look like students).
+      setProfile(prev => {
+        if (profileData) return profileData;
+        if (prev && prev.id === userId) return prev;
+        return null;
+      });
     } catch (error) {
       console.error('AuthContext: Fatal Profile Error:', error);
     } finally {
