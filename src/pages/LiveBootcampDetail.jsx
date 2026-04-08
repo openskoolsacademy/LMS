@@ -393,11 +393,24 @@ export default function LiveBootcampDetail() {
             <span className="lbd-section-label">By the End of This Bootcamp</span>
             <h2 className="lbd-section-title">What You'll Achieve</h2>
             <ul className="lbd-achieve-list">
-              <li><FiCheckCircle /> Gain practical, job-ready skills from industry experts</li>
-              <li><FiCheckCircle /> Hands-on experience through live coding sessions</li>
-              <li><FiCheckCircle /> Network with other learners and professionals</li>
-              {bootcamp.enable_certificate && (
-                <li><FiCheckCircle /> Earn a verifiable certificate of completion</li>
+              {bootcamp.achievements && bootcamp.achievements.length > 0 ? (
+                <>
+                  {bootcamp.achievements.flatMap(o => o.split('\n')).map(o => o.trim()).filter(Boolean).map((outcome, i) => (
+                    <li key={`achieve-${i}`}><FiCheckCircle /> {outcome}</li>
+                  ))}
+                  {bootcamp.enable_certificate && (
+                    <li><FiCheckCircle /> Earn a verifiable certificate of completion</li>
+                  )}
+                </>
+              ) : (
+                <>
+                  <li><FiCheckCircle /> Gain practical, job-ready skills from industry experts</li>
+                  <li><FiCheckCircle /> Hands-on experience through live coding sessions</li>
+                  <li><FiCheckCircle /> Network with other learners and professionals</li>
+                  {bootcamp.enable_certificate && (
+                    <li><FiCheckCircle /> Earn a verifiable certificate of completion</li>
+                  )}
+                </>
               )}
             </ul>
 

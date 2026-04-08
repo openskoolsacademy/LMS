@@ -69,7 +69,7 @@ export default function AdminPanel() {
   const [adminBootcamps, setAdminBootcamps] = useState([]);
   const [showBootcampModal, setShowBootcampModal] = useState(false);
   const [editingBootcamp, setEditingBootcamp] = useState(null);
-  const [bootcampForm, setBootcampForm] = useState({ title: '', description: '', category: 'Online Bootcamp', instructor_name: '', instructor_bio: '', instructor_image: '', start_date: '', end_date: '', schedule_info: '', total_sessions: 1, live_link: '', thumbnail_url: '', enable_certificate: false, price: 0, status: 'upcoming', learning_outcomes: '', max_students: '' });
+  const [bootcampForm, setBootcampForm] = useState({ title: '', description: '', category: 'Online Bootcamp', instructor_name: '', instructor_bio: '', instructor_image: '', start_date: '', end_date: '', schedule_info: '', total_sessions: 1, live_link: '', thumbnail_url: '', enable_certificate: false, price: 0, status: 'upcoming', learning_outcomes: '', achievements: '', max_students: '' });
   const [bootcampSubmitting, setBootcampSubmitting] = useState(false);
   const [bootcampEnrollees, setBootcampEnrollees] = useState([]);
   const [selectedBootcampId, setSelectedBootcampId] = useState(null);
@@ -1639,7 +1639,7 @@ export default function AdminPanel() {
                             ))}
                           </div>
                         </div>
-                        <button className="btn btn-primary btn-sm" style={{ background: '#008ad1', borderColor: '#008ad1' }} onClick={() => { setEditingBootcamp(null); setBootcampForm({ title: '', description: '', category: 'Online Bootcamp', instructor_name: '', instructor_bio: '', instructor_image: '', start_date: '', end_date: '', schedule_info: '', total_sessions: 1, live_link: '', thumbnail_url: '', enable_certificate: false, price: 0, status: 'upcoming', learning_outcomes: '', max_students: '' }); setShowBootcampModal(true); }}>
+                        <button className="btn btn-primary btn-sm" style={{ background: '#008ad1', borderColor: '#008ad1' }} onClick={() => { setEditingBootcamp(null); setBootcampForm({ title: '', description: '', category: 'Online Bootcamp', instructor_name: '', instructor_bio: '', instructor_image: '', start_date: '', end_date: '', schedule_info: '', total_sessions: 1, live_link: '', thumbnail_url: '', enable_certificate: false, price: 0, status: 'upcoming', learning_outcomes: '', achievements: '', max_students: '' }); setShowBootcampModal(true); }}>
                           <FiBookOpen style={{ marginRight: 6 }} /> Create Bootcamp
                         </button>
                       </div>
@@ -1729,6 +1729,7 @@ export default function AdminPanel() {
                                       price: bc.price || 0,
                                       status: bc.status || 'upcoming',
                                       learning_outcomes: (bc.learning_outcomes || []).join('\n'),
+                                      achievements: (bc.achievements || []).join('\n'),
                                       max_students: bc.max_students || ''
                                     });
                                     setShowBootcampModal(true);
@@ -2660,6 +2661,9 @@ export default function AdminPanel() {
               const outcomes = bootcampForm.learning_outcomes
                 ? bootcampForm.learning_outcomes.split('\n').map(s => s.trim()).filter(Boolean)
                 : [];
+              const achievementsList = bootcampForm.achievements
+                ? bootcampForm.achievements.split('\n').map(s => s.trim()).filter(Boolean)
+                : [];
               const payload = {
                 title: bootcampForm.title,
                 description: bootcampForm.description,
@@ -2677,6 +2681,7 @@ export default function AdminPanel() {
                 price: parseFloat(bootcampForm.price) || 0,
                 status: bootcampForm.status,
                 learning_outcomes: outcomes,
+                achievements: achievementsList,
                 max_students: bootcampForm.max_students ? parseInt(bootcampForm.max_students) : null
               };
 
@@ -2798,6 +2803,10 @@ export default function AdminPanel() {
                 <div className="form-group-modern" style={{ gridColumn: '1 / -1' }}>
                   <label>Learning Outcomes <span style={{ fontSize: '0.75rem', color: 'var(--gray-400)', fontWeight: 400 }}>One per line</span></label>
                   <textarea className="form-control-modern" rows={4} placeholder="Build real projects&#10;Master React&#10;Learn Node.js&#10;Deploy to cloud" value={bootcampForm.learning_outcomes} onChange={e => setBootcampForm({...bootcampForm, learning_outcomes: e.target.value})} style={{ resize: 'vertical' }} />
+                </div>
+                <div className="form-group-modern" style={{ gridColumn: '1 / -1' }}>
+                  <label>What You'll Achieve <span style={{ fontSize: '0.75rem', color: 'var(--gray-400)', fontWeight: 400 }}>One per line</span></label>
+                  <textarea className="form-control-modern" rows={4} placeholder="Gain practical, job-ready skills&#10;Hands-on experience through live coding&#10;Network with professionals" value={bootcampForm.achievements} onChange={e => setBootcampForm({...bootcampForm, achievements: e.target.value})} style={{ resize: 'vertical' }} />
                 </div>
                 <div className="form-group-modern" style={{ gridColumn: '1 / -1' }}>
                   <label style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}>
