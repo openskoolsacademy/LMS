@@ -1728,7 +1728,7 @@ export default function AdminPanel() {
                                       enable_certificate: bc.enable_certificate || false,
                                       price: bc.price || 0,
                                       status: bc.status || 'upcoming',
-                                      learning_outcomes: (bc.learning_outcomes || []).join(', '),
+                                      learning_outcomes: (bc.learning_outcomes || []).join('\n'),
                                       max_students: bc.max_students || ''
                                     });
                                     setShowBootcampModal(true);
@@ -2658,7 +2658,7 @@ export default function AdminPanel() {
             setBootcampSubmitting(true);
             try {
               const outcomes = bootcampForm.learning_outcomes
-                ? bootcampForm.learning_outcomes.split(',').map(s => s.trim()).filter(Boolean)
+                ? bootcampForm.learning_outcomes.split('\n').map(s => s.trim()).filter(Boolean)
                 : [];
               const payload = {
                 title: bootcampForm.title,
@@ -2796,8 +2796,8 @@ export default function AdminPanel() {
                   <textarea className="form-control-modern" rows={3} placeholder="Instructor biography..." value={bootcampForm.instructor_bio} onChange={e => setBootcampForm({...bootcampForm, instructor_bio: e.target.value})} style={{ resize: 'vertical' }} />
                 </div>
                 <div className="form-group-modern" style={{ gridColumn: '1 / -1' }}>
-                  <label>Learning Outcomes <span style={{ fontSize: '0.75rem', color: 'var(--gray-400)', fontWeight: 400 }}>Comma-separated list</span></label>
-                  <textarea className="form-control-modern" rows={2} placeholder="Build real projects, Master React, Learn Node.js, Deploy to cloud" value={bootcampForm.learning_outcomes} onChange={e => setBootcampForm({...bootcampForm, learning_outcomes: e.target.value})} style={{ resize: 'vertical' }} />
+                  <label>Learning Outcomes <span style={{ fontSize: '0.75rem', color: 'var(--gray-400)', fontWeight: 400 }}>One per line</span></label>
+                  <textarea className="form-control-modern" rows={4} placeholder="Build real projects&#10;Master React&#10;Learn Node.js&#10;Deploy to cloud" value={bootcampForm.learning_outcomes} onChange={e => setBootcampForm({...bootcampForm, learning_outcomes: e.target.value})} style={{ resize: 'vertical' }} />
                 </div>
                 <div className="form-group-modern" style={{ gridColumn: '1 / -1' }}>
                   <label style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}>

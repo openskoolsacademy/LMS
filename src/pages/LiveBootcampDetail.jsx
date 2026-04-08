@@ -382,7 +382,7 @@ export default function LiveBootcampDetail() {
                 <span className="lbd-section-label">What You Will Learn</span>
                 <h2 className="lbd-section-title">Learning Outcomes</h2>
                 <ul className="lbd-achieve-list">
-                  {bootcamp.learning_outcomes.map((outcome, i) => (
+                  {bootcamp.learning_outcomes.flatMap(o => o.split('\n')).map(o => o.trim()).filter(Boolean).map((outcome, i) => (
                     <li key={i}><FiCheckCircle /> {outcome}</li>
                   ))}
                 </ul>

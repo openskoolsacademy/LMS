@@ -559,7 +559,7 @@ export default function CourseDetail() {
               <div className="cd-learn-box">
                 <h3>What you'll learn</h3>
                 <div className="cd-learn-grid">
-                  {course.whatYouLearn?.map((item, i) => (
+                  {course.whatYouLearn?.flatMap(o => o.split('\n')).map(o => o.trim()).filter(Boolean).map((item, i) => (
                     <div key={i} className="cd-learn-item"><FiCheck className="check-icon" /><span>{item}</span></div>
                   ))}
                 </div>
