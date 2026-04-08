@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { useAlert } from '../context/AlertContext';
 import Certificate from '../components/ui/Certificate';
+import { resolveImageUrl } from '../utils/imageUtils';
 import './LiveBootcampDetail.css';
 
 export default function LiveBootcampDetail() {
@@ -304,7 +305,7 @@ export default function LiveBootcampDetail() {
             {/* Media */}
             <div className="lbd-media animate-fade">
               <img
-                src={bootcamp.thumbnail_url || 'https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&q=80&w=800'}
+                src={resolveImageUrl(bootcamp.thumbnail_url) || 'https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&q=80&w=800'}
                 alt={bootcamp.title}
               />
             </div>

@@ -9,6 +9,7 @@ import Button from '../components/ui/Button';
 import LatestJobs from '../components/ui/LatestJobs';
 import WhatsAppCTA from '../components/ui/WhatsAppCTA';
 import { mapCategory } from '../data/categories';
+import { resolveImageUrl } from '../utils/imageUtils';
 import './CourseDetail.css';
 
 export default function CourseDetail() {
@@ -87,7 +88,7 @@ export default function CourseDetail() {
           ? courseData.requirements 
           : ['No prior experience needed', 'A computer with internet'],
         language: 'Tamil',
-        thumbnail: courseData.thumbnail_url || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80&w=800',
+        thumbnail: resolveImageUrl(courseData.thumbnail_url) || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80&w=800',
       });
 
       // 3. Fetch reviews

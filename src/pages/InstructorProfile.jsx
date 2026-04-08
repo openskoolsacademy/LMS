@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase';
 import CourseCard from '../components/ui/CourseCard';
 import Skeleton from '../components/ui/Skeleton';
 import { generateUserCode } from '../utils/userCode';
+import { resolveImageUrl } from '../utils/imageUtils';
 import './InstructorProfile.css';
 
 export default function InstructorProfile() {
@@ -55,7 +56,7 @@ export default function InstructorProfile() {
           category: c.category,
           price: c.price,
           level: c.level,
-          thumbnail: c.thumbnail_url || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80&w=800',
+          thumbnail: resolveImageUrl(c.thumbnail_url) || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80&w=800',
           instructor: userData.name || 'Instructor',
           rating: stats.average_rating || 0,
           reviewsCount: stats.review_count || 0,

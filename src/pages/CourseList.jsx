@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { categories, mapCategory } from '../data/categories';
+import { resolveImageUrl } from '../utils/imageUtils';
 import CourseCard from '../components/ui/CourseCard';
 import SearchBar from '../components/ui/SearchBar';
 import Skeleton from '../components/ui/Skeleton';
@@ -81,7 +82,7 @@ export default function CourseList() {
             regular_price: Number(c.regular_price || 0),
             offer_price: Number(c.offer_price || 0),
             level: c.level,
-            thumbnail: c.thumbnail_url || 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&q=80&w=800',
+            thumbnail: resolveImageUrl(c.thumbnail_url) || 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&q=80&w=800',
             instructor: instructorName,
             instructorId: c.instructor_id,
             rating: realStatsMap[c.id] ? (realStatsMap[c.id].total / realStatsMap[c.id].count) : Number(stats.average_rating || 0),

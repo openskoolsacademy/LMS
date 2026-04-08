@@ -11,6 +11,7 @@ import { useAuth } from '../context/AuthContext';
 import { useAlert } from '../context/AlertContext';
 import { mapCategory } from '../data/categories';
 import { generateUserCode } from '../utils/userCode';
+import { resolveImageUrl } from '../utils/imageUtils';
 import './AdminPanel.css';
 
 export default function AdminPanel() {
@@ -1458,7 +1459,7 @@ export default function AdminPanel() {
                             <tr key={ev.id}>
                               <td>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                  {ev.thumbnail_url && <img src={ev.thumbnail_url} alt="" style={{ width: 48, height: 36, objectFit: 'cover', borderRadius: 6 }} />}
+                                  {ev.thumbnail_url && <img src={resolveImageUrl(ev.thumbnail_url)} alt="" style={{ width: 48, height: 36, objectFit: 'cover', borderRadius: 6 }} />}
                                   <div>
                                     <strong style={{ display: 'block', fontSize: '0.9rem' }}>{ev.title}</strong>
                                     <span style={{ fontSize: '0.8rem', color: 'var(--gray-400)' }}>{ev.instructor_name}</span>
@@ -1670,7 +1671,7 @@ export default function AdminPanel() {
                             <tr key={bc.id}>
                               <td>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                  {bc.thumbnail_url && <img src={bc.thumbnail_url} alt="" style={{ width: 48, height: 36, objectFit: 'cover', borderRadius: 6 }} />}
+                                  {bc.thumbnail_url && <img src={resolveImageUrl(bc.thumbnail_url)} alt="" style={{ width: 48, height: 36, objectFit: 'cover', borderRadius: 6 }} />}
                                   <div>
                                     <strong style={{ display: 'block', fontSize: '0.9rem' }}>{bc.title}</strong>
                                     <span style={{ fontSize: '0.8rem', color: 'var(--gray-400)' }}>{bc.instructor_name}</span>
@@ -1993,7 +1994,7 @@ export default function AdminPanel() {
                               <tr key={i}>
                                 <td>
                                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                                    <img src={enr.course?.thumbnail_url || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=60'} alt="" style={{ width: 36, height: 36, borderRadius: 6, objectFit: 'cover' }} />
+                                    <img src={resolveImageUrl(enr.course?.thumbnail_url) || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=60'} alt="" style={{ width: 36, height: 36, borderRadius: 6, objectFit: 'cover' }} />
                                     <span style={{ fontWeight: 600, fontSize: '.875rem' }}>{enr.course?.title || 'Unknown'}</span>
                                   </div>
                                 </td>
@@ -2186,7 +2187,7 @@ export default function AdminPanel() {
                        </div>
                     ) : (
                       <div className="ap-no-video">
-                        <img src={reviewCourse.thumbnail_url || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80&w=800'} alt="Course Thumbnail" />
+                        <img src={resolveImageUrl(reviewCourse.thumbnail_url) || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80&w=800'} alt="Course Thumbnail" />
                         <p>No preview video provided</p>
                       </div>
                     )}

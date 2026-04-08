@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { FiArrowRight, FiChevronLeft, FiChevronRight, FiUsers, FiStar, FiAward, FiActivity, FiPlay, FiCheckCircle } from 'react-icons/fi';
 import { supabase } from '../lib/supabase';
 import { categories, mapCategory } from '../data/categories';
+import { resolveImageUrl } from '../utils/imageUtils';
 import CourseCard from '../components/ui/CourseCard';
 import LogoCarousel from '../components/ui/LogoCarousel';
 import GlobalBanner from '../components/ui/GlobalBanner';
@@ -45,7 +46,7 @@ export default function Landing() {
             regular_price: Number(c.regular_price || 0),
             offer_price: Number(c.offer_price || 0),
             level: c.level,
-            thumbnail: c.thumbnail_url || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80&w=800',
+            thumbnail: resolveImageUrl(c.thumbnail_url) || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80&w=800',
             instructor: c.instructor?.name || 'Unknown Instructor',
             rating: stats.average_rating || 0,
             reviewsCount: stats.review_count || 0,

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
+import { resolveImageUrl } from '../../utils/imageUtils';
 import CourseCard from './CourseCard';
 
 export default function RecommendedCourses({ limit = 4 }) {
@@ -35,7 +36,7 @@ export default function RecommendedCourses({ limit = 4 }) {
             category: c.category,
             instructor: c.instructor?.name || 'Unknown',
             instructorId: c.instructor_id,
-            thumbnail: c.thumbnail_url || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80&w=400',
+            thumbnail: resolveImageUrl(c.thumbnail_url) || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80&w=400',
             price: c.price || 0,
             originalPrice: (c.price || 0) * 1.5,
             rating: stats.average_rating || 0,

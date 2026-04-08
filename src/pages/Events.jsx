@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { useAlert } from '../context/AlertContext';
 import Certificate from '../components/ui/Certificate';
+import { resolveImageUrl } from '../utils/imageUtils';
 import './Events.css';
 
 export default function Events() {
@@ -304,7 +305,7 @@ export default function Events() {
                 <Link to={`/events/${event.id}`} key={event.id} className="event-card animate-fade" style={{ textDecoration: 'none', color: 'inherit' }}>
                   <div className="event-card-img-wrap">
                     <img
-                      src={event.thumbnail_url || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&q=80&w=800'}
+                      src={resolveImageUrl(event.thumbnail_url) || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&q=80&w=800'}
                       alt={event.title}
                     />
                     <div className="event-card-badges">

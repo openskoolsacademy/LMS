@@ -11,6 +11,7 @@ import Certificate from '../components/ui/Certificate';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { mapCategory } from '../data/categories';
+import { resolveImageUrl } from '../utils/imageUtils';
 import './StudentDashboard.css';
 
 export default function StudentDashboard() {
@@ -334,7 +335,7 @@ export default function StudentDashboard() {
             {enrollments.length === 0 && <p>You haven't enrolled in any courses yet. <Link to="/courses">Browse courses</Link></p>}
             {enrollments.map((enr, idx) => (
               <div key={idx} className="sd-course-card">
-                <img src={enr.course.thumbnail_url || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80&w=800'} alt={enr.course.title} className="sd-course-img" />
+                <img src={resolveImageUrl(enr.course.thumbnail_url) || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80&w=800'} alt={enr.course.title} className="sd-course-img" />
                 <div className="sd-course-info">
                   <span className="sd-course-cat">{mapCategory(enr.course.category)}</span>
                   <h4>{enr.course.title}</h4>

@@ -9,6 +9,7 @@ import { generateUserCode } from '../utils/userCode';
 import Modal from '../components/ui/Modal';
 import Button from '../components/ui/Button';
 import Rating from '../components/ui/Rating';
+import { resolveImageUrl } from '../utils/imageUtils';
 import './InstructorDashboard.css';
 
 export default function InstructorDashboard() {
@@ -565,7 +566,7 @@ export default function InstructorDashboard() {
                     <tr key={c.id}>
                       <td>
                         <div className="id-course-cell">
-                          <img src={c.thumbnail_url || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80&w=800'} alt={c.title} />
+                          <img src={resolveImageUrl(c.thumbnail_url) || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80&w=800'} alt={c.title} />
                           <div>
                             <strong>{c.title}</strong>
                             <span>{c.category} • {c.level}</span>

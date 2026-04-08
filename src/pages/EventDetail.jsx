@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { useAlert } from '../context/AlertContext';
 import Certificate from '../components/ui/Certificate';
+import { resolveImageUrl } from '../utils/imageUtils';
 import './EventDetail.css';
 
 export default function EventDetail() {
@@ -310,7 +311,7 @@ export default function EventDetail() {
             {/* Media */}
             <div className="ed-media animate-fade">
               <img
-                src={event.thumbnail_url || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&q=80&w=800'}
+                src={resolveImageUrl(event.thumbnail_url) || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&q=80&w=800'}
                 alt={event.title}
               />
             </div>

@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { useAlert } from '../context/AlertContext';
 import Certificate from '../components/ui/Certificate';
+import { resolveImageUrl } from '../utils/imageUtils';
 import './LiveBootcamps.css';
 
 export default function LiveBootcamps() {
@@ -228,7 +229,7 @@ export default function LiveBootcamps() {
                 <Link to={`/live-bootcamps/${bc.id}`} key={bc.id} className="lb-card animate-fade" style={{ textDecoration: 'none', color: 'inherit' }}>
                   <div className="lb-card-img-wrap">
                     <img
-                      src={bc.thumbnail_url || 'https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&q=80&w=800'}
+                      src={resolveImageUrl(bc.thumbnail_url) || 'https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&q=80&w=800'}
                       alt={bc.title}
                     />
                     <div className="lb-card-badges">
