@@ -533,20 +533,24 @@ export default function CourseDetail() {
         <div className="cd-main">
           {/* Mobile Video Preview (Only shows on mobile) */}
           <div className="cd-video-preview animate-fade md-hide">
-            <ReactPlayer 
-              url={promoVideo}
-              light={course.thumbnail}
-              playing={true}
-              controls={true}
-              width="100%"
-              height="100%"
-              playIcon={
-                <div className="cd-play-overlay">
-                  <button className="cd-play-btn"><FiPlay /></button>
-                  <span>Preview this course</span>
-                </div>
-              }
-            />
+            {promoVideo ? (
+              <ReactPlayer 
+                url={promoVideo}
+                light={course.thumbnail}
+                playing={true}
+                controls={true}
+                width="100%"
+                height="100%"
+                playIcon={
+                  <div className="cd-play-overlay">
+                    <button className="cd-play-btn"><FiPlay /></button>
+                    <span>Preview this course</span>
+                  </div>
+                }
+              />
+            ) : (
+              <img src={course.thumbnail} alt={course.title} />
+            )}
           </div>
 
           {/* Tabs */}
@@ -801,20 +805,24 @@ export default function CourseDetail() {
           <div className="cd-price-card">
             {/* Desktop Video Preview */}
             <div className="cd-video-preview animate-fade desk-only">
-              <ReactPlayer 
-                url={promoVideo}
-                light={course.thumbnail}
-                playing={true}
-                controls={true}
-                width="100%"
-                height="100%"
-                playIcon={
-                  <div className="cd-play-overlay">
-                    <button className="cd-play-btn"><FiPlay /></button>
-                    <span>Preview this course</span>
-                  </div>
-                }
-              />
+              {promoVideo ? (
+                <ReactPlayer 
+                  url={promoVideo}
+                  light={course.thumbnail}
+                  playing={true}
+                  controls={true}
+                  width="100%"
+                  height="100%"
+                  playIcon={
+                    <div className="cd-play-overlay">
+                      <button className="cd-play-btn"><FiPlay /></button>
+                      <span>Preview this course</span>
+                    </div>
+                  }
+                />
+              ) : (
+                <img src={course.thumbnail} alt={course.title} />
+              )}
             </div>
 
             <div className="cd-price-content">
