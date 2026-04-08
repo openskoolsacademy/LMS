@@ -31,3 +31,33 @@ export function resolveImageUrl(url, width = 800) {
 
   return url;
 }
+
+/**
+ * Converts Google Drive sharing links to embeddable video URLs.
+ * 
+ * Google Drive links like:
+ *   https://drive.google.com/file/d/FILE_ID/view?usp=sharing
+ * 
+ * Are converted to the embeddable preview format:
+ *   https://drive.google.com/file/d/FILE_ID/preview
+ * 
+ * Non-Drive URLs are returned unchanged.
+ */
+export function resolveVideoUrl(url) {
+  if (!url || typeof url !== 'string') return url;
+
+  const driveMatch = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if (driveMatch) {
+    return `https://drive.google.com/file/d/${driveMatch[1]}/preview`;
+  }
+
+  return url;
+}
+
+/**
+ * Checks if a URL is a Google Drive link.
+ */
+export function isGoogleDriveUrl(url) {
+  if (!url || typeof url !== 'string') return false;
+  return /drive\.google\.com/.test(url);
+}
