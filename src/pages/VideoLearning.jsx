@@ -5,6 +5,7 @@ import ReactPlayer from 'react-player';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { useAlert } from '../context/AlertContext';
+import Loader from '../components/ui/Loader';
 import './VideoLearning.css';
 
 export default function VideoLearning() {
@@ -172,7 +173,7 @@ export default function VideoLearning() {
   }, [activeLesson, driveId, currentLesson?.id, currentLesson?.duration, markComplete]);
 
   // Early returns AFTER all hooks
-  if (loading) return <div className="container section"><h2>Loading Player...</h2></div>;
+  if (loading) return <Loader fullScreen={true} text="Loading Player..." />;
   if (!course) return <div className="container section"><h2>Course not found</h2><Link to="/courses" className="btn btn-primary">Browse Courses</Link></div>;
 
   const progress = allLessons.length > 0 ? Math.round((completed.length / allLessons.length) * 100) : 0;
