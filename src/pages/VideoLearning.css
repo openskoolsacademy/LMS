@@ -27,7 +27,7 @@
 .vl-time { font-size: .75rem; color: var(--gray-500); white-space: nowrap; }
 
 /* Below player */
-.vl-below { padding: 24px; }
+.vl-below { padding: 24px; padding-bottom: 80px; }
 .vl-tabs { display: flex; gap: 4px; border-bottom: 2px solid var(--gray-200); margin-bottom: 20px; }
 .vl-tab {
   padding: 10px 20px; border: none; background: none; font-size: .875rem; font-weight: 600;

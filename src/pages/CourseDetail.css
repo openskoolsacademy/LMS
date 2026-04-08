@@ -68,7 +68,7 @@
   }
 }
 
-.cd-meta-row { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; margin-bottom: 16px; }
+.cd-meta-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
 
 .cd-rating-badge { display: flex; align-items: center; gap: 8px; color: var(--warning); font-weight: 700; }
 .rating-value { font-size: 1.125rem; }
@@ -76,7 +76,7 @@
 
 .cd-students-count { color: var(--white); font-size: 0.875rem; display: flex; align-items: center; gap: 6px; }
 
-.cd-header-footer { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; font-size: 0.875rem; color: var(--white); }
+.cd-header-footer { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; font-size: 0.875rem; color: var(--white); }
 .cd-instructor-link { color: var(--primary-200); font-weight: 700; border-bottom: 1px solid transparent; transition: var(--transition); }
 .cd-instructor-link:hover { border-bottom-color: var(--primary-200); }
 .cd-instructor-link span { color: var(--white); font-weight: 400; }
@@ -89,6 +89,10 @@
   grid-template-columns: 1fr; 
   gap: 32px; 
   padding: 32px 0; 
+}
+
+.cd-main {
+  padding-bottom: 80px;
 }
 
 @media (min-width: 1024px) {
@@ -163,12 +167,14 @@
 
 /* Tabs */
 .cd-tabs { 
-  display: flex; gap: 4px; border-bottom: 1px solid var(--gray-200); margin-bottom: 32px; 
+  display: flex; gap: 4px; border-bottom: 1px solid var(--gray-200); margin-bottom: 24px; 
   position: sticky; top: 0; background: white; z-index: 10;
 }
 .cd-tab {
-  padding: 16px 20px; border: none; background: none; font-size: 1rem; font-weight: 700;
+  padding: 16px 16px; border: none; background: none; font-size: 1rem; font-weight: 700;
   color: var(--gray-500); cursor: pointer; border-bottom: 4px solid transparent; transition: var(--transition);
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
 }
 .cd-tab.active { color: var(--dark); border-bottom-color: var(--primary); }
 
@@ -244,7 +250,14 @@
 
 /* Visibility Utilities */
 .desk-only { display: none; }
-.md-hide { display: block; }
+.md-hide { 
+  display: block; 
+  margin-left: -24px;
+  margin-right: -24px;
+  width: calc(100% + 48px) !important;
+  border-radius: 0;
+  margin-bottom: 24px;
+}
 
 @media (min-width: 1024px) {
   .desk-only { display: block; }
