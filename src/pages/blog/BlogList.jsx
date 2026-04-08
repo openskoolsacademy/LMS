@@ -4,6 +4,8 @@ import { supabase } from '../../lib/supabase';
 import { FiClock, FiUser } from 'react-icons/fi';
 import GlobalBanner from '../../components/ui/GlobalBanner';
 import './Blog.css';
+import Loader from '../../components/ui/Loader';
+
 
 export default function BlogList() {
   const [blogs, setBlogs] = useState([]);
@@ -33,7 +35,7 @@ export default function BlogList() {
     fetchBlogs();
   }, []);
 
-  if (loading) return <div className="page-loader"><div className="spinner"></div></div>;
+  if (loading) return <div className="vl-page"><Loader text="Loading..." /></div>;
 
   return (
     <div className="blog-page">

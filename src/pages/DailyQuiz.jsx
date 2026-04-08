@@ -13,6 +13,8 @@ import QuizRewardPopup from '../components/ui/QuizRewardPopup';
 import InviteFriends from '../components/ui/InviteFriends';
 import GlobalBanner from '../components/ui/GlobalBanner';
 import './DailyQuiz.css';
+import Loader from '../components/ui/Loader';
+
 
 // ── Fallback question bank (used when no admin quiz exists for today) ──────────
 const FALLBACK_QUESTIONS = [
@@ -316,17 +318,7 @@ export default function DailyQuiz() {
   const nextTier = NEXT_TIER.find(t => t.pts > userPoints) || NEXT_TIER[NEXT_TIER.length - 1];
   const tpProgress = Math.min(100, Math.round((userPoints / nextTier.pts) * 100));
 
-  if (loading) return (
-    <div className="dq-page section">
-      <GlobalBanner location="Quiz" />
-      <div className="container">
-        <div className="dq-loading">
-          <div className="dq-loading-spinner" />
-          <p>Loading today's challenge...</p>
-        </div>
-      </div>
-    </div>
-  );
+  if (loading) return <div className="vl-page"><Loader text="Loading..." /></div>;
 
   // ── INTRO PHASE ────────────────────────────────────────────
   if (phase === 'intro') {

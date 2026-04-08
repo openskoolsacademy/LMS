@@ -11,6 +11,8 @@ import Button from '../components/ui/Button';
 import Rating from '../components/ui/Rating';
 import { resolveImageUrl } from '../utils/imageUtils';
 import './InstructorDashboard.css';
+import Loader from '../components/ui/Loader';
+
 
 export default function InstructorDashboard() {
   const { user, profile, refreshProfile } = useAuth();
@@ -523,7 +525,7 @@ export default function InstructorDashboard() {
   const totalReviews = courses.reduce((acc, c) => acc + Number(c.review_count), 0);
   const avgRatingSummary = totalReviews > 0 ? (totalStars / totalReviews).toFixed(1) : "0.0";
 
-  if (loading) return <div className="container section"><h2>Loading dashboard...</h2></div>;
+  if (loading) return <div className="vl-page"><Loader text="Loading..." /></div>;
 
   return (
     <div className="instructor-dash section">

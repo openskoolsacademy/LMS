@@ -11,6 +11,8 @@ import WhatsAppCTA from '../components/ui/WhatsAppCTA';
 import { mapCategory } from '../data/categories';
 import { resolveImageUrl, resolveVideoUrl } from '../utils/imageUtils';
 import './CourseDetail.css';
+import Loader from '../components/ui/Loader';
+
 
 export default function CourseDetail() {
   const { id } = useParams();
@@ -279,13 +281,7 @@ export default function CourseDetail() {
       setLoading(false);
     }
   };
-  if (loading) return (
-    <div className="container section" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', gap: '20px' }}>
-      <div className="spinner" style={{ width: 48, height: 48, border: '4px solid var(--gray-200)', borderTopColor: 'var(--primary)', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-      <h2 style={{ color: 'var(--primary)', fontWeight: 700 }}>Course is Loading...</h2>
-      <p style={{ color: 'var(--gray-500)' }}>Please wait while we fetch the course details.</p>
-    </div>
-  );
+  if (loading) return <div className="vl-page"><Loader text="Loading..." /></div>;
 
   if (!course) return <div className="container section"><h2>Course not found</h2><Link to="/courses" className="btn btn-primary btn-md">Browse Courses</Link></div>;
 

@@ -7,6 +7,8 @@ import { useAlert } from '../context/AlertContext';
 import Certificate from '../components/ui/Certificate';
 import { resolveImageUrl } from '../utils/imageUtils';
 import './Events.css';
+import Loader from '../components/ui/Loader';
+
 
 export default function Events() {
   const { user, profile } = useAuth();
@@ -251,12 +253,7 @@ export default function Events() {
 
 
 
-  if (loading) return (
-    <div className="container section" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', gap: '20px' }}>
-      <div className="spinner" style={{ width: 48, height: 48, border: '4px solid var(--gray-200)', borderTopColor: 'var(--primary)', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-      <h2 style={{ color: 'var(--primary)', fontWeight: 700 }}>Loading Events...</h2>
-    </div>
-  );
+  if (loading) return <div className="vl-page"><Loader text="Loading..." /></div>;
 
   return (
     <div className="events-page section">

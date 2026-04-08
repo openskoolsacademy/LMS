@@ -5,6 +5,8 @@ import { FiArrowLeft, FiClock, FiUser } from 'react-icons/fi';
 import DOMPurify from 'dompurify'; // Need to sanitize HTML
 import GlobalBanner from '../../components/ui/GlobalBanner';
 import './Blog.css';
+import Loader from '../../components/ui/Loader';
+
 
 export default function BlogDetail() {
   const { slug } = useParams();
@@ -35,7 +37,7 @@ export default function BlogDetail() {
     if (slug) fetchBlog();
   }, [slug]);
 
-  if (loading) return <div className="page-loader"><div className="spinner"></div></div>;
+  if (loading) return <div className="vl-page"><Loader text="Loading..." /></div>;
   if (!blog) return <div className="text-center" style={{ padding: '100px 0' }}><h2>Article Not Found</h2><Link to="/blog" className="btn btn-primary" style={{ marginTop: '20px' }}>Back to Blog</Link></div>;
 
   return (

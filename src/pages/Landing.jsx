@@ -8,6 +8,8 @@ import CourseCard from '../components/ui/CourseCard';
 import LogoCarousel from '../components/ui/LogoCarousel';
 import GlobalBanner from '../components/ui/GlobalBanner';
 import './Landing.css';
+import Loader from '../components/ui/Loader';
+
 
 export default function Landing() {
   const [featured, setFeatured] = useState([]);
@@ -168,7 +170,7 @@ export default function Landing() {
           </div>
           <div className="featured__carousel" ref={scrollRef}>
             {loading ? (
-              <div style={{ padding: '40px', textAlign: 'center', width: '100%' }}>Loading featured courses...</div>
+              <Loader text="Loading featured courses..." />
             ) : featured.length > 0 ? (
               featured.map(course => (
                 <div key={course.id} className="featured__item">

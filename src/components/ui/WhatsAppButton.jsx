@@ -32,11 +32,6 @@ export default function WhatsAppButton() {
   const [lastScrollY, setLastScrollY] = useState(0);
   const [showTooltip, setShowTooltip] = useState(false);
 
-  // Distraction-free mode for learning and assessment pages
-  if (location.pathname.startsWith('/learn') || location.pathname.startsWith('/assessment')) {
-    return null;
-  }
-
   const handleScroll = useCallback(() => {
     const currentScrollY = window.scrollY;
     // Hide while scrolling down, show when scrolling up
@@ -73,6 +68,11 @@ export default function WhatsAppButton() {
 
     window.open(url, '_blank', 'noopener,noreferrer');
   };
+
+  // Distraction-free mode for learning and assessment pages
+  if (location.pathname.startsWith('/learn') || location.pathname.startsWith('/assessment')) {
+    return null;
+  }
 
   return (
     <div

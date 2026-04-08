@@ -6,6 +6,8 @@ import { useAuth } from '../context/AuthContext';
 import { useAlert } from '../context/AlertContext';
 import Certificate from '../components/ui/Certificate';
 import './Assessment.css';
+import Loader from '../components/ui/Loader';
+
 
 export default function Assessment() {
   const { courseId } = useParams();
@@ -196,7 +198,7 @@ export default function Assessment() {
     return `${m}:${s.toString().padStart(2, '0')}`;
   };
 
-  if (loading) return <div className="container section"><h2>Loading Assessment...</h2></div>;
+  if (loading) return <div className="vl-page"><Loader text="Loading..." /></div>;
   if (!course || !assessment) return <div className="container section"><h2>Assessment not found</h2><Link to="/dashboard" className="btn btn-primary">Back to Dashboard</Link></div>;
 
   // ─── INTRO PHASE ─────────────────────

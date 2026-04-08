@@ -13,6 +13,8 @@ import 'react-datepicker/dist/react-datepicker.css';
 import { mapCategory } from '../data/categories';
 import { resolveImageUrl } from '../utils/imageUtils';
 import './StudentDashboard.css';
+import Loader from '../components/ui/Loader';
+
 
 export default function StudentDashboard() {
   const { user, profile, refreshProfile } = useAuth();
@@ -258,7 +260,7 @@ export default function StudentDashboard() {
     }
   };
 
-  if (loading) return <div className="container section"><h2>Loading dashboard...</h2></div>;
+  if (loading) return <div className="vl-page"><Loader text="Loading..." /></div>;
 
   const completedCount = enrollments.filter(e => e.status === 'completed').length;
   const overallProgress = enrollments.length 

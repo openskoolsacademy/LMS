@@ -7,6 +7,8 @@ import { useAlert } from '../context/AlertContext';
 import Certificate from '../components/ui/Certificate';
 import { resolveImageUrl } from '../utils/imageUtils';
 import './LiveBootcampDetail.css';
+import Loader from '../components/ui/Loader';
+
 
 export default function LiveBootcampDetail() {
   const { id } = useParams();
@@ -245,12 +247,7 @@ export default function LiveBootcampDetail() {
   const formatDate = (d) => new Date(d).toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
   const formatShortDate = (d) => new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
 
-  if (loading) return (
-    <div className="container section" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', gap: '20px' }}>
-      <div className="spinner" style={{ width: 48, height: 48, border: '4px solid var(--gray-200)', borderTopColor: '#008ad1', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-      <h2 style={{ color: '#008ad1', fontWeight: 700 }}>Loading Bootcamp...</h2>
-    </div>
-  );
+  if (loading) return <div className="vl-page"><Loader text="Loading..." /></div>;
 
   if (!bootcamp) return (
     <div className="container section" style={{ textAlign: 'center', padding: '80px 20px' }}>

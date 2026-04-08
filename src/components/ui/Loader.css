@@ -43,9 +43,9 @@
 }
 
 .brand-spinner::after {
-  border-bottom-color: var(--info);
-  border-left-color: var(--info);
-  opacity: 0.6;
+  border-bottom-color: var(--primary);
+  border-left-color: var(--primary);
+  opacity: 0.4;
   animation: spinnerRing 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite reverse;
 }
 
