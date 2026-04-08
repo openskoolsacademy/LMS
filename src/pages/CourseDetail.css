@@ -1,7 +1,7 @@
 /* ===== Header (Site Theme Blue) ===== */
 .cd-header { 
   background: linear-gradient(135deg, #006da3 0%, #008ad1 50%, #33a1da 100%); 
-  padding: 40px 0 32px; 
+  padding: 24px 0 24px; 
   color: var(--white);
   border-bottom: none;
 }
@@ -25,23 +25,47 @@
 .cd-breadcrumb span { color: var(--white); }
 
 .cd-title { 
-  font-size: 2rem; 
+  font-size: 1.5rem; 
   font-weight: 800; 
   margin-bottom: 12px; 
-  line-height: 1.2;
+  line-height: 1.3;
   color: var(--white) !important;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 @media (min-width: 768px) {
-  .cd-title { font-size: 2.75rem; }
+  .cd-title { 
+    font-size: 2.75rem; 
+    -webkit-line-clamp: 4;
+    line-clamp: 4;
+  }
 }
 
 .cd-description { 
   color: var(--white); 
-  font-size: 1.125rem; 
+  font-size: 1rem; 
   line-height: 1.4; 
   margin-bottom: 16px;
   max-width: 800px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (min-width: 768px) {
+  .cd-description { 
+    font-size: 1.125rem; 
+    -webkit-line-clamp: unset;
+    line-clamp: unset;
+  }
 }
 
 .cd-meta-row { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; margin-bottom: 16px; }
