@@ -9,7 +9,7 @@ import Button from '../components/ui/Button';
 import LatestJobs from '../components/ui/LatestJobs';
 import WhatsAppCTA from '../components/ui/WhatsAppCTA';
 import { mapCategory } from '../data/categories';
-import { resolveImageUrl, resolveVideoUrl } from '../utils/imageUtils';
+import { resolveImageUrl } from '../utils/imageUtils';
 import './CourseDetail.css';
 import Loader from '../components/ui/Loader';
 
@@ -304,7 +304,7 @@ export default function CourseDetail() {
   
   // Group lessons by their defined section_title
   const grouped = lessons.reduce((acc, lesson) => {
-    const sec = lesson.section_title || 'General';
+    const sec = lesson.section_title || '';
     if (!acc[sec]) acc[sec] = [];
     acc[sec].push(lesson);
     return acc;
@@ -490,7 +490,7 @@ export default function CourseDetail() {
   };
   const ratingBars = calculateRatingBars();
 
-  const promoVideo = lessons.find(l => l.title === 'Course Introduction' || l.order_index === 0)?.video_url;
+
 
   return (
     <div className="course-detail">
@@ -541,18 +541,9 @@ export default function CourseDetail() {
       <div className="container cd-body">
         {/* Main Content */}
         <div className="cd-main">
-          {/* Mobile Video Preview (Only shows on mobile) */}
+          {/* Mobile Thumbnail Preview (Only shows on mobile) */}
           <div className="cd-video-preview animate-fade md-hide">
-            {promoVideo ? (
-              <iframe 
-                src={resolveVideoUrl(promoVideo)}
-                style={{ width: '100%', height: '100%', border: 'none' }}
-                allowFullScreen
-                allow="autoplay"
-              />
-            ) : (
-              <img src={course.thumbnail} alt={course.title} />
-            )}
+            <img src={course.thumbnail} alt={course.title} />
           </div>
 
           {/* Tabs */}
@@ -616,7 +607,7 @@ export default function CourseDetail() {
                     <div key={i} className="cd-section" style={{ border: 'none', borderBottom: i === curriculum.length - 1 ? 'none' : '1px solid var(--gray-200)' }}>
                       <button className="cd-section-header" onClick={() => toggleSection(i)} style={{ background: i % 2 === 0 ? '#f8fafc' : '#ffffff' }}>
                         {openSections.includes(i) ? <FiChevronUp /> : <FiChevronDown />}
-                        <strong>{section.title}</strong>
+                        {section.title && <strong>{section.title}</strong>}
                         <span>{section.lessons.length} lessons</span>
                       </button>
                       {openSections.includes(i) && (
@@ -807,18 +798,9 @@ export default function CourseDetail() {
         {/* Sidebar */}
         <aside className="cd-sidebar animate-fade">
           <div className="cd-price-card">
-            {/* Desktop Video Preview */}
+            {/* Desktop Thumbnail */}
             <div className="cd-video-preview animate-fade desk-only">
-              {promoVideo ? (
-                <iframe 
-                  src={resolveVideoUrl(promoVideo)}
-                  style={{ width: '100%', height: '100%', border: 'none' }}
-                  allowFullScreen
-                  allow="autoplay"
-                />
-              ) : (
-                <img src={course.thumbnail} alt={course.title} />
-              )}
+              <img src={course.thumbnail} alt={course.title} />
             </div>
 
             <div className="cd-price-content">

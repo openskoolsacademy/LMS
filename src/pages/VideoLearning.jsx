@@ -72,7 +72,7 @@ export default function VideoLearning() {
         setCourse(courseData);
 
         const grouped = (lessonsData || []).reduce((acc, lesson) => {
-          const sec = lesson.section_title || 'General';
+          const sec = lesson.section_title || '';
           if (!acc[sec]) acc[sec] = [];
           acc[sec].push(lesson);
           return acc;
@@ -270,7 +270,7 @@ export default function VideoLearning() {
             <div className="vl-lessons-mobile">
               {curriculum.map((section, si) => (
                 <div key={si} className="vl-section-mobile">
-                  <h4>{section.title}</h4>
+                  {section.title && <h4>{section.title}</h4>}
                   {section.lessons.map(lesson => (
                     <button
                       key={lesson.id}
@@ -386,7 +386,7 @@ export default function VideoLearning() {
         <div className="vl-sidebar__lessons">
           {curriculum.map((section, si) => (
             <div key={si} className="vl-sidebar-section">
-              <h4 className="vl-sidebar-section-title">{section.title}</h4>
+              {section.title && <h4 className="vl-sidebar-section-title">{section.title}</h4>}
               {section.lessons.map(lesson => (
                 <button
                   key={lesson.id}
