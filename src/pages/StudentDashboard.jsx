@@ -659,7 +659,7 @@ export default function StudentDashboard() {
                 const { error } = await supabase
                   .from('users')
                   .update({
-                    name: profileName,
+                    name: profileName.trim().replace(/\b\w/g, c => c.toUpperCase()),
                     bio: profileBio,
                     dob: profileDob || null,
                     gender: profileGender || null,

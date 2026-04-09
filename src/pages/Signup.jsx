@@ -23,6 +23,8 @@ export default function Signup() {
     navigate('/dashboard');
   }
 
+  const toTitleCase = (str) => str.replace(/\b\w/g, c => c.toUpperCase());
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -33,7 +35,7 @@ export default function Signup() {
         password,
         options: {
           data: {
-            full_name: name,
+            full_name: toTitleCase(name.trim()),
             phone: phone,
             role: 'student', // Default role for new signups
           }

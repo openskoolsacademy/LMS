@@ -34,7 +34,7 @@ BEGIN
   VALUES (
     new.id, 
     new.email, 
-    COALESCE(new.raw_user_meta_data->>'full_name', 'Student'), 
+    INITCAP(COALESCE(new.raw_user_meta_data->>'full_name', 'Student')), 
     COALESCE(new.raw_user_meta_data->>'role', 'student'),
     new.raw_user_meta_data->>'phone'
   );

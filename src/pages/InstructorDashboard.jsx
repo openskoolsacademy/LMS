@@ -706,7 +706,7 @@ export default function InstructorDashboard() {
                 const { error } = await supabase
                   .from('users')
                   .update({
-                    name: profileName,
+                    name: profileName.trim().replace(/\b\w/g, c => c.toUpperCase()),
                     bio: profileBio,
                     qualification: profileQualification || null,
                     experience: profileExperience || null,
