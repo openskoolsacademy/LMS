@@ -47,7 +47,6 @@ export default function Signup() {
       // Detect this by checking if identities array is empty.
       if (data?.user?.identities?.length === 0) {
         await showAlert('An account with this email already exists. Please log in instead.', 'Account Exists', 'warning');
-        navigate('/login');
         return;
       }
 
