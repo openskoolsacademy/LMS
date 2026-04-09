@@ -122,6 +122,17 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  margin: 0 16px; /* Mobile safe padding */
+  width: calc(100% - 32px);
+  border-radius: 12px;
+}
+
+@media (min-width: 1024px) {
+  .cd-price-card {
+    margin: 0;
+    width: 100%;
+    border-radius: 0;
+  }
 }
 
 /* Video Preview inside Sidebar on Desktop */
@@ -169,7 +180,12 @@
 .cd-tabs { 
   display: flex; gap: 4px; border-bottom: 1px solid var(--gray-200); margin-bottom: 24px; 
   position: sticky; top: 0; background: white; z-index: 10;
+  padding: 0 16px; /* Mobile safe padding */
 }
+@media (min-width: 1024px) {
+  .cd-tabs { padding: 0; }
+}
+
 .cd-tab {
   padding: 16px 16px; border: none; background: none; font-size: 1rem; font-weight: 700;
   color: var(--gray-500); cursor: pointer; border-bottom: 4px solid transparent; transition: var(--transition);
@@ -179,6 +195,16 @@
 .cd-tab.active { color: var(--dark); border-bottom-color: var(--primary); }
 
 /* Content Sections */
+.cd-overview, .cd-curriculum, .cd-reviews {
+  padding: 0 16px;
+}
+
+@media (min-width: 1024px) {
+  .cd-overview, .cd-curriculum, .cd-reviews {
+    padding: 0;
+  }
+}
+
 .cd-learn-box { border: 1px solid var(--gray-200); padding: 24px; margin-bottom: 32px; }
 .cd-learn-box h3 { margin-bottom: 16px; font-size: 1.5rem; }
 .cd-learn-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }

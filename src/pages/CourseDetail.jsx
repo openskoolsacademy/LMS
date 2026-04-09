@@ -580,9 +580,11 @@ export default function CourseDetail() {
           {/* Curriculum Tab */}
           {activeTab === 'curriculum' && (
             <div className="cd-curriculum animate-fade" style={{ paddingBottom: '24px' }}>
-              <div className="cd-curriculum-header" style={{ marginBottom: '24px' }}>
-                <span>{curriculum.length} sections • {lessons.length} lessons • ~{Math.floor(totalDuration/60)}h {totalDuration%60}m total</span>
-                <button className="btn btn-ghost btn-sm" onClick={() => setOpenSections(openSections.length === curriculum.length ? [] : curriculum.map((_, i) => i))}>
+              <div className="cd-curriculum-header" style={{ marginBottom: '24px', alignItems: 'flex-start', gap: '8px' }}>
+                <span style={{ lineHeight: '1.4', flex: 1, paddingRight: '12px', paddingLeft: '16px' }}>
+                  {curriculum.length} sections &bull; {lessons.length} lessons &bull; {Math.floor(totalDuration/60) > 0 ? `${Math.floor(totalDuration/60)}h ` : ''}{totalDuration%60}m
+                </span>
+                <button className="btn btn-ghost btn-sm" style={{ marginTop: '-4px' }} onClick={() => setOpenSections(openSections.length === curriculum.length ? [] : curriculum.map((_, i) => i))}>
                   {openSections.length === curriculum.length ? 'Collapse all' : 'Expand all'}
                 </button>
               </div>
