@@ -30,13 +30,32 @@ export default function Signup() {
     setLoading(true);
     setError(null);
     try {
+      // Validate phone number (10 digits, Indian format)
+      const cleanPhone = phone.trim().replace(/\s+/g, '');
+      if (!/^[6-9]\d{9}$/.test(cleanPhone)) {
+        await showAlert('Please enter a valid 10-digit Indian phone number.', 'Invalid Phone Number', 'warning');
+        return;
+      }
+
+      // Check if phone number already exists
+      const { data: existingUser } = await supabase
+        .from('users')
+        .select('id')
+        .eq('contact_number', cleanPhone)
+        .maybeSingle();
+
+      if (existingUser) {
+        await showAlert('An account with this phone number already exists. Please log in instead.', 'Phone Number Exists', 'warning');
+        return;
+      }
+
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: {
             full_name: toTitleCase(name.trim()),
-            phone: phone,
+            phone: cleanPhone,
             role: 'student', // Default role for new signups
           }
         }
