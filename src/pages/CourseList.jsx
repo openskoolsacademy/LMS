@@ -38,7 +38,8 @@ export default function CourseList() {
     fetchCourses();
   }, []);
 
-  const fetchCourses = async () => {
+  const fetchCourses = async (retryCount = 0) => {
+    const MAX_RETRIES = 3;
     setLoading(true);
     try {
       // For MVP, we fetch courses and their instructor profiles alongside real statistics
@@ -49,7 +50,24 @@ export default function CourseList() {
         supabase.rpc('get_all_course_stats')
       ]);
 
-      if (coursesResponse.error) throw coursesResponse.error;
+      if (coursesResponse.error) {
+        console.error('CourseList: Courses fetch error:', coursesResponse.error);
+        throw coursesResponse.error;
+      }
+
+      if (statsResponse.error) {
+        console.warn('CourseList: Stats fetch error (non-fatal):', statsResponse.error);
+      }
+
+      console.log(`CourseList: Fetched ${coursesResponse.data?.length || 0} approved courses`);
+
+      // If we got 0 courses and haven't exhausted retries, try again
+      // (handles race condition where auth session isn't fully ready)
+      if ((!coursesResponse.data || coursesResponse.data.length === 0) && retryCount < MAX_RETRIES) {
+        console.log(`CourseList: 0 courses returned, retrying in 1.5s... (attempt ${retryCount + 1}/${MAX_RETRIES})`);
+        setTimeout(() => fetchCourses(retryCount + 1), 1500);
+        return;
+      }
       
       const statsMap = (statsResponse.data || []).reduce((acc, stat) => {
         acc[stat.rpc_course_id] = stat;
@@ -98,7 +116,13 @@ export default function CourseList() {
 
       setCourses(formatted);
     } catch (error) {
-      console.error('Error fetching courses:', error);
+      console.error('CourseList: Error fetching courses:', error);
+      // Retry on error
+      if (retryCount < MAX_RETRIES) {
+        console.log(`CourseList: Retrying after error in 1.5s... (attempt ${retryCount + 1}/${MAX_RETRIES})`);
+        setTimeout(() => fetchCourses(retryCount + 1), 1500);
+        return;
+      }
     } finally {
       setLoading(false);
     }

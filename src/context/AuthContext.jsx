@@ -35,8 +35,9 @@ export const AuthProvider = ({ children }) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const fetchProfile = async (userId) => {
-    console.log('AuthContext: Fetching profile for user:', userId);
+  const fetchProfile = async (userId, retryCount = 0) => {
+    const MAX_RETRIES = 3;
+    console.log('AuthContext: Fetching profile for user:', userId, retryCount > 0 ? `(retry ${retryCount})` : '');
     try {
       const { data, error } = await supabase
         .from('users')
@@ -45,8 +46,26 @@ export const AuthProvider = ({ children }) => {
         .single();
       
       if (error) {
-          console.warn('AuthContext: Profile fetch failed or record missing:', error.message);
-          // Don't throw, just set profile to null
+        console.warn('AuthContext: Profile fetch failed or record missing:', error.message);
+        // Retry on transient errors (not on "row not found")
+        if (retryCount < MAX_RETRIES && error.code !== 'PGRST116') {
+          const delay = Math.min(1000 * Math.pow(2, retryCount), 5000);
+          console.log(`AuthContext: Retrying profile fetch in ${delay}ms...`);
+          setTimeout(() => fetchProfile(userId, retryCount + 1), delay);
+          // On first attempt, try to use cached profile while retrying
+          if (retryCount === 0) {
+            try {
+              const cached = localStorage.getItem(`profile_${userId}`);
+              if (cached) {
+                const cachedProfile = JSON.parse(cached);
+                console.log('AuthContext: Using cached profile as fallback, role:', cachedProfile.role);
+                setProfile(cachedProfile);
+              }
+            } catch (e) { /* ignore parse errors */ }
+            setLoading(false);
+          }
+          return;
+        }
       }
       
       const session = await supabase.auth.getSession();
@@ -70,12 +89,31 @@ export const AuthProvider = ({ children }) => {
       // Only overwrite if we got valid data, to prevent transient network errors 
       // from wiping out the active profile (which makes admins suddenly look like students).
       setProfile(prev => {
-        if (profileData) return profileData;
+        if (profileData) {
+          // Cache successful profile to localStorage for fallback
+          try { localStorage.setItem(`profile_${userId}`, JSON.stringify(profileData)); } catch (e) { /* ignore */ }
+          return profileData;
+        }
         if (prev && prev.id === userId) return prev;
+        // Last resort: try cached profile
+        try {
+          const cached = localStorage.getItem(`profile_${userId}`);
+          if (cached) return JSON.parse(cached);
+        } catch (e) { /* ignore */ }
         return null;
       });
     } catch (error) {
       console.error('AuthContext: Fatal Profile Error:', error);
+      // Even on fatal error, try to recover from cache
+      if (retryCount === 0) {
+        try {
+          const cached = localStorage.getItem(`profile_${userId}`);
+          if (cached) {
+            console.log('AuthContext: Recovering profile from cache after fatal error');
+            setProfile(JSON.parse(cached));
+          }
+        } catch (e) { /* ignore */ }
+      }
     } finally {
       console.log('AuthContext: Profile processing complete, clearing loading state.');
       setLoading(false);

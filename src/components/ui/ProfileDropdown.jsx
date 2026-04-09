@@ -67,7 +67,7 @@ export default function ProfileDropdown() {
             </div>
             <div className="profile-dropdown__header-info">
               <h4>{profile?.name || 'User'}</h4>
-              <span className="profile-dropdown__role">{role || 'student'}</span>
+              <span className="profile-dropdown__role">{(role || 'loading...').toUpperCase()}</span>
             </div>
           </div>
 
