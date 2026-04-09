@@ -407,7 +407,17 @@ export default function AdminPanel() {
         body: { user_id: userId }
       });
 
-      if (error) throw error;
+      if (error) {
+        // Try to extract actual error message from edge function response
+        let errorMsg = error.message;
+        try {
+          if (error.context && typeof error.context.json === 'function') {
+            const body = await error.context.json();
+            errorMsg = body?.error || errorMsg;
+          }
+        } catch {}
+        throw new Error(errorMsg);
+      }
       if (data?.error) throw new Error(data.error);
 
       setUsers(users.filter(u => u.id !== userId));
