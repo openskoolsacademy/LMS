@@ -13,11 +13,21 @@ serve(async (req) => {
 
   try {
     const { user_id } = await req.json()
-    if (!user_id) throw new Error('user_id is required')
+    if (!user_id) {
+      return new Response(
+        JSON.stringify({ error: 'user_id is required' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+      )
+    }
 
     // Verify the caller is an admin
     const authHeader = req.headers.get('Authorization')
-    if (!authHeader) throw new Error('No authorization header')
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: 'No authorization header' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+      )
+    }
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
@@ -25,7 +35,12 @@ serve(async (req) => {
 
     // Get calling user from JWT
     const { data: { user: caller }, error: callerError } = await supabase.auth.getUser(authHeader.replace('Bearer ', ''))
-    if (callerError || !caller) throw new Error('Invalid user token')
+    if (callerError || !caller) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid user token' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+      )
+    }
 
     // Verify caller is admin
     const { data: callerProfile } = await supabase
@@ -35,40 +50,25 @@ serve(async (req) => {
       .single()
 
     if (!callerProfile || callerProfile.role !== 'admin') {
-      throw new Error('Only admins can delete users')
+      return new Response(
+        JSON.stringify({ error: 'Only admins can delete users' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+      )
     }
 
     // Prevent self-deletion
     if (caller.id === user_id) {
-      throw new Error('You cannot delete your own account')
+      return new Response(
+        JSON.stringify({ error: 'You cannot delete your own account' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+      )
     }
 
     console.log(`Admin ${caller.id} deleting user ${user_id}`)
+    const warnings: string[] = []
 
     // 1. Clean up all dependent records that reference user_id
-    // Tables with ON DELETE CASCADE will be handled automatically,
-    // but we explicitly clean tables without CASCADE to avoid FK constraint errors
-    const userDependentTables = [
-      // Tables referencing users(id) WITHOUT ON DELETE CASCADE
-      { table: 'payments', column: 'user_id' },
-      { table: 'instructor_requests', column: 'user_id' },
-      { table: 'notifications', column: 'user_id' },
-      { table: 'course_reviews', column: 'user_id' },
-      { table: 'certificates', column: 'user_id' },
-      { table: 'assessment_attempts', column: 'user_id' },
-      { table: 'saved_jobs', column: 'user_id' },
-      { table: 'event_attendees', column: 'user_id' },
-      { table: 'bootcamp_enrollments', column: 'user_id' },
-      { table: 'quiz_attempts', column: 'user_id' },
-      { table: 'blogs', column: 'author_id' },
-      // Tables with ON DELETE CASCADE (cleaned explicitly for safety)
-      { table: 'enrollments', column: 'user_id' },
-      { table: 'lesson_completions', column: 'user_id' },
-      { table: 'activity_log', column: 'user_id' },
-    ]
-
-    // First handle courses owned by this user (instructor)
-    // Get their course IDs to clean up course-dependent records
+    // Handle courses owned by this user (instructor) first
     const { data: userCourses } = await supabase
       .from('courses')
       .select('id')
@@ -80,39 +80,57 @@ serve(async (req) => {
 
       // Clean up records that depend on these courses
       const courseDependentTables = [
-        'assessment_attempts', 'payments', 'enrollments', 'lessons',
-        'course_reviews', 'certificates', 'assessments', 'lesson_completions'
+        'assessment_attempts', 'assessment_questions', 'assessments',
+        'payments', 'enrollments', 'lesson_completions', 'lessons',
+        'course_reviews', 'certificates'
       ]
       for (const table of courseDependentTables) {
         try {
-          await supabase.from(table).delete().in('course_id', courseIds)
+          const { error } = await supabase.from(table).delete().in('course_id', courseIds)
+          if (error) warnings.push(`${table} (course): ${error.message}`)
         } catch (e) {
-          console.warn(`Skipping ${table} course cleanup:`, e.message)
+          warnings.push(`${table} (course): ${e.message}`)
         }
       }
 
-      // Now delete the courses themselves
-      const { error: coursesError } = await supabase
-        .from('courses')
-        .delete()
-        .eq('instructor_id', user_id)
-      if (coursesError) console.warn('Courses deletion warning:', coursesError.message)
+      // Delete the courses themselves
+      try {
+        const { error } = await supabase.from('courses').delete().eq('instructor_id', user_id)
+        if (error) warnings.push(`courses: ${error.message}`)
+      } catch (e) {
+        warnings.push(`courses: ${e.message}`)
+      }
     }
 
-    // Clean up jobs created by this user
-    try {
-      await supabase.from('jobs').delete().eq('created_by', user_id)
-    } catch (e) {
-      console.warn('Jobs cleanup skipped:', e.message)
-    }
+    // Clean up all user-dependent records across all tables
+    const userDependentTables = [
+      { table: 'payments', column: 'user_id' },
+      { table: 'instructor_requests', column: 'user_id' },
+      { table: 'notifications', column: 'user_id' },
+      { table: 'course_reviews', column: 'user_id' },
+      { table: 'certificates', column: 'user_id' },
+      { table: 'assessment_attempts', column: 'user_id' },
+      { table: 'saved_jobs', column: 'user_id' },
+      { table: 'event_attendees', column: 'user_id' },
+      { table: 'bootcamp_enrollments', column: 'user_id' },
+      { table: 'quiz_attempts', column: 'user_id' },
+      { table: 'quiz_scores', column: 'user_id' },
+      { table: 'blogs', column: 'author_id' },
+      { table: 'jobs', column: 'created_by' },
+      { table: 'enrollments', column: 'user_id' },
+      { table: 'lesson_completions', column: 'user_id' },
+      { table: 'activity_log', column: 'user_id' },
+    ]
 
-    // Clean up all user-dependent records
     for (const { table, column } of userDependentTables) {
       try {
         const { error } = await supabase.from(table).delete().eq(column, user_id)
-        if (error) console.warn(`Warning cleaning ${table}:`, error.message)
+        if (error) {
+          warnings.push(`${table}: ${error.message}`)
+          console.warn(`Warning cleaning ${table}:`, error.message)
+        }
       } catch (e) {
-        console.warn(`Skipping ${table}:`, e.message)
+        warnings.push(`${table}: ${e.message}`)
       }
     }
 
@@ -123,25 +141,34 @@ serve(async (req) => {
       .eq('id', user_id)
 
     if (profileError) {
-      console.warn('Profile deletion warning:', profileError.message)
-      // Continue even if profile doesn't exist - still need to delete auth
+      console.error('Profile deletion failed:', profileError.message)
+      return new Response(
+        JSON.stringify({ error: `Failed to delete user profile: ${profileError.message}`, warnings }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+      )
     }
 
     // 3. Delete from auth.users (this requires service role key)
     const { error: authError } = await supabase.auth.admin.deleteUser(user_id)
-    if (authError) throw authError
+    if (authError) {
+      console.error('Auth deletion failed:', authError.message)
+      return new Response(
+        JSON.stringify({ error: `Profile deleted but failed to delete from auth: ${authError.message}`, warnings }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+      )
+    }
 
     console.log(`User ${user_id} fully deleted from both auth and profile tables`)
 
     return new Response(
-      JSON.stringify({ success: true, message: 'User deleted from both auth and profile' }),
+      JSON.stringify({ success: true, message: 'User deleted from both auth and profile', warnings }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
     )
   } catch (error) {
-    console.error('Delete user error:', error.message)
+    console.error('Delete user unexpected error:', error.message)
     return new Response(
       JSON.stringify({ error: error.message }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
     )
   }
 })
