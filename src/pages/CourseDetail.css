@@ -252,11 +252,12 @@
 .desk-only { display: none; }
 .md-hide { 
   display: block; 
-  margin-left: -24px;
-  margin-right: -24px;
-  width: calc(100% + 48px) !important;
-  border-radius: 0;
+  margin-left: 16px;
+  margin-right: 16px;
+  width: calc(100% - 32px) !important;
+  border-radius: 8px;
   margin-bottom: 24px;
+  overflow: hidden;
 }
 
 @media (min-width: 1024px) {
