@@ -30,20 +30,31 @@ CREATE POLICY "Users can update own profile" ON public.users FOR UPDATE USING (a
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-  INSERT INTO public.users (id, email, name, role, contact_number)
-  VALUES (
-    new.id, 
-    new.email, 
-    INITCAP(COALESCE(new.raw_user_meta_data->>'full_name', 'Student')), 
-    COALESCE(new.raw_user_meta_data->>'role', 'student'),
-    new.raw_user_meta_data->>'phone'
-  );
-  RETURN new;
+  -- Only create the public.users record after the email is confirmed.
+  -- This fires on INSERT (e.g., Google login where email is auto-confirmed)
+  -- and on UPDATE (when a user clicks the email confirmation link).
+  IF NEW.email_confirmed_at IS NOT NULL THEN
+    -- Only insert if going from unconfirmed → confirmed, or if it's a new confirmed user
+    IF TG_OP = 'INSERT' OR (TG_OP = 'UPDATE' AND (OLD.email_confirmed_at IS NULL)) THEN
+      INSERT INTO public.users (id, email, name, role, contact_number)
+      VALUES (
+        NEW.id, 
+        NEW.email, 
+        INITCAP(COALESCE(NEW.raw_user_meta_data->>'full_name', 'Student')), 
+        COALESCE(NEW.raw_user_meta_data->>'role', 'student'),
+        NEW.raw_user_meta_data->>'phone'
+      )
+      ON CONFLICT (id) DO NOTHING;
+    END IF;
+  END IF;
+  RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+
 CREATE TRIGGER on_auth_user_created
-  AFTER INSERT ON auth.users
+  AFTER INSERT OR UPDATE ON auth.users
   FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
 
 
