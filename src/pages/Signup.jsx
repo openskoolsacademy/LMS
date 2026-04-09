@@ -30,7 +30,7 @@ export default function Signup() {
     setLoading(true);
     setError(null);
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -42,6 +42,15 @@ export default function Signup() {
         }
       });
       if (error) throw error;
+
+      // Supabase returns a fake success for existing emails (to prevent enumeration).
+      // Detect this by checking if identities array is empty.
+      if (data?.user?.identities?.length === 0) {
+        await showAlert('An account with this email already exists. Please log in instead.', 'Account Exists', 'warning');
+        navigate('/login');
+        return;
+      }
+
       await showAlert('Account created! Please check your email inbox to confirm your account before logging in.', 'Welcome!', 'success');
       navigate('/login');
     } catch (err) {
