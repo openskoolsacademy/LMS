@@ -398,14 +398,20 @@ export default function AdminPanel() {
 
   const handleDeleteUser = async (userId) => {
     setActiveMenu(null);
-    const confirmed = await showConfirm("Are you sure you want to delete this user? This action cannot be undone.", undefined, 'Delete User', 'Delete', 'Cancel');
+    const confirmed = await showConfirm("Are you sure you want to delete this user? This will permanently remove them from both the app and Supabase Auth. This action cannot be undone.", undefined, 'Delete User', 'Delete', 'Cancel');
     if (!confirmed) return;
 
     try {
-      const { data, error } = await supabase.from('users').delete().eq('id', userId).select();
+      // Call the edge function which uses service role key to delete from both auth.users and public.users
+      const { data, error } = await supabase.functions.invoke('delete-user', {
+        body: { user_id: userId }
+      });
+
       if (error) throw error;
-      if (!data || data.length === 0) throw new Error("Permission denied by database (Check RLS policies).");
+      if (data?.error) throw new Error(data.error);
+
       setUsers(users.filter(u => u.id !== userId));
+      await showAlert("User deleted successfully from both app and Supabase Auth.", 'Deleted', 'success');
     } catch (error) {
       await showAlert("Error deleting user: " + error.message, 'Delete Failed', 'error');
     }
