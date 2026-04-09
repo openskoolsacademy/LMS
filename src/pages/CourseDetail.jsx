@@ -304,7 +304,7 @@ export default function CourseDetail() {
   
   // Group lessons by their defined section_title
   const grouped = lessons.reduce((acc, lesson) => {
-    const sec = lesson.section_title || '';
+    const sec = (lesson.section_title && lesson.section_title !== 'General') ? lesson.section_title : '';
     if (!acc[sec]) acc[sec] = [];
     acc[sec].push(lesson);
     return acc;
@@ -607,7 +607,7 @@ export default function CourseDetail() {
                     <div key={i} className="cd-section" style={{ border: 'none', borderBottom: i === curriculum.length - 1 ? 'none' : '1px solid var(--gray-200)' }}>
                       <button className="cd-section-header" onClick={() => toggleSection(i)} style={{ background: i % 2 === 0 ? '#f8fafc' : '#ffffff' }}>
                         {openSections.includes(i) ? <FiChevronUp /> : <FiChevronDown />}
-                        {section.title && <strong>{section.title}</strong>}
+                        {section.title && section.title !== 'General' && <strong>{section.title}</strong>}
                         <span>{section.lessons.length} lessons</span>
                       </button>
                       {openSections.includes(i) && (
