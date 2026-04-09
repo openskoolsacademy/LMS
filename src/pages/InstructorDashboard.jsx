@@ -355,7 +355,7 @@ export default function InstructorDashboard() {
       const { error } = await supabase.from('lessons').insert([{
         course_id: curriculumCourse.id,
         title: lessonFormData.title,
-        section_title: lessonFormData.section_title || null,
+        section_title: lessonFormData.section_title || '',
         video_url: lessonFormData.video_url,
         duration: parseInt(lessonFormData.duration) || 0,
         notes: lessonFormData.notes || null,
