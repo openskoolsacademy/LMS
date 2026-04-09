@@ -191,7 +191,9 @@ export default function VideoLearning() {
   if (loading) return <div className="vl-page"><Loader text="Loading..." /></div>;
   if (!course) return <div className="container section"><h2>Course not found</h2><Link to="/courses" className="btn btn-primary">Browse Courses</Link></div>;
 
-  const progress = allLessons.length > 0 ? Math.round((completed.length / allLessons.length) * 100) : 0;
+  // Only count completed lessons that belong to this specific course
+  const courseCompletedLessons = allLessons.filter(l => completed.includes(l.id));
+  const progress = allLessons.length > 0 ? Math.round((courseCompletedLessons.length / allLessons.length) * 100) : 0;
 
   return (
     <div className="vl-page">
@@ -288,7 +290,7 @@ export default function VideoLearning() {
               ))}
               
               {/* Mobile Assessment Banner */}
-              {progress === 100 && (
+              {progress >= 100 && (
                 <div style={{ marginTop: '24px' }}>
                   {hasAssessment ? (
                     <Link to={`/assessment/${course.id}`} className="vl-assessment-banner" style={{ margin: '0' }}>
@@ -377,7 +379,7 @@ export default function VideoLearning() {
             <div className="vl-progress-ring">
               <span>{progress}%</span>
             </div>
-            <span>{completed.length}/{allLessons.length} completed</span>
+            <span>{courseCompletedLessons.length}/{allLessons.length} completed</span>
           </div>
         </div>
 
@@ -407,7 +409,7 @@ export default function VideoLearning() {
         </div>
         
         {/* Sidebar Footer - Assessment/Certificate */}
-        {(progress === 100) && (
+        {(progress >= 100) && (
           <div className="vl-sidebar__footer">
             {hasAssessment ? (
               <Link to={`/assessment/${course.id}`} className="vl-assessment-banner">
