@@ -18,7 +18,8 @@ export default function Landing() {
   const scrollRef = useRef();
 
   useEffect(() => {
-    const fetchFeatured = async () => {
+    const fetchFeatured = async (retryCount = 0) => {
+      const MAX_RETRIES = 3;
       setLoading(true);
       try {
         const [coursesResponse, statsResponse] = await Promise.all([
@@ -30,7 +31,19 @@ export default function Landing() {
           supabase.rpc('get_all_course_stats')
         ]);
 
-        if (coursesResponse.error) throw coursesResponse.error;
+        if (coursesResponse.error) {
+          console.error('Landing: Featured courses fetch error:', coursesResponse.error);
+          throw coursesResponse.error;
+        }
+
+        console.log(`Landing: Fetched ${coursesResponse.data?.length || 0} featured courses`);
+
+        // Retry if 0 courses returned (RLS/session timing issue)
+        if ((!coursesResponse.data || coursesResponse.data.length === 0) && retryCount < MAX_RETRIES) {
+          console.log(`Landing: 0 featured courses, retrying in 1.5s... (attempt ${retryCount + 1}/${MAX_RETRIES})`);
+          setTimeout(() => fetchFeatured(retryCount + 1), 1500);
+          return;
+        }
         
         const statsMap = (statsResponse.data || []).reduce((acc, stat) => {
           acc[stat.rpc_course_id] = stat;
@@ -59,15 +72,27 @@ export default function Landing() {
         });
         setFeatured(formatted);
       } catch (err) {
-        console.error('Error fetching featured courses:', err);
+        console.error('Landing: Error fetching featured courses:', err);
+        if (retryCount < MAX_RETRIES) {
+          console.log(`Landing: Retrying after error in 1.5s... (attempt ${retryCount + 1}/${MAX_RETRIES})`);
+          setTimeout(() => fetchFeatured(retryCount + 1), 1500);
+          return;
+        }
       } finally {
         setLoading(false);
       }
     };
-    const fetchCategoryCounts = async () => {
+    const fetchCategoryCounts = async (retryCount = 0) => {
       try {
         const { data, error } = await supabase.from('courses').select('category');
         if (error) throw error;
+        
+        // Retry if 0 results (same timing issue)
+        if ((!data || data.length === 0) && retryCount < 3) {
+          setTimeout(() => fetchCategoryCounts(retryCount + 1), 1500);
+          return;
+        }
+        
         const counts = (data || []).reduce((acc, curr) => {
           if (curr.category) {
             const mapped = mapCategory(curr.category);
@@ -78,6 +103,9 @@ export default function Landing() {
         setCategoryCounts(counts);
       } catch (err) {
         console.error('Error fetching category counts:', err);
+        if (retryCount < 3) {
+          setTimeout(() => fetchCategoryCounts(retryCount + 1), 1500);
+        }
       }
     };
 

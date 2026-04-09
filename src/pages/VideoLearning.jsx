@@ -34,10 +34,20 @@ export default function VideoLearning() {
   }, [tab]);
 
   useEffect(() => {
-    async function loadCourse() {
+    async function loadCourse(retryCount = 0) {
+      const MAX_RETRIES = 3;
       try {
         const { data: courseData, error: courseError } = await supabase.from('courses').select('*').eq('id', id).single();
-        if (courseError) throw courseError;
+        if (courseError) {
+          console.error('VideoLearning: Course fetch error:', courseError);
+          // Retry on transient errors (not on "row not found")
+          if (courseError.code !== 'PGRST116' && retryCount < MAX_RETRIES) {
+            console.log(`VideoLearning: Retrying in 1.5s... (attempt ${retryCount + 1}/${MAX_RETRIES})`);
+            setTimeout(() => loadCourse(retryCount + 1), 1500);
+            return;
+          }
+          throw courseError;
+        }
         
         const { data: lessonsData, error: lessonsError } = await supabase.from('lessons').select('*').eq('course_id', id).order('order_index', { ascending: true });
         if (lessonsError) throw lessonsError;
@@ -78,7 +88,12 @@ export default function VideoLearning() {
           setActiveLesson(curr[0].lessons[0].id);
         }
       } catch (err) {
-        console.error("Error loading course:", err);
+        console.error("VideoLearning: Error loading course:", err);
+        if (retryCount < MAX_RETRIES) {
+          console.log(`VideoLearning: Retrying after error in 1.5s... (attempt ${retryCount + 1}/${MAX_RETRIES})`);
+          setTimeout(() => loadCourse(retryCount + 1), 1500);
+          return;
+        }
       } finally {
         setLoading(false);
       }

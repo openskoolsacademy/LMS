@@ -9,7 +9,8 @@ export default function RecommendedCourses({ limit = 4 }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchCourses() {
+    async function fetchCourses(retryCount = 0) {
+      const MAX_RETRIES = 3;
       try {
         const [coursesRes, statsRes] = await Promise.all([
           supabase
@@ -22,6 +23,13 @@ export default function RecommendedCourses({ limit = 4 }) {
         ]);
 
         if (coursesRes.error) throw coursesRes.error;
+
+        // Retry if 0 courses returned (RLS/session timing issue)
+        if ((!coursesRes.data || coursesRes.data.length === 0) && retryCount < MAX_RETRIES) {
+          console.log(`RecommendedCourses: 0 courses, retrying in 1.5s... (attempt ${retryCount + 1}/${MAX_RETRIES})`);
+          setTimeout(() => fetchCourses(retryCount + 1), 1500);
+          return;
+        }
 
         const statsMap = {};
         (statsRes.data || []).forEach(s => {
@@ -50,6 +58,10 @@ export default function RecommendedCourses({ limit = 4 }) {
         setCourses(mapped);
       } catch (err) {
         console.error('Error fetching recommended courses:', err);
+        if (retryCount < MAX_RETRIES) {
+          setTimeout(() => fetchCourses(retryCount + 1), 1500);
+          return;
+        }
       } finally {
         setLoading(false);
       }

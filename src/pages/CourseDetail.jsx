@@ -42,7 +42,8 @@ export default function CourseDetail() {
     }
   }, [id, user]);
 
-  const fetchCourseDetails = async () => {
+  const fetchCourseDetails = async (retryCount = 0) => {
+    const MAX_RETRIES = 3;
     setLoading(true);
     try {
       // 1. Fetch course + instructor + stats
@@ -55,7 +56,16 @@ export default function CourseDetail() {
         supabase.rpc('get_all_course_stats')
       ]);
 
-      if (courseRes.error) throw courseRes.error;
+      if (courseRes.error) {
+        console.error('CourseDetail: Course fetch error:', courseRes.error);
+        // Retry on transient errors (not on "row not found")
+        if (courseRes.error.code !== 'PGRST116' && retryCount < MAX_RETRIES) {
+          console.log(`CourseDetail: Retrying in 1.5s... (attempt ${retryCount + 1}/${MAX_RETRIES})`);
+          setTimeout(() => fetchCourseDetails(retryCount + 1), 1500);
+          return;
+        }
+        throw courseRes.error;
+      }
       const courseData = courseRes.data;
 
       const stats = (statsRes.data || []).find(s => s.rpc_course_id === id) || 
@@ -122,7 +132,12 @@ export default function CourseDetail() {
       }
 
     } catch (error) {
-      console.error('Error loading course:', error);
+      console.error('CourseDetail: Error loading course:', error);
+      if (retryCount < MAX_RETRIES) {
+        console.log(`CourseDetail: Retrying after error in 1.5s... (attempt ${retryCount + 1}/${MAX_RETRIES})`);
+        setTimeout(() => fetchCourseDetails(retryCount + 1), 1500);
+        return;
+      }
     } finally {
       setLoading(false);
     }
