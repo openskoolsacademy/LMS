@@ -45,7 +45,78 @@ serve(async (req) => {
 
     console.log(`Admin ${caller.id} deleting user ${user_id}`)
 
-    // 1. Delete from public.users (profile) first
+    // 1. Clean up all dependent records that reference user_id
+    // Tables with ON DELETE CASCADE will be handled automatically,
+    // but we explicitly clean tables without CASCADE to avoid FK constraint errors
+    const userDependentTables = [
+      // Tables referencing users(id) WITHOUT ON DELETE CASCADE
+      { table: 'payments', column: 'user_id' },
+      { table: 'instructor_requests', column: 'user_id' },
+      { table: 'notifications', column: 'user_id' },
+      { table: 'course_reviews', column: 'user_id' },
+      { table: 'certificates', column: 'user_id' },
+      { table: 'assessment_attempts', column: 'user_id' },
+      { table: 'saved_jobs', column: 'user_id' },
+      { table: 'event_attendees', column: 'user_id' },
+      { table: 'bootcamp_enrollments', column: 'user_id' },
+      { table: 'quiz_attempts', column: 'user_id' },
+      { table: 'blogs', column: 'author_id' },
+      // Tables with ON DELETE CASCADE (cleaned explicitly for safety)
+      { table: 'enrollments', column: 'user_id' },
+      { table: 'lesson_completions', column: 'user_id' },
+      { table: 'activity_log', column: 'user_id' },
+    ]
+
+    // First handle courses owned by this user (instructor)
+    // Get their course IDs to clean up course-dependent records
+    const { data: userCourses } = await supabase
+      .from('courses')
+      .select('id')
+      .eq('instructor_id', user_id)
+
+    if (userCourses && userCourses.length > 0) {
+      const courseIds = userCourses.map((c: any) => c.id)
+      console.log(`Cleaning up ${courseIds.length} courses owned by user`)
+
+      // Clean up records that depend on these courses
+      const courseDependentTables = [
+        'assessment_attempts', 'payments', 'enrollments', 'lessons',
+        'course_reviews', 'certificates', 'assessments', 'lesson_completions'
+      ]
+      for (const table of courseDependentTables) {
+        try {
+          await supabase.from(table).delete().in('course_id', courseIds)
+        } catch (e) {
+          console.warn(`Skipping ${table} course cleanup:`, e.message)
+        }
+      }
+
+      // Now delete the courses themselves
+      const { error: coursesError } = await supabase
+        .from('courses')
+        .delete()
+        .eq('instructor_id', user_id)
+      if (coursesError) console.warn('Courses deletion warning:', coursesError.message)
+    }
+
+    // Clean up jobs created by this user
+    try {
+      await supabase.from('jobs').delete().eq('created_by', user_id)
+    } catch (e) {
+      console.warn('Jobs cleanup skipped:', e.message)
+    }
+
+    // Clean up all user-dependent records
+    for (const { table, column } of userDependentTables) {
+      try {
+        const { error } = await supabase.from(table).delete().eq(column, user_id)
+        if (error) console.warn(`Warning cleaning ${table}:`, error.message)
+      } catch (e) {
+        console.warn(`Skipping ${table}:`, e.message)
+      }
+    }
+
+    // 2. Delete from public.users (profile)
     const { error: profileError } = await supabase
       .from('users')
       .delete()
@@ -56,7 +127,7 @@ serve(async (req) => {
       // Continue even if profile doesn't exist - still need to delete auth
     }
 
-    // 2. Delete from auth.users (this requires service role key)
+    // 3. Delete from auth.users (this requires service role key)
     const { error: authError } = await supabase.auth.admin.deleteUser(user_id)
     if (authError) throw authError
 
