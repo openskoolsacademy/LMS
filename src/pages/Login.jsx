@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { FiMail, FiLock, FiEye, FiEyeOff } from 'react-icons/fi';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
+import { useAlert } from '../context/AlertContext';
 import './Auth.css';
 
 export default function Login() {
@@ -13,6 +14,7 @@ export default function Login() {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { showAlert } = useAlert();
   const location = useLocation();
 
   // If already logged in, redirect securely as a side-effect
@@ -34,13 +36,28 @@ export default function Login() {
       
       if (authError) {
         console.error('Login: Auth error:', authError.message);
+
+        // Show specific alert for unconfirmed email
+        if (authError.message.toLowerCase().includes('email not confirmed')) {
+          await showAlert('Your email is not confirmed yet. Please check your inbox and click the confirmation link to activate your account.', 'Email Not Confirmed', 'warning');
+          setLoading(false);
+          return;
+        }
+
+        // Show alert for invalid credentials
+        if (authError.message.toLowerCase().includes('invalid login credentials')) {
+          await showAlert('Incorrect email or password. Please try again.', 'Login Failed', 'error');
+          setLoading(false);
+          return;
+        }
+
         throw authError;
       }
 
       console.log('Login: Success! Token received for user:', data.user?.id);
       // AuthContext will update, triggering the useEffect above
     } catch (err) {
-      setError(err.message);
+      await showAlert(err.message, 'Login Error', 'error');
       setLoading(false); // Reset loading on error
     }
     // Note: We don't setLoading(false) in finally if successful, 
