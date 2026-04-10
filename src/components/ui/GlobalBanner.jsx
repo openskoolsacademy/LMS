@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FiArrowRight } from 'react-icons/fi';
 import { supabase } from '../../lib/supabase';
+import { resolveImageUrl } from '../../utils/imageUtils';
 import './GlobalBanner.css';
 
 // Track banner analytics directly in Supabase using atomic RPC
@@ -93,7 +94,7 @@ export default function GlobalBanner({ location }) {
             className={`global-banner animate-fade ${!banner.image_url ? 'no-image' : ''}`}
             onClick={(e) => handleBannerClick(e, banner)}
             style={{ 
-              backgroundImage: banner.image_url ? `url("${banner.image_url}")` : 'none',
+              backgroundImage: banner.image_url ? `url("${resolveImageUrl(banner.image_url)}")` : 'none',
               backgroundColor: banner.image_url ? 'var(--dark)' : (banner.bg_color || 'var(--primary)'),
               cursor: banner.cta_link ? 'pointer' : 'default'
             }}
