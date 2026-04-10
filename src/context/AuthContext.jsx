@@ -47,6 +47,15 @@ export const AuthProvider = ({ children }) => {
       
       if (error) {
         console.warn('AuthContext: Profile fetch failed or record missing:', error.message);
+        
+        // Auto-logout if the JWT is invalid, expired, or the user was deleted from the backend
+        if (error.code === 'PGRST301' || error.message?.toLowerCase().includes('jwt')) {
+          console.error('AuthContext: Invalid JWT detected. Force clearing session.');
+          await supabase.auth.signOut();
+          window.location.reload();
+          return;
+        }
+
         // Retry on transient errors (not on "row not found")
         if (retryCount < MAX_RETRIES && error.code !== 'PGRST116') {
           const delay = Math.min(1000 * Math.pow(2, retryCount), 5000);
