@@ -4,12 +4,10 @@ import { supabase } from '../../lib/supabase';
 import { resolveImageUrl } from '../../utils/imageUtils';
 import { useAuth } from '../../context/AuthContext';
 import { FiArrowLeft, FiClock, FiUser, FiEdit2 } from 'react-icons/fi';
-import DOMPurify from 'dompurify'; // Need to sanitize HTML
+import DOMPurify from 'dompurify';
 import GlobalBanner from '../../components/ui/GlobalBanner';
 import './Blog.css';
 import Loader from '../../components/ui/Loader';
-
-
 
 export default function BlogDetail() {
   const { slug } = useParams();
@@ -44,60 +42,63 @@ export default function BlogDetail() {
   if (loading) return <div className="vl-page"><Loader text="Loading..." /></div>;
   if (!blog) return <div className="text-center" style={{ padding: '100px 0' }}><h2>Article Not Found</h2><Link to="/blog" className="btn btn-primary" style={{ marginTop: '20px' }}>Back to Blog</Link></div>;
 
-  // Show edit button if the user is the blog author or an admin
   const canEdit = user && (role === 'admin' || blog.author_id === user.id);
 
   return (
-    <div className="blog-detail-page">
-      {/* Cover Image Banner */}
-      {blog.cover_image ? (
-        <img src={resolveImageUrl(blog.cover_image)} alt={blog.title} className="blog-cover" />
-      ) : (
-        <div className="blog-cover" style={{ backgroundColor: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <h1 style={{ color: 'white', opacity: 0.5, fontSize: '4rem' }}>{blog.title.substring(0, 1)}</h1>
-        </div>
-      )}
-
+    <div className="blog-reading-page">
       <div className="container">
-        <article className="blog-article">
-          <div className="blog-detail-top-bar">
-            <Link to="/blog" className="btn btn-ghost btn-sm" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-              <FiArrowLeft /> Back to Blog
+        
+        <div className="blog-detail-top-bar" style={{ maxWidth: 800, margin: '0 auto 40px' }}>
+          <Link to="/blog" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', color: '#6a6f73', textDecoration: 'none', fontWeight: 600 }}>
+            <FiArrowLeft /> Back to Blog
+          </Link>
+          {canEdit && (
+            <Link to={`/blog/edit/${slug}`} className="blog-edit-btn" id="blog-edit-button">
+              <FiEdit2 size={14} /> Edit Post
             </Link>
-            {canEdit && (
-              <Link to={`/blog/edit/${slug}`} className="blog-edit-btn" id="blog-edit-button">
-                <FiEdit2 size={14} /> Edit Post
-              </Link>
-            )}
-          </div>
+          )}
+        </div>
 
-          <header className="article-header">
-            {blog.status === 'pending' && <span className="badge badge-warning" style={{ marginBottom: '16px', display: 'inline-block' }}>Pending Review</span>}
-            <h1 className="article-title">{blog.title}</h1>
-            <div className="article-meta">
-              <div className="article-author-info">
-                {blog.author?.avatar_url ? (
-                  <img src={blog.author.avatar_url} alt={blog.author?.name} className="article-author-avatar" />
-                ) : (
-                  <div className="article-author-avatar" style={{ backgroundColor: 'var(--gray-200)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><FiUser size={24} /></div>
-                )}
-                <div style={{ textAlign: 'left' }}>
-                  <div style={{ fontWeight: 600, color: 'var(--dark)' }}>{blog.author?.name || 'Unknown Author'}</div>
-                  <div style={{ fontSize: '0.85rem' }}>{new Date(blog.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
+        <header className="article-header">
+          {blog.status === 'pending' && <span className="badge badge-warning" style={{ marginBottom: '16px', display: 'inline-block' }}>Pending Review</span>}
+          <h1 className="article-title">{blog.title}</h1>
+          <div className="article-meta">
+            <div className="article-author-info">
+              {blog.author?.avatar_url ? (
+                <img src={resolveImageUrl(blog.author.avatar_url)} alt={blog.author?.name} className="article-author-avatar" />
+              ) : (
+                <div className="article-author-avatar" style={{ backgroundColor: '#f7f9fa', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><FiUser size={24} color="#6a6f73" /></div>
+              )}
+              <div style={{ textAlign: 'left' }}>
+                <div style={{ fontWeight: 700, color: '#1c1d1f' }}>{blog.author?.name || 'Unknown Author'}</div>
+                <div style={{ fontSize: '0.85rem', color: '#6a6f73' }}>
+                  {new Date(blog.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
                 </div>
               </div>
             </div>
-          </header>
+          </div>
+        </header>
 
-          <GlobalBanner location="Blog Reading Top" />
-
-          <div 
-            className="article-content ql-editor" 
-            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(blog.content) }} 
+        {blog.cover_image && (
+          <img 
+            src={resolveImageUrl(blog.cover_image)} 
+            alt={blog.title} 
+            className="inline-blog-cover" 
           />
+        )}
 
+        <div style={{ maxWidth: 800, margin: '0 auto 40px' }}>
+          <GlobalBanner location="Blog Reading Top" />
+        </div>
+
+        <article 
+          className="article-content ql-editor" 
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(blog.content) }} 
+        />
+
+        <div style={{ maxWidth: 800, margin: '40px auto 0' }}>
           <GlobalBanner location="Blog Reading Bottom" />
-        </article>
+        </div>
       </div>
     </div>
   );

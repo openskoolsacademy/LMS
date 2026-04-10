@@ -12,6 +12,12 @@ export default function BlogList() {
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Hardcoded tags for the sidebar UI
+  const popularTopics = [
+    'Web Development', 'React', 'AI', 'JavaScript', 
+    'Python', 'Design', 'Data Science', 'Technology'
+  ];
+
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
@@ -38,6 +44,9 @@ export default function BlogList() {
 
   if (loading) return <div className="vl-page"><Loader text="Loading..." /></div>;
 
+  const featuredPost = blogs.length > 0 ? blogs[0] : null;
+  const gridPosts = blogs.length > 1 ? blogs.slice(1) : [];
+
   return (
     <div className="blog-page">
       <div className="container">
@@ -49,40 +58,89 @@ export default function BlogList() {
         <GlobalBanner location="Blog" />
 
         {blogs.length === 0 ? (
-          <div className="empty-state">
-            <p>No articles published yet. Check back soon!</p>
+          <div className="empty-state" style={{ marginTop: '40px' }}>
+            <p style={{ color: '#6a6f73', fontSize: '1.2rem' }}>No articles published yet. Check back soon!</p>
           </div>
         ) : (
-          <div className="blog-grid">
-            {blogs.map((blog) => (
-              <Link to={`/blog/${blog.slug}`} key={blog.id} className="blog-card">
-                <div className="blog-card-img">
-                  <img 
-                    src={resolveImageUrl(blog.cover_image) || 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&q=80&w=800'} 
-                    alt={blog.title} 
-                  />
-                </div>
-                <div className="blog-card-content">
-                  <h3 className="blog-title">{blog.title}</h3>
-                  <p className="blog-excerpt">{blog.excerpt}</p>
-                  <div className="blog-meta">
-                    <div className="blog-author">
-                      {blog.author?.avatar_url ? (
-                        <img src={blog.author.avatar_url} alt={blog.author?.name} className="author-avatar" />
-                      ) : (
-                        <div className="author-avatar-placeholder"><FiUser /></div>
-                      )}
-                      <span>{blog.author?.name || 'Unknown Author'}</span>
+          <>
+            {/* Featured Hero Post */}
+            {featuredPost && (
+              <div className="blog-featured">
+                <img 
+                  src={resolveImageUrl(featuredPost.cover_image) || 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&q=80&w=1200'} 
+                  alt={featuredPost.title} 
+                  className="blog-featured-img"
+                />
+                <div className="blog-featured-content">
+                  <span className="blog-badge">Featured Post</span>
+                  <Link to={`/blog/${featuredPost.slug}`} style={{ textDecoration: 'none' }}>
+                    <h2 className="blog-featured-title">{featuredPost.title}</h2>
+                  </Link>
+                  <p className="blog-featured-excerpt">{featuredPost.excerpt}</p>
+                  <div className="blog-meta-minimal">
+                    <div className="blog-author-minimal">
+                      {featuredPost.author?.name || 'Unknown Author'}
                     </div>
-                    <div className="blog-date">
+                    <span>•</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                       <FiClock />
-                      {new Date(blog.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      {new Date(featuredPost.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                     </div>
                   </div>
                 </div>
-              </Link>
-            ))}
-          </div>
+              </div>
+            )}
+
+            {/* Layout: Grid + Sidebar */}
+            <div className="blog-layout">
+              {/* Left Column: Grid */}
+              <div>
+                <h3 className="blog-sidebar-title" style={{ marginTop: 0 }}>All Articles</h3>
+                {gridPosts.length === 0 ? (
+                  <p style={{ color: '#6a6f73' }}>No more articles to show right now.</p>
+                ) : (
+                  <div className="blog-grid">
+                    {gridPosts.map((blog) => (
+                      <Link to={`/blog/${blog.slug}`} key={blog.id} className="blog-card">
+                        <img 
+                          src={resolveImageUrl(blog.cover_image) || 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&q=80&w=800'} 
+                          alt={blog.title} 
+                          className="blog-card-img"
+                        />
+                        <div className="blog-card-content">
+                          <h3 className="blog-title">{blog.title}</h3>
+                          <p className="blog-excerpt">{blog.excerpt}</p>
+                          <div className="blog-meta-minimal" style={{ marginTop: 'auto' }}>
+                            <div className="blog-author-minimal">
+                              {blog.author?.name || 'Unknown Author'}
+                            </div>
+                            <span>•</span>
+                            <div>
+                              {new Date(blog.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                            </div>
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Right Sidebar */}
+              <aside className="blog-sidebar">
+                <div className="blog-sidebar-widget">
+                  <h3 className="blog-sidebar-title" style={{ marginTop: 0 }}>Popular Topics</h3>
+                  <div className="sidebar-tags">
+                    {popularTopics.map((topic, i) => (
+                      <Link key={i} to={`/blog?topic=${encodeURIComponent(topic)}`} className="sidebar-tag">
+                        {topic}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              </aside>
+            </div>
+          </>
         )}
       </div>
     </div>
