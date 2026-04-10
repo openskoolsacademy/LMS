@@ -24,7 +24,10 @@ export async function createStudentCertificate(user, courseId, courseTitle, prof
       course_id: courseId
     }]);
     // Ignore duplicate error if they already had a raw certificate record but no log
-    if (rawErr && rawErr.code !== '23505') throw rawErr;
+    // Also ignore RLS issues (42501) or missing table (42P01) for this legacy table
+    if (rawErr && rawErr.code !== '23505') {
+      console.warn('Non-fatal error inserting into legacy certificates table:', rawErr);
+    }
 
     // 4. Insert into bulk_certificates for public verification
     await supabase.from('bulk_certificates').insert([{
