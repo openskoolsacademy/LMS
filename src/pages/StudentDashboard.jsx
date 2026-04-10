@@ -761,7 +761,7 @@ export default function StudentDashboard() {
                           <span className="badge badge-success" style={{ fontSize: '0.75rem' }}>Attended</span>
                           {userEventAttendance[ev.id]?.attended && ev.enable_certificate && (
                             (() => {
-                              const cert = eventCerts.find(c => c.course_id === ev.id);
+                              const cert = eventCerts.find(c => c.course_name === ev.title);
                               if (cert) {
                                 return (
                                   <button className="btn btn-primary btn-sm" onClick={() => {
@@ -901,7 +901,7 @@ export default function StudentDashboard() {
                           )}
                           {isCompleted && bc.enable_certificate && (
                             (() => {
-                              const cert = bootcampCerts.find(c => c.course_id === bc.id);
+                              const cert = bootcampCerts.find(c => c.course_name === bc.title);
                               if (cert) {
                                 return (
                                   <button className="btn btn-primary btn-sm" style={{ background: '#008ad1', borderColor: '#008ad1' }} onClick={() => {
