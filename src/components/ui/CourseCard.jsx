@@ -27,7 +27,7 @@ export default function CourseCard({ course }) {
       <div className="course-card__img">
         <img src={course.thumbnail} alt={course.title} loading="lazy" />
         {course.bestseller && <span className="course-card__badge">Bestseller</span>}
-
+        {hasDiscount && <span className="course-card__discount">{discount}% OFF</span>}
       </div>
       <div className="course-card__body">
         <span className="course-card__category">{course.category}</span>
