@@ -2685,6 +2685,135 @@ export default function AdminPanel() {
           </form>
         </Modal>
 
+        {/* Event Form Modal */}
+        <Modal isOpen={showEventModal} onClose={() => setShowEventModal(false)} title={editingEvent ? 'Edit Event' : 'Create Event'}>
+          <form className="modal-form-modern" onSubmit={async (e) => {
+            e.preventDefault();
+            setEventSubmitting(true);
+            try {
+              const payload = {
+                title: eventForm.title,
+                description: eventForm.description,
+                instructor_name: eventForm.instructor_name,
+                instructor_bio: eventForm.instructor_bio || null,
+                instructor_image: eventForm.instructor_image || null,
+                event_date: eventForm.event_date,
+                duration_minutes: parseInt(eventForm.duration_minutes) || 60,
+                live_link: eventForm.live_link,
+                thumbnail_url: eventForm.thumbnail_url,
+                enable_certificate: eventForm.enable_certificate,
+                price: parseFloat(eventForm.price) || 0,
+                status: eventForm.status
+              };
+
+              if (editingEvent) {
+                const { data, error } = await supabase.from('events').update(payload).eq('id', editingEvent.id).select();
+                if (error) throw error;
+                setAdminEvents(adminEvents.map(ev => ev.id === editingEvent.id ? data[0] : ev));
+                await showAlert('Event updated.', 'Success', 'success');
+              } else {
+                payload.created_by = user.id;
+                const { data, error } = await supabase.from('events').insert([payload]).select();
+                if (error) throw error;
+                setAdminEvents([data[0], ...adminEvents]);
+                await showAlert('Event created!', 'Success', 'success');
+              }
+              setShowEventModal(false);
+              setEditingEvent(null);
+            } catch (err) {
+              await showAlert('Error saving event: ' + err.message, 'Error', 'error');
+            } finally {
+              setEventSubmitting(false);
+            }
+          }}>
+            <div className="modal-body-modern">
+              <div className="form-grid-modern">
+                <div className="form-group-modern full" style={{ gridColumn: '1 / -1' }}>
+                  <label>Event Title *</label>
+                  <div className="input-with-icon">
+                    <FiVideo />
+                    <input className="form-control-modern" placeholder="e.g. Master React in 2 Hours" value={eventForm.title} onChange={e => setEventForm({...eventForm, title: e.target.value})} required />
+                  </div>
+                </div>
+                <div className="form-group-modern">
+                  <label>Instructor / Speaker *</label>
+                  <div className="input-with-icon">
+                    <FiUser />
+                    <input className="form-control-modern" placeholder="Instructor name" value={eventForm.instructor_name} onChange={e => setEventForm({...eventForm, instructor_name: e.target.value})} required />
+                  </div>
+                </div>
+                <div className="form-group-modern">
+                  <label>Event Date & Time *</label>
+                  <div className="input-with-icon">
+                    <FiCalendar />
+                    <input type="datetime-local" className="form-control-modern" value={eventForm.event_date} onChange={e => setEventForm({...eventForm, event_date: e.target.value})} required />
+                  </div>
+                </div>
+                <div className="form-group-modern">
+                  <label>Duration (minutes) *</label>
+                  <div className="input-with-icon">
+                    <FiClock />
+                    <input type="number" min="1" className="form-control-modern" value={eventForm.duration_minutes} onChange={e => setEventForm({...eventForm, duration_minutes: e.target.value})} required />
+                  </div>
+                </div>
+                <div className="form-group-modern">
+                  <label>Price (₹) *</label>
+                  <div className="input-with-icon">
+                    <span style={{color: 'var(--gray-400)', position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', fontWeight: 600}}>₹</span>
+                    <input type="number" min="0" step="0.01" className="form-control-modern" placeholder="0 for free" style={{paddingLeft: 35}} value={eventForm.price} onChange={e => setEventForm({...eventForm, price: e.target.value})} required />
+                  </div>
+                </div>
+                <div className="form-group-modern">
+                  <label>Status</label>
+                  <div className="input-with-icon">
+                    <FiCheckCircle />
+                    <select className="form-control-modern" value={eventForm.status} onChange={e => setEventForm({...eventForm, status: e.target.value})}>
+                      <option value="upcoming">Upcoming</option>
+                      <option value="live">Live</option>
+                      <option value="completed">Completed</option>
+                      <option value="cancelled">Cancelled</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="form-group-modern full" style={{ gridColumn: '1 / -1' }}>
+                  <label>Thumbnail / Cover Image URL</label>
+                  <div className="input-with-icon">
+                    <FiImage />
+                    <input className="form-control-modern" placeholder="https://example.com/banner.jpg" value={eventForm.thumbnail_url} onChange={e => setEventForm({...eventForm, thumbnail_url: e.target.value})} />
+                  </div>
+                </div>
+                <div className="form-group-modern full" style={{ gridColumn: '1 / -1' }}>
+                  <label>Live Meeting Link</label>
+                  <div className="input-with-icon">
+                    <FiLink />
+                    <input className="form-control-modern" placeholder="e.g. Zoom, GMeet, Youtube Live Link" value={eventForm.live_link} onChange={e => setEventForm({...eventForm, live_link: e.target.value})} />
+                  </div>
+                </div>
+                <div className="form-group-modern full" style={{ gridColumn: '1 / -1' }}>
+                  <label>Description *</label>
+                  <textarea className="form-control-modern" rows="4" placeholder="What will attendees learn?" value={eventForm.description} onChange={e => setEventForm({...eventForm, description: e.target.value})} required style={{ padding: '12px' }} />
+                </div>
+                
+                <div className="form-group-modern full" style={{ gridColumn: '1 / -1', background: 'var(--gray-50)', padding: '16px', borderRadius: '12px', border: '1px solid var(--gray-200)' }}>
+                   <label className="checkbox-container" style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', margin: 0 }}>
+                     <input type="checkbox" checked={eventForm.enable_certificate} onChange={e => setEventForm({...eventForm, enable_certificate: e.target.checked})} style={{ width: '18px', height: '18px', accentColor: '#008ad1' }} />
+                     <div>
+                       <strong style={{ display: 'block', color: 'var(--dark)' }}>Enable Certificate of Completion</strong>
+                       <span style={{ fontSize: '0.8rem', color: 'var(--gray-500)', fontWeight: 400 }}>Attendees marked as attended will instantly receive a downloadable certificate.</span>
+                     </div>
+                   </label>
+                </div>
+              </div>
+            </div>
+            <div className="modal-footer-modern">
+              <button type="button" className="btn-modern outline" onClick={() => setShowEventModal(false)}>Cancel</button>
+              <button type="submit" className="btn-modern primary" disabled={eventSubmitting}>
+                {eventSubmitting ? 'Saving...' : editingEvent ? 'Update Event' : 'Create Event'}
+              </button>
+            </div>
+          </form>
+        </Modal>
+
         {/* Bootcamp Create/Edit Modal */}
         <Modal isOpen={showBootcampModal} onClose={() => setShowBootcampModal(false)} title={editingBootcamp ? 'Edit Bootcamp' : 'Create Bootcamp'}>
           <form onSubmit={async (e) => {
