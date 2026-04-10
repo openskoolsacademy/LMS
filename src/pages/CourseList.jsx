@@ -29,7 +29,7 @@ export default function CourseList() {
     return cat ? [cat] : [];
   });
   const [selectedLevels, setSelectedLevels] = useState([]);
-  const [priceRange, setPriceRange] = useState([0, 5000]);
+  const [priceRange, setPriceRange] = useState([0, 1000]);
   const [minRating, setMinRating] = useState(0);
   const [sort, setSort] = useState('popular');
   const [showFilters, setShowFilters] = useState(false);
@@ -128,19 +128,6 @@ export default function CourseList() {
     }
   };
 
-  // Dynamically calculate the max price from loaded courses
-  const maxPrice = useMemo(() => {
-    if (courses.length === 0) return 5000;
-    const highest = Math.max(...courses.map(c => c.offer_price || c.regular_price || c.price || 0));
-    return Math.ceil(highest / 100) * 100 || 5000; // Round up to nearest 100
-  }, [courses]);
-
-  // Reset price range when courses load
-  useEffect(() => {
-    if (courses.length > 0) {
-      setPriceRange([0, maxPrice]);
-    }
-  }, [maxPrice]);
 
   const toggleCat = (name) => setSelectedCats(prev => prev.includes(name) ? prev.filter(c => c !== name) : [...prev, name]);
   const toggleLevel = (lvl) => setSelectedLevels(prev => prev.includes(lvl) ? prev.filter(l => l !== lvl) : [...prev, lvl]);
@@ -165,8 +152,8 @@ export default function CourseList() {
     return result;
   }, [courses, search, selectedCats, selectedLevels, priceRange, minRating, sort]);
 
-  const clearFilters = () => { setSelectedCats([]); setSelectedLevels([]); setPriceRange([0, maxPrice]); setMinRating(0); setSearch(''); };
-  const activeFilters = selectedCats.length + selectedLevels.length + (minRating > 0 ? 1 : 0) + (priceRange[1] < maxPrice ? 1 : 0);
+  const clearFilters = () => { setSelectedCats([]); setSelectedLevels([]); setPriceRange([0, 1000]); setMinRating(0); setSearch(''); };
+  const activeFilters = selectedCats.length + selectedLevels.length + (minRating > 0 ? 1 : 0) + (priceRange[1] < 1000 ? 1 : 0);
 
   return (
     <div className="course-list-page section">
@@ -226,7 +213,7 @@ export default function CourseList() {
             </div>
             <div className="filter-group">
               <h4>Price Range</h4>
-              <input type="range" min="0" max={maxPrice} step={maxPrice <= 500 ? 10 : maxPrice <= 2000 ? 50 : 100} value={priceRange[1]}
+              <input type="range" min="0" max="1000" step="10" value={priceRange[1]}
                 onChange={(e) => setPriceRange([0, +e.target.value])} />
               <div className="price-range-labels">
                 <span>₹0</span>
