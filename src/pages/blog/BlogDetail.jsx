@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
+import { resolveImageUrl } from '../../utils/imageUtils';
 import { useAuth } from '../../context/AuthContext';
 import { FiArrowLeft, FiClock, FiUser, FiEdit2 } from 'react-icons/fi';
 import DOMPurify from 'dompurify'; // Need to sanitize HTML
@@ -50,7 +51,7 @@ export default function BlogDetail() {
     <div className="blog-detail-page">
       {/* Cover Image Banner */}
       {blog.cover_image ? (
-        <img src={blog.cover_image} alt={blog.title} className="blog-cover" />
+        <img src={resolveImageUrl(blog.cover_image)} alt={blog.title} className="blog-cover" />
       ) : (
         <div className="blog-cover" style={{ backgroundColor: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <h1 style={{ color: 'white', opacity: 0.5, fontSize: '4rem' }}>{blog.title.substring(0, 1)}</h1>

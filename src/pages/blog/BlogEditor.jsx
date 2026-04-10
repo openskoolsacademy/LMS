@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
+import { resolveImageUrl } from '../../utils/imageUtils';
 import { useAuth } from '../../context/AuthContext';
 import { useAlert } from '../../context/AlertContext';
 import { FiSave, FiCheckCircle, FiArrowLeft } from 'react-icons/fi';
@@ -193,7 +194,7 @@ export default function BlogEditor() {
         />
         {coverImage && (
           <img 
-            src={coverImage} 
+            src={resolveImageUrl(coverImage)} 
             alt="Cover Preview" 
             className="editor-cover-preview"
           />

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
+import { resolveImageUrl } from '../../utils/imageUtils';
 import { FiClock, FiUser } from 'react-icons/fi';
 import GlobalBanner from '../../components/ui/GlobalBanner';
 import './Blog.css';
@@ -57,7 +58,7 @@ export default function BlogList() {
               <Link to={`/blog/${blog.slug}`} key={blog.id} className="blog-card">
                 <div className="blog-card-img">
                   <img 
-                    src={blog.cover_image || 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&q=80&w=800'} 
+                    src={resolveImageUrl(blog.cover_image) || 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&q=80&w=800'} 
                     alt={blog.title} 
                   />
                 </div>
