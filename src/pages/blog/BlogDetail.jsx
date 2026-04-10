@@ -1,15 +1,18 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
-import { FiArrowLeft, FiClock, FiUser } from 'react-icons/fi';
+import { useAuth } from '../../context/AuthContext';
+import { FiArrowLeft, FiClock, FiUser, FiEdit2 } from 'react-icons/fi';
 import DOMPurify from 'dompurify'; // Need to sanitize HTML
 import GlobalBanner from '../../components/ui/GlobalBanner';
 import './Blog.css';
 import Loader from '../../components/ui/Loader';
 
 
+
 export default function BlogDetail() {
   const { slug } = useParams();
+  const { user, role } = useAuth();
   const [blog, setBlog] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -19,7 +22,7 @@ export default function BlogDetail() {
         const { data, error } = await supabase
           .from('blogs')
           .select(`
-            id, title, status, content, cover_image, created_at,
+            id, title, status, content, cover_image, created_at, author_id,
             author:users(name, avatar_url, bio)
           `)
           .eq('slug', slug)
@@ -40,6 +43,9 @@ export default function BlogDetail() {
   if (loading) return <div className="vl-page"><Loader text="Loading..." /></div>;
   if (!blog) return <div className="text-center" style={{ padding: '100px 0' }}><h2>Article Not Found</h2><Link to="/blog" className="btn btn-primary" style={{ marginTop: '20px' }}>Back to Blog</Link></div>;
 
+  // Show edit button if the user is the blog author or an admin
+  const canEdit = user && (role === 'admin' || blog.author_id === user.id);
+
   return (
     <div className="blog-detail-page">
       {/* Cover Image Banner */}
@@ -53,9 +59,16 @@ export default function BlogDetail() {
 
       <div className="container">
         <article className="blog-article">
-          <Link to="/blog" className="btn btn-ghost btn-sm" style={{ marginBottom: '24px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-            <FiArrowLeft /> Back to Blog
-          </Link>
+          <div className="blog-detail-top-bar">
+            <Link to="/blog" className="btn btn-ghost btn-sm" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+              <FiArrowLeft /> Back to Blog
+            </Link>
+            {canEdit && (
+              <Link to={`/blog/edit/${slug}`} className="blog-edit-btn" id="blog-edit-button">
+                <FiEdit2 size={14} /> Edit Post
+              </Link>
+            )}
+          </div>
 
           <header className="article-header">
             {blog.status === 'pending' && <span className="badge badge-warning" style={{ marginBottom: '16px', display: 'inline-block' }}>Pending Review</span>}

@@ -252,6 +252,37 @@
 .ql-editor p { margin-bottom: 1em; }
 
 /* Blog Detail Specifics */
+.blog-detail-top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.blog-edit-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--primary);
+  background: rgba(0, 138, 209, 0.08);
+  border: 1px solid rgba(0, 138, 209, 0.2);
+  border-radius: 8px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.blog-edit-btn:hover {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 138, 209, 0.25);
+}
+
 .blog-article {
   max-width: 800px;
   margin: 0 auto;

@@ -77,6 +77,7 @@ export default function App() {
           <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']}><AdminPanel /></ProtectedRoute>} />
           <Route path="/blog" element={<BlogList />} />
           <Route path="/blog/write" element={<ProtectedRoute allowedRoles={['admin', 'instructor', 'author']}><BlogEditor /></ProtectedRoute>} />
+          <Route path="/blog/edit/:slug" element={<ProtectedRoute allowedRoles={['admin', 'instructor', 'author']}><BlogEditor /></ProtectedRoute>} />
           <Route path="/blog/:slug" element={<BlogDetail />} />
           <Route path="*" element={<NotFound />} />
         </Route>
