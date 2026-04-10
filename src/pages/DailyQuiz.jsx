@@ -16,14 +16,7 @@ import './DailyQuiz.css';
 import Loader from '../components/ui/Loader';
 
 
-// ── Fallback question bank (used when no admin quiz exists for today) ──────────
-const FALLBACK_QUESTIONS = [
-  { id: 'fq1', question_text: 'Which planet is closest to the Sun?', options: ['Venus', 'Mercury', 'Mars', 'Earth'], correct_option: 1, order_index: 0, explanation: 'Mercury is the closest planet to the Sun in our solar system, orbiting at an average distance of about 57.9 million km.' },
-  { id: 'fq2', question_text: 'What is the capital of France?', options: ['Berlin', 'Madrid', 'Paris', 'Rome'], correct_option: 2, order_index: 1, explanation: 'Paris is the capital and most populous city of France, serving as the country\'s political, cultural, and economic center.' },
-  { id: 'fq3', question_text: 'Which element has the chemical symbol "O"?', options: ['Gold', 'Oxygen', 'Osmium', 'Oganesson'], correct_option: 1, order_index: 2, explanation: 'Oxygen has the chemical symbol "O" and is the eighth element on the periodic table. It is essential for most forms of life.' },
-  { id: 'fq4', question_text: 'How many bones are in the adult human body?', options: ['196', '206', '216', '186'], correct_option: 1, order_index: 3, explanation: 'The adult human body has 206 bones. Babies are born with around 270-300 bones, but many fuse together as we grow.' },
-  { id: 'fq5', question_text: 'What is the largest ocean on Earth?', options: ['Atlantic', 'Indian', 'Arctic', 'Pacific'], correct_option: 3, order_index: 4, explanation: 'The Pacific Ocean is the largest and deepest ocean on Earth, covering more than 30% of the Earth\'s surface area.' },
-];
+
 
 const POINTS_PER_CORRECT = 10;
 const QUIZ_TIME_SECONDS = 150; // 2.5 minutes for 5 questions
@@ -149,10 +142,10 @@ export default function DailyQuiz() {
         }
       }
 
-      setQuestions(loadedQuestions || FALLBACK_QUESTIONS);
+      setQuestions(loadedQuestions || []);
       if (!loadedQuestions) setQuizId(null);
     } catch {
-      setQuestions(FALLBACK_QUESTIONS);
+      setQuestions([]);
     } finally {
       setLoading(false);
     }
@@ -377,6 +370,16 @@ export default function DailyQuiz() {
                 <div className="dq-done-actions">
                   <Link to="/leaderboard" className="btn btn-primary"><FiTrendingUp /> View Leaderboard</Link>
                   <Link to="/dashboard" className="btn btn-outline"><FiArrowLeft /> Dashboard</Link>
+                </div>
+              </div>
+            ) : questions.length === 0 ? (
+              <div className="dq-done-card">
+                <div className="dq-done-icon" style={{background: 'var(--gray-100)', color: 'var(--gray-500)', boxShadow: 'none'}}><FiCalendar /></div>
+                <h3>No Quiz Scheduled</h3>
+                <p>Looks like the admin hasn't added a Daily Quiz for today.</p>
+                <p className="dq-done-sub">Please check back again tomorrow!</p>
+                <div className="dq-done-actions">
+                  <Link to="/dashboard" className="btn btn-primary"><FiArrowLeft /> Go to Dashboard</Link>
                 </div>
               </div>
             ) : (
