@@ -460,13 +460,13 @@ export default function EventDetail() {
                   {isAttended && event.enable_certificate && !attendance?.certificate_issued && (
                     <p style={{ textAlign: 'center', fontSize: '0.85rem', color: '#6b7280', margin: '16px 0 0 0', padding: '12px', background: '#f9fafb', borderRadius: '8px' }}>
                       <FiAward style={{ marginRight: 6, verticalAlign: 'middle', color: '#008ad1' }} />
-                      Certificate will be available in your <Link to="/dashboard" style={{ color: '#008ad1', fontWeight: 600, textDecoration: 'none' }}>Dashboard</Link> once issued by the Admin.
+                      Certificate will be available in your <Link to="/dashboard?tab=certificates" style={{ color: '#008ad1', fontWeight: 600, textDecoration: 'none' }}>Dashboard</Link> once issued by the Admin.
                     </p>
                   )}
                   {isAttended && event.enable_certificate && attendance?.certificate_issued && (
                     <p style={{ textAlign: 'center', fontSize: '0.85rem', color: '#059669', margin: '16px 0 0 0', padding: '12px', background: '#dcfce7', borderRadius: '8px', fontWeight: 500 }}>
                       <FiAward style={{ marginRight: 6, verticalAlign: 'middle', color: '#059669' }} />
-                      Certificate has been issued! View it in your <Link to="/dashboard" style={{ color: '#059669', fontWeight: 600, textDecoration: 'underline' }}>Dashboard</Link>.
+                      Certificate has been issued! View it in your <Link to="/dashboard?tab=certificates" style={{ color: '#059669', fontWeight: 600, textDecoration: 'underline' }}>Dashboard</Link>.
                     </p>
                   )}
                   {isRegistered && (
