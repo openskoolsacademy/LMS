@@ -204,7 +204,26 @@ export default function AdminPanel() {
       if (!coursesRes.error) setCourses(coursesRes.data || []);
       if (!requestsRes.error) setRequests(requestsRes.data || []);
       if (!blogsRes.error) setBlogs(blogsRes.data || []);
-      if (!jobsRes.error) setJobs(jobsRes.data || []);
+      if (!jobsRes.error) {
+        const allJobs = jobsRes.data || [];
+        // Auto-delete jobs expired > 7 days
+        const now = new Date();
+        const expiredBeyondGrace = allJobs.filter(j => {
+          if (!j.expiry_date) return false;
+          const grace = new Date(j.expiry_date);
+          grace.setDate(grace.getDate() + 7);
+          return now > grace;
+        });
+        if (expiredBeyondGrace.length > 0) {
+          const idsToDelete = expiredBeyondGrace.map(j => j.id);
+          supabase.from('jobs').delete().in('id', idsToDelete).then(() => {
+            console.log(`Auto-deleted ${idsToDelete.length} expired job(s)`);
+          });
+          setJobs(allJobs.filter(j => !idsToDelete.includes(j.id)));
+        } else {
+          setJobs(allJobs);
+        }
+      }
       if (!messagesRes.error) setMessages(messagesRes.data || []);
       if (!paymentsRes.error) setPayments(paymentsRes.data || []);
       if (!couponsRes.error) setCoupons(couponsRes.data || []);

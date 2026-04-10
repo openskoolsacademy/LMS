@@ -53,6 +53,15 @@ export default function CareersHub() {
     return expiryDate < today;
   };
 
+  // Auto-hide jobs that have been expired for more than 7 days
+  const isExpiredBeyondGrace = (expiryDate) => {
+    if (!expiryDate) return false;
+    const expiry = new Date(expiryDate);
+    const gracePeriodEnd = new Date(expiry);
+    gracePeriodEnd.setDate(gracePeriodEnd.getDate() + 7);
+    return new Date() > gracePeriodEnd;
+  };
+
   // Smart Category Matcher
   const jobMatchesCategory = (job, cat) => {
     if (cat === 'All') return true;
@@ -76,8 +85,11 @@ export default function CareersHub() {
     return false;
   };
 
-  // Filter jobs
+  // Filter jobs — hide jobs expired beyond 7-day grace period
   const filteredJobs = jobs.filter(job => {
+    // Auto-hide jobs expired > 7 days
+    if (isExpiredBeyondGrace(job.expiry_date)) return false;
+
     const q = search.toLowerCase();
     const matchesSearch = !q ||
       (job.company_name || '').toLowerCase().includes(q) ||
