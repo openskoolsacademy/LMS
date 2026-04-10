@@ -83,11 +83,13 @@ export default function DailyQuiz() {
   const loadQuizData = async () => {
     setLoading(true);
     try {
+      const nowISO = new Date().toISOString();
       const todayQuizFetch = supabase
         .from('daily_quizzes')
         .select('id')
         .eq('quiz_date', todayStr)
         .eq('is_active', true)
+        .lte('scheduled_at', nowISO)
         .maybeSingle();
 
       const userFetches = user ? [
