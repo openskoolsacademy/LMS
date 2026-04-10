@@ -102,9 +102,9 @@ export default function StudentDashboard() {
       const _n = new Date();
       const todayStr = `${_n.getFullYear()}-${String(_n.getMonth() + 1).padStart(2, '0')}-${String(_n.getDate()).padStart(2, '0')}`;
       const [pts, streak, attempt, leaders, rewards] = await Promise.all([
-        supabase.from('user_points').select('total_points').eq('user_id', user.id).single(),
-        supabase.from('user_streaks').select('current_streak').eq('user_id', user.id).single(),
-        supabase.from('daily_quiz_attempts').select('*').eq('user_id', user.id).eq('quiz_date', todayStr).single(),
+        supabase.from('user_points').select('total_points').eq('user_id', user.id).maybeSingle(),
+        supabase.from('user_streaks').select('current_streak').eq('user_id', user.id).maybeSingle(),
+        supabase.from('daily_quiz_attempts').select('*').eq('user_id', user.id).eq('quiz_date', todayStr).maybeSingle(),
         supabase.from('user_points').select('user_id, total_points').order('total_points', { ascending: false }).limit(5),
         supabase.from('user_rewards').select('*').eq('user_id', user.id)
       ]);

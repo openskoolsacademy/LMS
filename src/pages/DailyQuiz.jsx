@@ -88,12 +88,12 @@ export default function DailyQuiz() {
         .select('id')
         .eq('quiz_date', todayStr)
         .eq('is_active', true)
-        .single();
+        .maybeSingle();
 
       const userFetches = user ? [
-        supabase.from('daily_quiz_attempts').select('*').eq('user_id', user.id).eq('quiz_date', todayStr).single(),
-        supabase.from('user_points').select('total_points').eq('user_id', user.id).single(),
-        supabase.from('user_streaks').select('current_streak').eq('user_id', user.id).single(),
+        supabase.from('daily_quiz_attempts').select('*').eq('user_id', user.id).eq('quiz_date', todayStr).maybeSingle(),
+        supabase.from('user_points').select('total_points').eq('user_id', user.id).maybeSingle(),
+        supabase.from('user_streaks').select('current_streak').eq('user_id', user.id).maybeSingle(),
       ] : [Promise.resolve({ data: null }), Promise.resolve({ data: null }), Promise.resolve({ data: null })];
 
       const [quizData, attemptRes, pointsRes, streakRes] = await Promise.all([

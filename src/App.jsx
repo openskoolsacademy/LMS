@@ -33,6 +33,7 @@ import Events from './pages/Events';
 import EventDetail from './pages/EventDetail';
 import LiveBootcamps from './pages/LiveBootcamps';
 import LiveBootcampDetail from './pages/LiveBootcampDetail';
+import NotFound from './pages/NotFound';
 import ProtectedRoute from './components/layout/ProtectedRoute';
 import ScrollToTop from './components/layout/ScrollToTop';
 import WhatsAppButton from './components/ui/WhatsAppButton';
@@ -77,6 +78,7 @@ export default function App() {
           <Route path="/blog" element={<BlogList />} />
           <Route path="/blog/write" element={<ProtectedRoute allowedRoles={['admin', 'instructor', 'author']}><BlogEditor /></ProtectedRoute>} />
           <Route path="/blog/:slug" element={<BlogDetail />} />
+          <Route path="*" element={<NotFound />} />
         </Route>
         {/* Full-screen pages (no footer) */}
         <Route path="/learn/:id" element={<ProtectedRoute><VideoLearning /></ProtectedRoute>} />
