@@ -759,7 +759,7 @@ export default function StudentDashboard() {
                         </div>
                         <div className="sd-event-item-actions">
                           <span className="badge badge-success" style={{ fontSize: '0.75rem' }}>Attended</span>
-                          {isAttended && ev.enable_certificate && (
+                          {userEventAttendance[ev.id]?.attended && ev.enable_certificate && (
                             (() => {
                               const cert = eventCerts.find(c => c.course_id === ev.id);
                               if (cert) {
