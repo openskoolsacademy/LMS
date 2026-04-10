@@ -2743,6 +2743,17 @@ export default function AdminPanel() {
                   </div>
                 </div>
                 <div className="form-group-modern">
+                  <label>Instructor Photo URL</label>
+                  <div className="input-with-icon">
+                    <FiImage />
+                    <input className="form-control-modern" placeholder="https://example.com/photo.jpg" value={eventForm.instructor_image || ''} onChange={e => setEventForm({...eventForm, instructor_image: e.target.value})} />
+                  </div>
+                </div>
+                <div className="form-group-modern full" style={{ gridColumn: '1 / -1' }}>
+                  <label>Instructor Bio</label>
+                  <textarea className="form-control-modern" rows="2" placeholder="Brief info about the instructor..." value={eventForm.instructor_bio || ''} onChange={e => setEventForm({...eventForm, instructor_bio: e.target.value})} style={{ padding: '12px' }} />
+                </div>
+                <div className="form-group-modern">
                   <label>Event Date & Time *</label>
                   <div className="input-with-icon">
                     <FiCalendar />
