@@ -227,7 +227,8 @@ export default function CourseList() {
             <div className="filter-group">
               <h4>Price Range</h4>
               <input type="range" min="0" max={maxPrice} step={maxPrice <= 500 ? 10 : maxPrice <= 2000 ? 50 : 100} value={priceRange[1]}
-                onChange={(e) => setPriceRange([0, +e.target.value])} />
+                onChange={(e) => setPriceRange([0, +e.target.value])}
+                style={{ background: `linear-gradient(to right, var(--primary) 0%, var(--primary) ${maxPrice > 0 ? (priceRange[1] / maxPrice) * 100 : 100}%, #ddd ${maxPrice > 0 ? (priceRange[1] / maxPrice) * 100 : 100}%, #ddd 100%)` }} />
               <div className="price-range-labels">
                 <span>₹0</span>
                 <span className="price-separator">—</span>
