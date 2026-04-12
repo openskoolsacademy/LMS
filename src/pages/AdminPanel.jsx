@@ -57,7 +57,7 @@ export default function AdminPanel() {
   const [adminEvents, setAdminEvents] = useState([]);
   const [showEventModal, setShowEventModal] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null);
-  const [eventForm, setEventForm] = useState({ title: '', description: '', instructor_name: '', event_date: '', duration_minutes: 60, live_link: '', thumbnail_url: '', enable_certificate: false, price: 0, status: 'upcoming' });
+  const [eventForm, setEventForm] = useState({ title: '', description: '', instructor_name: '', event_date: '', duration_minutes: 60, live_link: '', thumbnail_url: '', enable_certificate: false, price: 0, status: 'upcoming', master_event_id: '' });
   const [eventSubmitting, setEventSubmitting] = useState(false);
   const [eventAttendees, setEventAttendees] = useState([]);
   const [selectedEventId, setSelectedEventId] = useState(null);
@@ -1454,7 +1454,7 @@ export default function AdminPanel() {
                             ))}
                           </div>
                         </div>
-                        <button className="btn btn-primary btn-sm" onClick={() => { setEditingEvent(null); setEventForm({ title: '', description: '', instructor_name: '', instructor_bio: '', instructor_image: '', event_date: '', duration_minutes: 60, live_link: '', thumbnail_url: '', enable_certificate: false, price: 0, status: 'upcoming' }); setShowEventModal(true); }}>
+                        <button className="btn btn-primary btn-sm" onClick={() => { setEditingEvent(null); setEventForm({ title: '', description: '', instructor_name: '', instructor_bio: '', instructor_image: '', event_date: '', duration_minutes: 60, live_link: '', thumbnail_url: '', enable_certificate: false, price: 0, status: 'upcoming', master_event_id: crypto.randomUUID() }); setShowEventModal(true); }}>
                           <FiVideo style={{ marginRight: 6 }} /> Create Event
                         </button>
                       </div>
@@ -1537,7 +1537,8 @@ export default function AdminPanel() {
                                       thumbnail_url: ev.thumbnail_url || '',
                                       enable_certificate: ev.enable_certificate || false,
                                       price: ev.price || 0,
-                                      status: ev.status || 'upcoming'
+                                      status: ev.status || 'upcoming',
+                                      master_event_id: ev.master_event_id || ''
                                     });
                                     setShowEventModal(true);
                                   }}>
@@ -1583,34 +1584,40 @@ export default function AdminPanel() {
                         ) : (
                           <div className="id-table-wrap">
                             <table className="id-table">
-                              <thead><tr><th>Student</th><th>Email</th><th>Registered</th><th>Attended</th><th>Payment</th><th>Certificate</th><th>Actions</th></tr></thead>
+                              <thead><tr><th>Student</th><th>Email</th><th>Status</th><th>Joined At</th><th>Payment</th><th>Certificate</th><th>Actions</th></tr></thead>
                               <tbody>
                                 {eventAttendees.map(att => (
                                   <tr key={att.id}>
                                     <td style={{ fontWeight: 600 }}>{att.user?.name || 'Unknown'}</td>
                                     <td style={{ fontSize: '0.85rem', color: 'var(--gray-500)' }}>{att.user?.email || '-'}</td>
-                                    <td>{att.registered ? <span className="badge badge-success">Yes</span> : <span className="badge badge-info">No</span>}</td>
-                                    <td>{att.attended ? <span className="badge badge-success">Attended</span> : <span className="badge badge-danger">No</span>}</td>
+                                    <td>{att.status === 'JOINED' || att.attended ? <span className="badge badge-success">JOINED</span> : att.status === 'ENTERED' ? <span className="badge badge-info">ENTERED</span> : att.registered ? <span className="badge badge-primary">REGISTERED</span> : <span className="badge badge-light">—</span>}</td>
+                                    <td style={{ fontSize: '0.8rem', color: 'var(--gray-500)' }}>{(att.entered_at || att.join_time) ? new Date(att.entered_at || att.join_time).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '—'}</td>
                                     <td style={{ fontSize: '0.85rem' }}>{att.amount_paid > 0 ? `₹${att.amount_paid}` : 'Free'}</td>
                                     <td>{att.certificate_issued ? <span style={{ color: '#8b5cf6', fontWeight: 600, fontSize: '0.8rem' }}>{att.certificate_id}</span> : <span style={{ color: 'var(--gray-400)', fontSize: '0.8rem' }}>—</span>}</td>
                                     <td>
                                       <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                                         <button
-                                          className={`btn btn-sm ${att.attended ? 'btn-outline' : 'btn-primary'}`}
+                                          className={`btn btn-sm ${att.status === 'JOINED' || att.attended ? 'btn-outline' : 'btn-primary'}`}
                                           style={{ fontSize: '0.75rem' }}
                                           onClick={async () => {
                                             try {
-                                              const newVal = !att.attended;
-                                              await supabase.from('event_attendance').update({ attended: newVal, join_time: newVal ? new Date().toISOString() : null }).eq('id', att.id);
-                                              setEventAttendees(eventAttendees.map(a => a.id === att.id ? { ...a, attended: newVal } : a));
+                                              const isCurrentlyJoined = att.status === 'JOINED' || att.attended;
+                                              const newStatus = isCurrentlyJoined ? (att.entered_at ? 'ENTERED' : 'REGISTERED') : 'JOINED';
+                                              const now = new Date().toISOString();
+                                              await supabase.from('event_attendance').update({ 
+                                                status: newStatus, 
+                                                attended: !isCurrentlyJoined,
+                                                joined_at: !isCurrentlyJoined ? now : null 
+                                              }).eq('id', att.id);
+                                              setEventAttendees(eventAttendees.map(a => a.id === att.id ? { ...a, status: newStatus, attended: !isCurrentlyJoined, joined_at: !isCurrentlyJoined ? now : null } : a));
                                             } catch (err) {
                                               await showAlert('Error updating attendance: ' + err.message, 'Error', 'error');
                                             }
                                           }}
                                         >
-                                          {att.attended ? <><FiXCircle style={{ marginRight: 4 }} /> Unmark</> : <><FiCheckCircle style={{ marginRight: 4 }} /> Mark Attended</>}
+                                          {att.status === 'JOINED' || att.attended ? <><FiXCircle style={{ marginRight: 4 }} /> Unmark</> : <><FiCheckCircle style={{ marginRight: 4 }} /> Mark Attended</>}
                                         </button>
-                                        {att.attended && adminEvents.find(e => e.id === selectedEventId)?.enable_certificate && (
+                                        {(att.status === 'JOINED' || att.attended) && adminEvents.find(e => e.id === selectedEventId)?.enable_certificate && (
                                           <button
                                             className="btn btn-outline btn-sm"
                                             style={{ fontSize: '0.75rem', color: '#8b5cf6', borderColor: '#8b5cf6' }}
@@ -2702,8 +2709,9 @@ export default function AdminPanel() {
                 live_link: eventForm.live_link,
                 thumbnail_url: eventForm.thumbnail_url,
                 enable_certificate: eventForm.enable_certificate,
-                price: parseFloat(eventForm.price) || 0,
-                status: eventForm.status
+                price: Math.round(parseFloat(eventForm.price) * 100) / 100 || 0,
+                status: eventForm.status,
+                master_event_id: eventForm.master_event_id || crypto.randomUUID()
               };
 
               if (editingEvent) {
@@ -2813,6 +2821,13 @@ export default function AdminPanel() {
                        <span style={{ fontSize: '0.8rem', color: 'var(--gray-500)', fontWeight: 400 }}>Attendees marked as attended will instantly receive a downloadable certificate.</span>
                      </div>
                    </label>
+                </div>
+                <div className="form-group-modern full" style={{ gridColumn: '1 / -1' }}>
+                  <label>Master Event ID <span style={{ fontWeight: 400, fontSize: '0.78rem', color: 'var(--gray-400)' }}>(auto-generated; copy this when creating a rescheduled duplicate)</span></label>
+                  <div className="input-with-icon">
+                    <FiHash />
+                    <input className="form-control-modern" placeholder="Auto-generated UUID" value={eventForm.master_event_id || ''} onChange={e => setEventForm({...eventForm, master_event_id: e.target.value})} />
+                  </div>
                 </div>
               </div>
             </div>

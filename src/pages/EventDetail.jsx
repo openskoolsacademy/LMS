@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { FiCalendar, FiClock, FiUser, FiVideo, FiAward, FiDownload, FiExternalLink, FiCheckCircle, FiXCircle, FiUsers, FiMapPin, FiMessageCircle, FiChevronRight, FiTag } from 'react-icons/fi';
+import { FiCalendar, FiClock, FiUser, FiVideo, FiAward, FiDownload, FiExternalLink, FiCheckCircle, FiXCircle, FiUsers, FiMapPin, FiMessageCircle, FiChevronRight, FiTag, FiAlertCircle } from 'react-icons/fi';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { useAlert } from '../context/AlertContext';
@@ -18,13 +18,49 @@ export default function EventDetail() {
   const [attendance, setAttendance] = useState(null);
   const [loading, setLoading] = useState(true);
   const [registering, setRegistering] = useState(false);
+  const [joining, setJoining] = useState(false);
   const [activeCert, setActiveCert] = useState(null);
   const [coupon, setCoupon] = useState('');
   const [couponApplied, setCouponApplied] = useState(null);
+  const [countdown, setCountdown] = useState(null);
+  const [now, setNow] = useState(new Date());
+  const [masterEventBlocked, setMasterEventBlocked] = useState(false);
+  const countdownRef = useRef(null);
 
   useEffect(() => {
     fetchEvent();
   }, [id, user]);
+
+  // Live clock — update every second for countdown & status
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // Countdown timer logic
+  useEffect(() => {
+    if (!event) return;
+    const eventDate = new Date(event.event_date);
+    const joinWindowStart = new Date(eventDate.getTime() - 10 * 60000);
+
+    const updateCountdown = () => {
+      const current = new Date();
+      const diff = joinWindowStart - current;
+      if (diff <= 0) {
+        setCountdown(null);
+        return;
+      }
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+      setCountdown({ days, hours, minutes, seconds, total: diff });
+    };
+
+    updateCountdown();
+    countdownRef.current = setInterval(updateCountdown, 1000);
+    return () => clearInterval(countdownRef.current);
+  }, [event]);
 
   const fetchEvent = async () => {
     setLoading(true);
@@ -47,6 +83,18 @@ export default function EventDetail() {
           .maybeSingle();
 
         setAttendance(attData || null);
+
+        // Check master_event_id attendance
+        if (eventData?.master_event_id) {
+          try {
+            const { data: checkData } = await supabase.rpc('check_master_event_attendance', {
+              p_event_id: id
+            });
+            if (checkData?.already_attended) {
+              setMasterEventBlocked(true);
+            }
+          } catch { /* rpc may not exist yet */ }
+        }
       }
     } catch (err) {
       console.error('Error fetching event:', err);
@@ -57,12 +105,27 @@ export default function EventDetail() {
 
   const getEventStatus = () => {
     if (!event) return 'upcoming';
-    const now = new Date();
     const eventDate = new Date(event.event_date);
     const endDate = new Date(eventDate.getTime() + (event.duration_minutes || 60) * 60000);
     if (event.status === 'completed' || now > endDate) return 'completed';
     if (event.status === 'live' || (now >= eventDate && now <= endDate)) return 'live';
     return 'upcoming';
+  };
+
+  // Determine if join window is open
+  const getJoinWindowStatus = () => {
+    if (!event) return { canJoin: false, reason: '' };
+    const eventDate = new Date(event.event_date);
+    const endDate = new Date(eventDate.getTime() + (event.duration_minutes || 60) * 60000);
+    const joinWindowStart = new Date(eventDate.getTime() - 10 * 60000);
+
+    if (now < joinWindowStart) {
+      return { canJoin: false, reason: 'too_early', message: 'You can join 10 minutes before event start time' };
+    }
+    if (now > endDate) {
+      return { canJoin: false, reason: 'ended', message: 'Event has ended' };
+    }
+    return { canJoin: true, reason: 'open' };
   };
 
   // Coupon logic
@@ -107,12 +170,12 @@ export default function EventDetail() {
 
   const calculateFinalPrice = () => {
     if (!event || event.price <= 0) return 0;
-    const basePrice = event.price;
+    const basePrice = Math.round(event.price);
     if (!couponApplied) return basePrice;
     if (couponApplied.discount_type === 'percentage') {
       return Math.max(0, Math.round(basePrice * (1 - couponApplied.discount_value / 100)));
     } else {
-      return Math.max(0, basePrice - couponApplied.discount_value);
+      return Math.max(0, Math.round(basePrice - couponApplied.discount_value));
     }
   };
 
@@ -121,8 +184,30 @@ export default function EventDetail() {
       await showAlert('Please log in to register for this event.', 'Login Required', 'info');
       return;
     }
+
+    // Check master event block before registration
+    if (masterEventBlocked) {
+      await showAlert('You have already attended this event.', 'Already Attended', 'info');
+      return;
+    }
+
     setRegistering(true);
     try {
+      // Double-check master event attendance server-side
+      if (event.master_event_id) {
+        try {
+          const { data: checkData } = await supabase.rpc('check_master_event_attendance', {
+            p_event_id: event.id
+          });
+          if (checkData?.already_attended) {
+            setMasterEventBlocked(true);
+            await showAlert('You have already attended this event.', 'Already Attended', 'info');
+            setRegistering(false);
+            return;
+          }
+        } catch { /* rpc may not exist yet */ }
+      }
+
       const finalPrice = calculateFinalPrice();
 
       if (finalPrice > 0) {
@@ -236,15 +321,54 @@ export default function EventDetail() {
 
   const handleJoinLive = async () => {
     if (!attendance?.registered) return;
+
+    // Frontend guard
+    const joinStatus = getJoinWindowStatus();
+    if (!joinStatus.canJoin) {
+      await showAlert(joinStatus.message, 'Cannot Join', 'info');
+      return;
+    }
+
+    if (masterEventBlocked) {
+      await showAlert('You have already attended this event.', 'Already Attended', 'info');
+      return;
+    }
+
+    setJoining(true);
     try {
-      await supabase.from('event_attendance')
-        .update({ attended: true, join_time: new Date().toISOString() })
-        .eq('user_id', user.id)
-        .eq('event_id', event.id);
-      setAttendance(prev => ({ ...prev, attended: true, join_time: new Date().toISOString() }));
-      if (event.live_link) window.open(event.live_link, '_blank');
+      // Call server-side RPC for validation
+      const { data: result, error: rpcError } = await supabase.rpc('join_event', {
+        p_event_id: event.id
+      });
+
+      if (rpcError) throw rpcError;
+
+      if (result && !result.success) {
+        await showAlert(result.error || 'Could not join event.', 'Cannot Join', 'info');
+        // Update local state based on error code
+        if (result.code === 'ALREADY_ATTENDED' || result.code === 'ALREADY_ATTENDED_MASTER') {
+          setAttendance(prev => ({ ...prev, attended: true }));
+        }
+        return;
+      }
+
+      // Success — update local state
+      const enteredAt = result?.entered_at || new Date().toISOString();
+      setAttendance(prev => ({ 
+        ...prev, 
+        status: prev?.status === 'JOINED' ? 'JOINED' : 'ENTERED', 
+        entered_at: enteredAt 
+      }));
+
+      if (event.live_link) {
+        window.open(event.live_link, '_blank');
+      }
+      await showAlert('You have successfully joined the event!', 'Joined', 'success', { celebrate: true });
     } catch (err) {
       console.error('Error joining:', err);
+      await showAlert(err.message || 'Failed to join event.', 'Error', 'error');
+    } finally {
+      setJoining(false);
     }
   };
 
@@ -264,7 +388,8 @@ export default function EventDetail() {
 
   const status = getEventStatus();
   const isRegistered = attendance?.registered;
-  const isAttended = attendance?.attended;
+  const isAttended = attendance?.status === 'JOINED' || attendance?.attended;
+  const joinWindowStatus = getJoinWindowStatus();
 
   return (
     <div className="event-detail">
@@ -283,7 +408,7 @@ export default function EventDetail() {
             <div className="ed-header-content animate-fade">
               <div className="ed-header-badges">
                 <span className="ed-badge"><FiVideo /> Online Event</span>
-                {status === 'live' && <span className="ed-badge live">Live Now</span>}
+                {status === 'live' && <span className="ed-badge live">🔴 Live Now</span>}
                 {status === 'upcoming' && <span className="ed-badge">Upcoming</span>}
                 {status === 'completed' && <span className="ed-badge">Completed</span>}
                 {event.enable_certificate && <span className="ed-badge cert"><FiAward /> Certificate</span>}
@@ -308,8 +433,9 @@ export default function EventDetail() {
             {/* Media */}
             <div className="ed-media animate-fade">
               <img
-                src={resolveImageUrl(event.thumbnail_url) || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&q=80&w=800'}
+                src={resolveImageUrl(event.thumbnail_url) || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&q=80&w=1200'}
                 alt={event.title}
+                onError={(e) => { e.target.onerror = null; e.target.src = 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&q=80&w=1200'; }}
               />
             </div>
           </div>
@@ -321,23 +447,50 @@ export default function EventDetail() {
         <div className="ed-body">
           {/* Main Content */}
           <div className="ed-main animate-fade">
-            {/* Attendance Status */}
-            {isAttended && event.enable_certificate && (
-              <div className="ed-attendance-banner attended">
-                <FiCheckCircle />
-                <div>
-                  <span>You attended this event</span>
-                  <span className="sub-text">Certificate available for download</span>
+            {/* Countdown Timer for Upcoming Events */}
+            {status === 'upcoming' && countdown && countdown.total > 0 && (
+              <div className="ed-countdown-banner">
+                <div className="ed-countdown-label">
+                  <FiClock /> Event starts in
+                </div>
+                <div className="ed-countdown-timer">
+                  {countdown.days > 0 && (
+                    <div className="ed-countdown-unit">
+                      <span className="ed-countdown-value">{countdown.days}</span>
+                      <span className="ed-countdown-text">Days</span>
+                    </div>
+                  )}
+                  <div className="ed-countdown-unit">
+                    <span className="ed-countdown-value">{String(countdown.hours).padStart(2, '0')}</span>
+                    <span className="ed-countdown-text">Hours</span>
+                  </div>
+                  <div className="ed-countdown-unit">
+                    <span className="ed-countdown-value">{String(countdown.minutes).padStart(2, '0')}</span>
+                    <span className="ed-countdown-text">Min</span>
+                  </div>
+                  <div className="ed-countdown-unit">
+                    <span className="ed-countdown-value">{String(countdown.seconds).padStart(2, '0')}</span>
+                    <span className="ed-countdown-text">Sec</span>
+                  </div>
                 </div>
               </div>
             )}
-            {isAttended && !event.enable_certificate && (
+
+            {/* Already Attended Banner (master event or direct) */}
+            {(isAttended || masterEventBlocked) && (
               <div className="ed-attendance-banner attended">
                 <FiCheckCircle />
-                <span>You attended this event</span>
+                <div>
+                  <span>You have already attended this event</span>
+                  {isAttended && event.enable_certificate && (
+                    <span className="sub-text">Certificate available for download</span>
+                  )}
+                </div>
               </div>
             )}
-            {isRegistered && status === 'completed' && !isAttended && (
+
+            {/* Registered but didn't attend (completed event) */}
+            {isRegistered && status === 'completed' && !isAttended && !masterEventBlocked && (
               <div className="ed-attendance-banner not-attended">
                 <FiXCircle />
                 <div>
@@ -407,7 +560,7 @@ export default function EventDetail() {
                       <span className="ed-sidebar-price">₹{fp}</span>
                       {couponApplied && fp < event.price && (
                         <>
-                          <span style={{ textDecoration: 'line-through', color: '#9ca3af', fontSize: '1.1rem' }}>₹{event.price}</span>
+                          <span style={{ textDecoration: 'line-through', color: '#9ca3af', fontSize: '1.1rem' }}>₹{Math.round(event.price)}</span>
                           <span style={{ background: '#dcfce7', color: '#15803d', padding: '2px 10px', borderRadius: '100px', fontSize: '0.75rem', fontWeight: 700 }}>
                             {couponApplied.discount_type === 'percentage' ? `${couponApplied.discount_value}% OFF` : `₹${couponApplied.discount_value} OFF`}
                           </span>
@@ -418,8 +571,14 @@ export default function EventDetail() {
                 })()}
               </div>
               <div className="ed-sidebar-card-body">
+                {/* Real-time Status Indicator */}
+                <div className={`ed-live-status ${status}`}>
+                  <span className={`ed-status-dot ${status}`}></span>
+                  {status === 'live' ? 'Live Now' : status === 'upcoming' ? 'Upcoming' : 'Completed'}
+                </div>
+
                 <div className="ed-sidebar-actions">
-                  {!isRegistered && status !== 'completed' && event.price > 0 && (
+                  {!isRegistered && status !== 'completed' && !masterEventBlocked && event.price > 0 && (
                     <div className="ed-coupon">
                       <input
                         type="text"
@@ -443,7 +602,9 @@ export default function EventDetail() {
                       Coupon {couponApplied.code} applied successfully!
                     </p>
                   )}
-                  {!isRegistered && status !== 'completed' && (
+
+                  {/* Register Button — blocked if master event already attended */}
+                  {!isRegistered && status !== 'completed' && !masterEventBlocked && (
                     <button className="btn ed-btn-primary" onClick={handleRegister} disabled={registering}>
                       {registering ? 'Processing...' : (() => {
                         const fp = calculateFinalPrice();
@@ -452,12 +613,33 @@ export default function EventDetail() {
                       })()}
                     </button>
                   )}
-                  {isRegistered && !isAttended && (status === 'upcoming' || status === 'live') && (
-                    <button className="btn ed-btn-primary" onClick={handleJoinLive}>
-                      <FiExternalLink /> Join Live Session
-                    </button>
+
+                  {/* Master event already attended — block message */}
+                  {!isRegistered && masterEventBlocked && (
+                    <div className="ed-join-message warning">
+                      <FiAlertCircle />
+                      <span>You have already attended this event</span>
+                    </div>
                   )}
-                  {isAttended && event.enable_certificate && !attendance?.certificate_issued && (
+
+                  {/* Join Button — only when registered and within time window */}
+                  {isRegistered && !masterEventBlocked && (
+                    <>
+                      {joinWindowStatus.canJoin ? (
+                        <button className="btn ed-btn-primary" onClick={handleJoinLive} disabled={joining}>
+                          <FiExternalLink /> {joining ? 'Loading...' : (attendance?.status === 'ENTERED' || isAttended) ? 'Re-enter Live Session' : 'Enter Live Session'}
+                        </button>
+                      ) : (
+                        <div className={`ed-join-message ${joinWindowStatus.reason === 'ended' ? 'ended' : 'waiting'}`}>
+                          <FiAlertCircle />
+                          <span>{joinWindowStatus.message}</span>
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                  {/* Certificate — only when attended AND event completed */}
+                  {isAttended && event.enable_certificate && status === 'completed' && !attendance?.certificate_issued && (
                     <p style={{ textAlign: 'center', fontSize: '0.85rem', color: '#6b7280', margin: '16px 0 0 0', padding: '12px', background: '#f9fafb', borderRadius: '8px' }}>
                       <FiAward style={{ marginRight: 6, verticalAlign: 'middle', color: '#008ad1' }} />
                       Certificate will be available in your <Link to="/dashboard?tab=certificates" style={{ color: '#008ad1', fontWeight: 600, textDecoration: 'none' }}>Dashboard</Link> once issued by the Admin.
@@ -469,12 +651,21 @@ export default function EventDetail() {
                       Certificate has been issued! View it in your <Link to="/dashboard?tab=certificates" style={{ color: '#059669', fontWeight: 600, textDecoration: 'underline' }}>Dashboard</Link>.
                     </p>
                   )}
-                  {isRegistered && (
+
+                  {/* Certificate not available — attended but event not yet completed */}
+                  {isAttended && event.enable_certificate && status !== 'completed' && (
+                    <p style={{ textAlign: 'center', fontSize: '0.85rem', color: '#6b7280', margin: '16px 0 0 0', padding: '12px', background: '#f9fafb', borderRadius: '8px' }}>
+                      <FiAward style={{ marginRight: 6, verticalAlign: 'middle', color: '#008ad1' }} />
+                      Certificate will be available after the event is completed.
+                    </p>
+                  )}
+
+                  {isRegistered && !isAttended && !masterEventBlocked && (
                     <span style={{ textAlign: 'center', fontSize: '0.8rem', color: '#059669', fontWeight: 600 }}>
                       <FiCheckCircle style={{ marginRight: 4 }} /> You are registered
                     </span>
                   )}
-                  {!isRegistered && status === 'completed' && (
+                  {!isRegistered && status === 'completed' && !masterEventBlocked && (
                     <span style={{ textAlign: 'center', fontSize: '0.85rem', color: '#9ca3af', fontWeight: 600 }}>
                       This event has ended
                     </span>

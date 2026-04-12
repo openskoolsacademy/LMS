@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FiCalendar, FiClock, FiAward, FiDownload, FiExternalLink, FiCheckCircle } from 'react-icons/fi';
+import { FiCalendar, FiClock, FiAward, FiDownload, FiExternalLink, FiCheckCircle, FiAlertCircle } from 'react-icons/fi';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { useAlert } from '../context/AlertContext';
@@ -17,13 +17,22 @@ export default function Events() {
   const [attendance, setAttendance] = useState({}); // { eventId: attendanceRecord }
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
+  const [now, setNow] = useState(new Date());
+  const [masterEventAttended, setMasterEventAttended] = useState({}); // { master_event_id: true }
 
   const [activeCert, setActiveCert] = useState(null);
   const [registering, setRegistering] = useState(null); // eventId being registered
+  const [joining, setJoining] = useState(null); // eventId being joined
 
   useEffect(() => {
     fetchEvents();
   }, [user]);
+
+  // Live clock for time-based UI
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const fetchEvents = async () => {
     setLoading(true);
@@ -46,6 +55,18 @@ export default function Events() {
         const attMap = {};
         (attData || []).forEach(a => { attMap[a.event_id] = a; });
         setAttendance(attMap);
+
+        // Build master_event_id attendance map
+        const masterMap = {};
+        (attData || []).forEach(a => {
+          if (a.status === 'JOINED' || a.attended) {
+            const ev = (eventsData || []).find(e => e.id === a.event_id);
+            if (ev?.master_event_id) {
+              masterMap[ev.master_event_id] = true;
+            }
+          }
+        });
+        setMasterEventAttended(masterMap);
       }
     } catch (err) {
       console.error('Error fetching events:', err);
@@ -57,6 +78,12 @@ export default function Events() {
   const handleRegister = async (event) => {
     if (!user) {
       await showAlert('Please log in to register for events.', 'Login Required', 'info');
+      return;
+    }
+
+    // Check master event block
+    if (event.master_event_id && masterEventAttended[event.master_event_id]) {
+      await showAlert('You have already attended this event.', 'Already Attended', 'info');
       return;
     }
 
@@ -185,25 +212,65 @@ export default function Events() {
       return;
     }
 
+    setJoining(event.id);
     try {
-      // Mark attendance
-      await supabase.from('event_attendance')
-        .update({ attended: true, join_time: new Date().toISOString() })
-        .eq('user_id', user.id)
-        .eq('event_id', event.id);
+      // Call server-side RPC for validation
+      const { data: result, error: rpcError } = await supabase.rpc('join_event', {
+        p_event_id: event.id
+      });
 
+      if (rpcError) throw rpcError;
+
+      if (result && !result.success) {
+        await showAlert(result.error || 'Could not join event.', 'Cannot Join', 'info');
+        if (result.code === 'ALREADY_ATTENDED' || result.code === 'ALREADY_ATTENDED_MASTER') {
+          setAttendance(prev => ({
+            ...prev,
+            [event.id]: { ...prev[event.id], status: 'JOINED' }
+          }));
+        }
+        return;
+      }
+
+      const enteredAt = result?.entered_at || new Date().toISOString();
       setAttendance(prev => ({
         ...prev,
-        [event.id]: { ...prev[event.id], attended: true, join_time: new Date().toISOString() }
+        [event.id]: { 
+          ...prev[event.id], 
+          status: prev[event.id]?.status === 'JOINED' ? 'JOINED' : 'ENTERED', 
+          entered_at: enteredAt 
+        }
       }));
+
+      // Update master event map
+      if (event.master_event_id) {
+        setMasterEventAttended(prev => ({ ...prev, [event.master_event_id]: true }));
+      }
 
       // Open live link
       if (event.live_link) {
         window.open(event.live_link, '_blank');
       }
+      await showAlert('Successfully joined the event!', 'Joined', 'success', { celebrate: true });
     } catch (err) {
       console.error('Error joining event:', err);
+      await showAlert(err.message || 'Failed to join event.', 'Error', 'error');
+    } finally {
+      setJoining(null);
     }
+  };
+
+  // Check if join window is open for a given event
+  const isJoinWindowOpen = (event) => {
+    const eventDate = new Date(event.event_date);
+    const endDate = new Date(eventDate.getTime() + (event.duration_minutes || 60) * 60000);
+    const joinWindowStart = new Date(eventDate.getTime() - 10 * 60000);
+    return now >= joinWindowStart && now <= endDate;
+  };
+
+  // Check if master event is blocked
+  const isMasterBlocked = (event) => {
+    return event.master_event_id && masterEventAttended[event.master_event_id];
   };
 
   const handleDownloadCertificate = async (event) => {
@@ -304,13 +371,14 @@ export default function Events() {
                     <img
                       src={resolveImageUrl(event.thumbnail_url) || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&q=80&w=800'}
                       alt={event.title}
+                      onError={(e) => { e.target.onerror = null; e.target.src = 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&q=80&w=800'; }}
                     />
                     <div className="event-card-badges">
                       <span className={`event-status-badge ${status}`}>
                         {status === 'live' ? 'Live Now' : status === 'upcoming' ? 'Upcoming' : 'Completed'}
                       </span>
                       <span className={`event-price-badge ${event.price <= 0 ? 'free' : ''}`}>
-                        {event.price > 0 ? `₹${event.price}` : 'Free'}
+                        {event.price > 0 ? `₹${Math.round(event.price)}` : 'Free'}
                       </span>
                     </div>
                   </div>
@@ -327,28 +395,32 @@ export default function Events() {
                       <span className="event-cert-badge"><FiAward /> Certificate</span>
                     )}
                     <div style={{ marginLeft: 'auto' }}>
-                      {!isRegistered && status !== 'completed' && (
+                      {!isRegistered && status !== 'completed' && !isMasterBlocked(event) && (
                         <button
                           className="btn btn-primary btn-sm"
                           onClick={(e) => { e.preventDefault(); handleRegister(event); }}
                           disabled={registering === event.id}
                         >
-                          {registering === event.id ? 'Processing...' : event.price > 0 ? `₹${event.price}` : 'Register Free'}
+                          {registering === event.id ? 'Processing...' : event.price > 0 ? `₹${Math.round(event.price)}` : 'Register Free'}
                         </button>
                       )}
-                      {isRegistered && !isAttended && (status === 'upcoming' || status === 'live') && (
-                        <button className="btn btn-primary btn-sm" onClick={(e) => { e.preventDefault(); handleJoinLive(event); }}>
-                          <FiExternalLink style={{ marginRight: 4 }} /> Join
-                        </button>
+                      {!isRegistered && isMasterBlocked(event) && (
+                        <span className="event-already-attended-badge"><FiAlertCircle style={{ marginRight: 4 }} /> Already Attended</span>
                       )}
-                      {isAttended && event.enable_certificate && (
-                        <span style={{ fontSize: '0.8rem', color: '#008ad1', fontWeight: 700 }}><FiCheckCircle style={{ marginRight: 4 }} /> Attended</span>
+                      {isRegistered && (status === 'upcoming' || status === 'live') && !isMasterBlocked(event) && (
+                        isJoinWindowOpen(event) ? (
+                          <button className="btn btn-primary btn-sm" onClick={(e) => { e.preventDefault(); handleJoinLive(event); }} disabled={joining === event.id}>
+                            <FiExternalLink style={{ marginRight: 4 }} /> {joining === event.id ? 'Loading...' : (att?.status === 'ENTERED' || att?.status === 'JOINED') ? 'Re-enter Live' : 'Enter Live'}
+                          </button>
+                        ) : (
+                          <span style={{ fontSize: '0.75rem', color: '#c2410c', fontWeight: 600 }}>Opens 10 min before</span>
+                        )
                       )}
-                      {isRegistered && status === 'completed' && !isAttended && (
+                      {(att?.status === 'JOINED' || (isRegistered && isMasterBlocked(event))) && (
+                        <span style={{ fontSize: '0.8rem', color: '#008ad1', fontWeight: 700 }}><FiCheckCircle style={{ marginRight: 4 }} /> Marked Attended</span>
+                      )}
+                      {isRegistered && status === 'completed' && att?.status !== 'JOINED' && !isMasterBlocked(event) && (
                         <span style={{ fontSize: '0.8rem', color: 'var(--gray-400)', fontWeight: 600 }}>Ended</span>
-                      )}
-                      {isRegistered && isAttended && !event.enable_certificate && (
-                        <span className="badge badge-success" style={{ fontSize: '0.75rem' }}>Attended</span>
                       )}
                     </div>
                   </div>

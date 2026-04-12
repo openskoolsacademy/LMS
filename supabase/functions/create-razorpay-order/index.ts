@@ -49,11 +49,12 @@ serve(async (req) => {
       console.log(`Event found: "${event.title}" | Price: ${event.price} | Requested: ${requestedAmount}`);
       // Use the amount from the frontend (already coupon-adjusted) if provided,
       // but never allow it to exceed the actual event price (security check)
+      const dbPrice = Math.round(Number(event.price ?? 0));
       const requestedPrice = requestedAmount ? Math.round(requestedAmount / 100) : null;
-      if (requestedPrice !== null && requestedPrice <= Number(event.price ?? 0)) {
+      if (requestedPrice !== null && requestedPrice <= dbPrice) {
         finalPrice = requestedPrice;
       } else {
-        finalPrice = Number(event.price ?? 0);
+        finalPrice = dbPrice;
       }
       receiptId = `rcpt_evt_${event_id.substring(0, 8)}_${Date.now().toString().slice(-6)}`;
 
@@ -71,11 +72,12 @@ serve(async (req) => {
       }
 
       console.log(`Bootcamp found: "${bootcamp.title}" | Price: ${bootcamp.price} | Requested: ${requestedAmount}`);
+      const dbPrice = Math.round(Number(bootcamp.price ?? 0));
       const requestedPrice = requestedAmount ? Math.round(requestedAmount / 100) : null;
-      if (requestedPrice !== null && requestedPrice <= Number(bootcamp.price ?? 0)) {
+      if (requestedPrice !== null && requestedPrice <= dbPrice) {
         finalPrice = requestedPrice;
       } else {
-        finalPrice = Number(bootcamp.price ?? 0);
+        finalPrice = dbPrice;
       }
       receiptId = `rcpt_bc_${live_bootcamp_id.substring(0, 8)}_${Date.now().toString().slice(-6)}`;
 

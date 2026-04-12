@@ -337,7 +337,12 @@ export default function StudentDashboard() {
             {enrollments.length === 0 && <p>You haven't enrolled in any courses yet. <Link to="/courses">Browse courses</Link></p>}
             {enrollments.map((enr, idx) => (
               <div key={idx} className="sd-course-card">
-                <img src={resolveImageUrl(enr.course.thumbnail_url) || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80&w=800'} alt={enr.course.title} className="sd-course-img" />
+                <img 
+                  src={resolveImageUrl(enr.course?.thumbnail_url) || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80&w=800'} 
+                  alt={enr.course?.title}
+                  className="sd-course-img"
+                  onError={(e) => { e.target.onerror = null; e.target.src = 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80&w=800'; }}
+                />
                 <div className="sd-course-info">
                   <span className="sd-course-cat">{mapCategory(enr.course.category)}</span>
                   <h4>{enr.course.title}</h4>
@@ -732,8 +737,8 @@ export default function StudentDashboard() {
         {tab === 'events' && (
           <div className="sd-courses animate-fade-in-up">
             {(() => {
-              const attendedEvents = userEvents.filter(e => userEventAttendance[e.id]?.attended);
-              const registeredEvents = userEvents.filter(e => userEventAttendance[e.id]?.registered && !userEventAttendance[e.id]?.attended);
+              const attendedEvents = userEvents.filter(e => userEventAttendance[e.id]?.status === 'JOINED' || userEventAttendance[e.id]?.attended);
+              const registeredEvents = userEvents.filter(e => userEventAttendance[e.id]?.registered && !(userEventAttendance[e.id]?.status === 'JOINED' || userEventAttendance[e.id]?.attended));
 
               if (attendedEvents.length === 0 && registeredEvents.length === 0) {
                 return (
@@ -785,12 +790,14 @@ export default function StudentDashboard() {
                     );
                   })}
                   {registeredEvents.map(ev => {
-                    const now = new Date();
                     const eventDate = new Date(ev.event_date);
                     const endDate = new Date(eventDate.getTime() + (ev.duration_minutes || 60) * 60000);
-                    const isLive = ev.status === 'live' || (now >= eventDate && now <= endDate);
-                    const isUpcoming = !isLive && now < eventDate;
-                    const isCompleted = ev.status === 'completed' || now > endDate;
+                    const joinWindowStart = new Date(eventDate.getTime() - 10 * 60000);
+                    const currentNow = new Date();
+                    const isLive = ev.status === 'live' || (currentNow >= eventDate && currentNow <= endDate);
+                    const isUpcoming = !isLive && currentNow < eventDate;
+                    const isCompleted = ev.status === 'completed' || currentNow > endDate;
+                    const canJoinNow = currentNow >= joinWindowStart && currentNow <= endDate;
 
                     return (
                       <div key={ev.id} className="sd-event-item">
@@ -809,25 +816,47 @@ export default function StudentDashboard() {
                           {isUpcoming && (
                             <span className="badge badge-primary" style={{ fontSize: '0.75rem' }}>Upcoming</span>
                           )}
-                          {(isLive || isUpcoming) && (
+                          {(isLive || isUpcoming) && canJoinNow && (
                             <button className="btn btn-primary btn-sm" onClick={async () => {
                               try {
-                                await supabase.from('event_attendance')
-                                  .update({ attended: true, join_time: new Date().toISOString() })
-                                  .eq('user_id', user.id)
-                                  .eq('event_id', ev.id);
+                                // Use server-side RPC for validation
+                                const { data: result, error: rpcError } = await supabase.rpc('join_event', {
+                                  p_event_id: ev.id
+                                });
+
+                                if (rpcError) throw rpcError;
+
+                                if (result && !result.success) {
+                                  await showAlert(result.error || 'Could not join event.', 'Cannot Join', 'info');
+                                  if (result.code === 'ALREADY_ATTENDED' || result.code === 'ALREADY_ATTENDED_MASTER') {
+                                    setUserEventAttendance(prev => ({
+                                      [ev.id]: { ...prev[ev.id], status: 'JOINED' }
+                                    }));
+                                  }
+                                  return;
+                                }
+
+                                const enteredAt = result?.entered_at || new Date().toISOString();
                                 setUserEventAttendance(prev => ({
                                   ...prev,
-                                  [ev.id]: { ...prev[ev.id], attended: true, join_time: new Date().toISOString() }
+                                  [ev.id]: { 
+                                    ...prev[ev.id], 
+                                    status: prev[ev.id]?.status === 'JOINED' ? 'JOINED' : 'ENTERED', 
+                                    entered_at: enteredAt 
+                                  }
                                 }));
                                 if (ev.live_link) window.open(ev.live_link, '_blank');
                                 else await showAlert('Live link not available yet. Please check back later.', 'Info', 'info');
                               } catch (err) {
                                 console.error('Join error:', err);
+                                await showAlert(err.message || 'Failed to join event.', 'Error', 'error');
                               }
                             }}>
-                              <FiExternalLink style={{ marginRight: 4 }} /> Join Now
+                              <FiExternalLink style={{ marginRight: 4 }} /> { (userEventAttendance[ev.id]?.status === 'ENTERED' || userEventAttendance[ev.id]?.status === 'JOINED') ? 'Re-enter Live' : 'Join Now' }
                             </button>
+                          )}
+                          {(isLive || isUpcoming) && !canJoinNow && (
+                            <span style={{ fontSize: '0.72rem', color: '#c2410c', fontWeight: 600 }}>Opens 10 min before</span>
                           )}
                           <Link to={`/events/${ev.id}`} className="btn btn-outline btn-sm" style={{ fontSize: '0.75rem' }}>
                             View Event
