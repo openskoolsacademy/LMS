@@ -282,7 +282,7 @@ export function getVerificationUrl(certificateId) {
 export const CERTIFICATE_TYPES = [
   { value: 'course', label: 'Recorded Course', color: '#008ad1' },
   { value: 'live', label: 'Live Session', color: '#008ad1' },
-  { value: 'live_bootcamp', label: 'Bootcamp', color: '#7c3aed' },
+  { value: 'live_bootcamp', label: 'Live Bootcamp', color: '#7c3aed' },
   { value: 'internship', label: 'Internship', color: '#10b981' },
   { value: 'offline', label: 'Offline Training', color: '#f59e0b' },
 ];
