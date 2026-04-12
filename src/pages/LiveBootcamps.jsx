@@ -169,9 +169,16 @@ export default function LiveBootcamps() {
 
   const formatDate = (d) => new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
 
+  const statusOrder = { active: 0, upcoming: 1, completed: 2 };
+
   const filteredBootcamps = bootcamps.filter(bc => {
     if (filter === 'all') return true;
     return getBootcampStatus(bc) === filter;
+  }).sort((a, b) => {
+    const sa = statusOrder[getBootcampStatus(a)] ?? 9;
+    const sb = statusOrder[getBootcampStatus(b)] ?? 9;
+    if (sa !== sb) return sa - sb;
+    return new Date(a.start_date) - new Date(b.start_date);
   });
 
 

@@ -313,9 +313,16 @@ export default function Events() {
     return d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
   };
 
+  const statusOrder = { live: 0, upcoming: 1, completed: 2 };
+
   const filteredEvents = events.filter(e => {
     if (filter === 'all') return true;
     return getEventStatus(e) === filter;
+  }).sort((a, b) => {
+    const sa = statusOrder[getEventStatus(a)] ?? 9;
+    const sb = statusOrder[getEventStatus(b)] ?? 9;
+    if (sa !== sb) return sa - sb;
+    return new Date(a.event_date) - new Date(b.event_date);
   });
 
 
