@@ -69,7 +69,7 @@ export default function AdminPanel() {
   const [adminBootcamps, setAdminBootcamps] = useState([]);
   const [showBootcampModal, setShowBootcampModal] = useState(false);
   const [editingBootcamp, setEditingBootcamp] = useState(null);
-  const [bootcampForm, setBootcampForm] = useState({ title: '', description: '', category: 'Online Bootcamp', instructor_name: '', instructor_bio: '', instructor_image: '', start_date: '', end_date: '', schedule_info: '', total_sessions: 1, live_link: '', thumbnail_url: '', enable_certificate: false, price: 0, status: 'upcoming', learning_outcomes: '', achievements: '', max_students: '' });
+  const [bootcampForm, setBootcampForm] = useState({ title: '', description: '', category: 'Online Bootcamp', instructor_name: '', instructor_bio: '', instructor_image: '', start_date: '', end_date: '', schedule_info: '', total_sessions: 1, live_link: '', thumbnail_url: '', enable_certificate: false, price: 0, status: 'upcoming', learning_outcomes: '', achievements: '', max_students: '', master_bootcamp_id: '' });
   const [bootcampSubmitting, setBootcampSubmitting] = useState(false);
   const [bootcampEnrollees, setBootcampEnrollees] = useState([]);
   const [selectedBootcampId, setSelectedBootcampId] = useState(null);
@@ -1672,7 +1672,7 @@ export default function AdminPanel() {
                             ))}
                           </div>
                         </div>
-                        <button className="btn btn-primary btn-sm" style={{ background: '#008ad1', borderColor: '#008ad1' }} onClick={() => { setEditingBootcamp(null); setBootcampForm({ title: '', description: '', category: 'Online Bootcamp', instructor_name: '', instructor_bio: '', instructor_image: '', start_date: '', end_date: '', schedule_info: '', total_sessions: 1, live_link: '', thumbnail_url: '', enable_certificate: false, price: 0, status: 'upcoming', learning_outcomes: '', achievements: '', max_students: '' }); setShowBootcampModal(true); }}>
+                        <button className="btn btn-primary btn-sm" style={{ background: '#008ad1', borderColor: '#008ad1' }} onClick={() => { setEditingBootcamp(null); setBootcampForm({ title: '', description: '', category: 'Online Bootcamp', instructor_name: '', instructor_bio: '', instructor_image: '', start_date: '', end_date: '', schedule_info: '', total_sessions: 1, live_link: '', thumbnail_url: '', enable_certificate: false, price: 0, status: 'upcoming', learning_outcomes: '', achievements: '', max_students: '', master_bootcamp_id: crypto.randomUUID() }); setShowBootcampModal(true); }}>
                           <FiBookOpen style={{ marginRight: 6 }} /> Create Bootcamp
                         </button>
                       </div>
@@ -1763,7 +1763,8 @@ export default function AdminPanel() {
                                       status: bc.status || 'upcoming',
                                       learning_outcomes: (bc.learning_outcomes || []).join('\n'),
                                       achievements: (bc.achievements || []).join('\n'),
-                                      max_students: bc.max_students || ''
+                                      max_students: bc.max_students || '',
+                                      master_bootcamp_id: bc.master_bootcamp_id || ''
                                     });
                                     setShowBootcampModal(true);
                                   }}>
@@ -1809,34 +1810,41 @@ export default function AdminPanel() {
                         ) : (
                           <div className="id-table-wrap">
                             <table className="id-table">
-                              <thead><tr><th>Student</th><th>Email</th><th>Enrolled</th><th>Completed</th><th>Payment</th><th>Certificate</th><th>Actions</th></tr></thead>
+                              <thead><tr><th>Student</th><th>Email</th><th>Enrolled</th><th>Status</th><th>Joined At</th><th>Payment</th><th>Certificate</th><th>Actions</th></tr></thead>
                               <tbody>
                                 {bootcampEnrollees.map(enr => (
                                   <tr key={enr.id}>
                                     <td style={{ fontWeight: 600 }}>{enr.user?.name || 'Unknown'}</td>
                                     <td style={{ fontSize: '0.85rem', color: 'var(--gray-500)' }}>{enr.user?.email || '-'}</td>
-                                    <td>{enr.registered ? <span className="badge badge-success">Yes</span> : <span className="badge badge-info">No</span>}</td>
-                                    <td>{enr.completed ? <span className="badge badge-success">Completed</span> : <span className="badge badge-danger">No</span>}</td>
+                                    <td>{enr.registered ? <span className="badge badge-primary">Yes</span> : <span className="badge badge-info">No</span>}</td>
+                                    <td>{enr.status === 'JOINED' || enr.completed ? <span className="badge badge-success">JOINED</span> : enr.status === 'ENTERED' ? <span className="badge badge-info">ENTERED</span> : <span className="badge badge-light">—</span>}</td>
+                                    <td style={{ fontSize: '0.8rem', color: 'var(--gray-500)' }}>{(enr.entered_at || enr.joined_at) ? new Date(enr.entered_at || enr.joined_at).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '—'}</td>
                                     <td style={{ fontSize: '0.85rem' }}>{enr.amount_paid > 0 ? `₹${enr.amount_paid}` : 'Free'}</td>
                                     <td>{enr.certificate_issued ? <span style={{ color: '#008ad1', fontWeight: 600, fontSize: '0.8rem' }}>{enr.certificate_id}</span> : <span style={{ color: 'var(--gray-400)', fontSize: '0.8rem' }}>—</span>}</td>
                                     <td>
                                       <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                                         <button
-                                          className={`btn btn-sm ${enr.completed ? 'btn-outline' : 'btn-primary'}`}
+                                          className={`btn btn-sm ${enr.status === 'JOINED' || enr.completed ? 'btn-outline' : 'btn-primary'}`}
                                           style={{ fontSize: '0.75rem' }}
                                           onClick={async () => {
                                             try {
-                                              const newVal = !enr.completed;
-                                              await supabase.from('live_bootcamp_enrollments').update({ completed: newVal }).eq('id', enr.id);
-                                              setBootcampEnrollees(bootcampEnrollees.map(e => e.id === enr.id ? { ...e, completed: newVal } : e));
+                                              const isCurrentlyJoined = enr.status === 'JOINED' || enr.completed;
+                                              const newStatus = isCurrentlyJoined ? (enr.entered_at ? 'ENTERED' : 'REGISTERED') : 'JOINED';
+                                              const now = new Date().toISOString();
+                                              await supabase.from('live_bootcamp_enrollments').update({ 
+                                                status: newStatus,
+                                                completed: !isCurrentlyJoined,
+                                                joined_at: !isCurrentlyJoined ? now : null 
+                                              }).eq('id', enr.id);
+                                              setBootcampEnrollees(bootcampEnrollees.map(e => e.id === enr.id ? { ...e, status: newStatus, completed: !isCurrentlyJoined, joined_at: !isCurrentlyJoined ? now : null } : e));
                                             } catch (err) {
-                                              await showAlert('Error updating completion: ' + err.message, 'Error', 'error');
+                                              await showAlert('Error updating status: ' + err.message, 'Error', 'error');
                                             }
                                           }}
                                         >
-                                          {enr.completed ? <><FiXCircle style={{ marginRight: 4 }} /> Unmark</> : <><FiCheckCircle style={{ marginRight: 4 }} /> Mark Completed</>}
+                                          {enr.status === 'JOINED' || enr.completed ? <><FiXCircle style={{ marginRight: 4 }} /> Unmark</> : <><FiCheckCircle style={{ marginRight: 4 }} /> Mark Joined</>}
                                         </button>
-                                        {enr.completed && adminBootcamps.find(b => b.id === selectedBootcampId)?.enable_certificate && (
+                                        {(enr.status === 'JOINED' || enr.completed) && adminBootcamps.find(b => b.id === selectedBootcampId)?.enable_certificate && (
                                           <button
                                             className="btn btn-outline btn-sm"
                                             style={{ fontSize: '0.75rem', color: '#008ad1', borderColor: '#008ad1' }}
@@ -2870,7 +2878,8 @@ export default function AdminPanel() {
                 status: bootcampForm.status,
                 learning_outcomes: outcomes,
                 achievements: achievementsList,
-                max_students: bootcampForm.max_students ? parseInt(bootcampForm.max_students) : null
+                max_students: bootcampForm.max_students ? parseInt(bootcampForm.max_students) : null,
+                master_bootcamp_id: bootcampForm.master_bootcamp_id || crypto.randomUUID()
               };
 
               if (editingBootcamp) {
@@ -2999,10 +3008,17 @@ export default function AdminPanel() {
                 <div className="form-group-modern" style={{ gridColumn: '1 / -1' }}>
                   <label style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}>
                     <span onClick={() => setBootcampForm({...bootcampForm, enable_certificate: !bootcampForm.enable_certificate})} style={{ fontSize: '1.5rem', color: bootcampForm.enable_certificate ? '#008ad1' : 'var(--gray-300)', cursor: 'pointer', display: 'flex' }}>
-                      {bootcampForm.enable_certificate ? <FiToggleRight /> : <FiToggleLeft />}
+                       {bootcampForm.enable_certificate ? <FiToggleRight /> : <FiToggleLeft />}
                     </span>
                     Enable Certificate for this Bootcamp
                   </label>
+                </div>
+                <div className="form-group-modern" style={{ gridColumn: '1 / -1' }}>
+                  <label>Master Bootcamp ID <span style={{ fontWeight: 400, fontSize: '0.78rem', color: 'var(--gray-400)' }}>(auto-generated; copy this when creating a rescheduled duplicate)</span></label>
+                  <div className="input-with-icon">
+                    <FiHash />
+                    <input className="form-control-modern" placeholder="Auto-generated UUID" value={bootcampForm.master_bootcamp_id || ''} onChange={e => setBootcampForm({...bootcampForm, master_bootcamp_id: e.target.value})} />
+                  </div>
                 </div>
               </div>
             </div>

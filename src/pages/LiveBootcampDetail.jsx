@@ -239,8 +239,34 @@ export default function LiveBootcampDetail() {
 
   const handleJoinLive = async () => {
     if (!enrollment?.registered) return;
-    if (bootcamp.live_link) window.open(bootcamp.live_link, '_blank');
-    else await showAlert('Live link not available yet. Please check back later.', 'Info', 'info');
+    try {
+      const { data: result, error: rpcError } = await supabase.rpc('join_bootcamp', {
+        p_live_bootcamp_id: bootcamp.id
+      });
+      
+      if (rpcError) throw rpcError;
+
+      if (result && !result.success) {
+        await showAlert(result.error || 'Could not join bootcamp.', 'Cannot Join', 'info');
+        if (result.code === 'ALREADY_ATTENDED_MASTER') {
+           setEnrollment(prev => ({ ...prev, status: 'JOINED' }));
+        }
+        return;
+      }
+
+      const enteredAt = result?.entered_at || new Date().toISOString();
+      setEnrollment(prev => ({ 
+        ...prev, 
+        status: prev?.status === 'JOINED' ? 'JOINED' : 'ENTERED', 
+        entered_at: enteredAt 
+      }));
+
+      if (bootcamp.live_link) window.open(bootcamp.live_link, '_blank');
+      else await showAlert('Live link not available yet. Please check back later.', 'Info', 'info');
+    } catch (err) {
+      console.error('Join error:', err);
+      await showAlert(err.message || 'Failed to join bootcamp.', 'Error', 'error');
+    }
   };
 
 
@@ -258,7 +284,7 @@ export default function LiveBootcampDetail() {
 
   const status = getBootcampStatus();
   const isEnrolled = enrollment?.registered;
-  const isCompleted = enrollment?.completed;
+  const isCompleted = enrollment?.status === 'JOINED' || enrollment?.completed;
 
   return (
     <div className="lbd-detail">
@@ -504,7 +530,7 @@ export default function LiveBootcampDetail() {
                   {/* Join Live */}
                   {isEnrolled && !isCompleted && (status === 'upcoming' || status === 'active') && (
                     <button className="btn lbd-btn-primary" onClick={handleJoinLive}>
-                      <FiExternalLink /> Join Live Session
+                      <FiExternalLink /> { (enrollment?.status === 'ENTERED' || enrollment?.status === 'JOINED') ? 'Re-enter Live Session' : 'Join Live Session' }
                     </button>
                   )}
 

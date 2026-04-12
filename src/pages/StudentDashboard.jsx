@@ -894,7 +894,7 @@ export default function StudentDashboard() {
                     const endDate = new Date(bc.end_date);
                     const isActive = bc.status === 'active' || (now >= startDate && now <= endDate);
                     const isUpcoming = !isActive && now < startDate;
-                    const isCompleted = enrollment?.completed;
+                    const isCompleted = enrollment?.status === 'JOINED' || enrollment?.completed;
                     const isEnded = bc.status === 'completed' || now > endDate;
 
                     return (
@@ -922,10 +922,41 @@ export default function StudentDashboard() {
                             <span className="badge badge-success" style={{ fontSize: '0.75rem', animation: 'pulse-badge 2s infinite' }}>Active</span>
                           )}
                           {(isActive || isUpcoming) && bc.live_link && (
-                            <button className="btn btn-primary btn-sm" style={{ background: '#008ad1', borderColor: '#008ad1' }} onClick={() => {
-                              if (bc.live_link) window.open(bc.live_link, '_blank');
+                            <button className="btn btn-primary btn-sm" style={{ background: '#008ad1', borderColor: '#008ad1' }} onClick={async () => {
+                              try {
+                                const { data: result, error: rpcError } = await supabase.rpc('join_bootcamp', {
+                                  p_live_bootcamp_id: bc.id
+                                });
+                                if (rpcError) throw rpcError;
+
+                                if (result && !result.success) {
+                                  await showAlert(result.error || 'Could not join bootcamp.', 'Cannot Join', 'info');
+                                  if (result.code === 'ALREADY_ATTENDED_MASTER') {
+                                    setUserBootcampEnrollments(prev => ({
+                                      ...prev, [bc.id]: { ...prev[bc.id], status: 'JOINED' }
+                                    }));
+                                  }
+                                  return;
+                                }
+
+                                const enteredAt = result?.entered_at || new Date().toISOString();
+                                setUserBootcampEnrollments(prev => ({
+                                  ...prev,
+                                  [bc.id]: {
+                                    ...prev[bc.id],
+                                    status: prev[bc.id]?.status === 'JOINED' ? 'JOINED' : 'ENTERED',
+                                    entered_at: enteredAt
+                                  }
+                                }));
+
+                                if (bc.live_link) window.open(bc.live_link, '_blank');
+                                else await showAlert('Live link not available yet. Please check back later.', 'Info', 'info');
+                              } catch (err) {
+                                console.error('Join error:', err);
+                                await showAlert(err.message || 'Failed to join bootcamp.', 'Error', 'error');
+                              }
                             }}>
-                              <FiExternalLink style={{ marginRight: 4 }} /> Join Now
+                              <FiExternalLink style={{ marginRight: 4 }} /> { (enrollment?.status === 'ENTERED' || enrollment?.status === 'JOINED') ? 'Re-enter Live' : 'Join Now' }
                             </button>
                           )}
                           {isCompleted && bc.enable_certificate && (
