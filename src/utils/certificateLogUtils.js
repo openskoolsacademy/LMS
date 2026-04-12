@@ -1,6 +1,16 @@
 import { supabase } from '../lib/supabase';
 import { generateCertificateId } from './certificateUtils';
 
+const toLocalDateString = (isoString) => {
+  if (!isoString) return null;
+  const d = new Date(isoString);
+  if (isNaN(d.getTime())) return null;
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 export async function createStudentCertificate(user, courseId, courseTitle, profileName) {
   try {
     // 1. Check if already generated in logs
@@ -188,8 +198,8 @@ export async function createLiveBootcampCertificate(user, bootcampId, bootcampTi
       course_name: bootcampTitle,
       certificate_type: 'live_bootcamp',
       instructor_name: instructorName || 'Open Skools',
-      start_date: startDate || null,
-      end_date: endDate || null,
+      start_date: toLocalDateString(startDate),
+      end_date: toLocalDateString(endDate),
       status: 'valid'
     }]);
 
@@ -203,8 +213,8 @@ export async function createLiveBootcampCertificate(user, bootcampId, bootcampTi
       certificate_type: 'live_bootcamp',
       status: 'active',
       issued_by: instructorName || 'Open Skools',
-      start_date: startDate || null,
-      end_date: endDate || null,
+      start_date: toLocalDateString(startDate),
+      end_date: toLocalDateString(endDate),
       issued_at: new Date().toISOString()
     }]).select().single();
 
@@ -243,8 +253,8 @@ export async function logCertificateAction(data) {
       status: 'active',
       user_id: data.user_id || null,
       course_id: data.course_id || null,
-      start_date: data.start_date || null,
-      end_date: data.end_date || null,
+      start_date: toLocalDateString(data.start_date),
+      end_date: toLocalDateString(data.end_date),
       issued_at: new Date().toISOString()
     });
     
