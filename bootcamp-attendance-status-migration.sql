@@ -108,3 +108,45 @@ BEGIN
   );
 END;
 $$;
+
+-- ========================
+-- 5. Create check_master_bootcamp_attendance RPC
+-- ========================
+CREATE OR REPLACE FUNCTION public.check_master_bootcamp_attendance(
+  p_live_bootcamp_id UUID
+)
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  v_user_id UUID;
+  v_master_bootcamp_id TEXT;
+  v_already_joined BOOLEAN;
+BEGIN
+  v_user_id := auth.uid();
+  IF v_user_id IS NULL THEN
+    RETURN jsonb_build_object('already_attended', false);
+  END IF;
+
+  -- Get master_bootcamp_id
+  SELECT master_bootcamp_id INTO v_master_bootcamp_id
+  FROM public.live_bootcamps WHERE id = p_live_bootcamp_id;
+
+  IF v_master_bootcamp_id IS NULL THEN
+    RETURN jsonb_build_object('already_attended', false);
+  END IF;
+
+  -- Check if user has JOINED any bootcamp with same master_bootcamp_id
+  SELECT EXISTS (
+    SELECT 1
+    FROM public.live_bootcamp_enrollments be
+    JOIN public.live_bootcamps b ON be.live_bootcamp_id = b.id
+    WHERE be.user_id = v_user_id
+      AND be.status = 'JOINED'
+      AND b.master_bootcamp_id = v_master_bootcamp_id
+  ) INTO v_already_joined;
+
+  RETURN jsonb_build_object('already_attended', v_already_joined);
+END;
+$$;

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { FiCalendar, FiClock, FiUser, FiVideo, FiAward, FiDownload, FiExternalLink, FiCheckCircle, FiXCircle, FiUsers, FiMapPin, FiMessageCircle, FiChevronRight, FiTag, FiBookOpen, FiTarget } from 'react-icons/fi';
+import { FiCalendar, FiClock, FiUser, FiVideo, FiAward, FiDownload, FiExternalLink, FiCheckCircle, FiXCircle, FiUsers, FiMapPin, FiMessageCircle, FiChevronRight, FiTag, FiBookOpen, FiTarget, FiAlertCircle } from 'react-icons/fi';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { useAlert } from '../context/AlertContext';
@@ -21,6 +21,7 @@ export default function LiveBootcampDetail() {
   const [activeCert, setActiveCert] = useState(null);
   const [coupon, setCoupon] = useState('');
   const [couponApplied, setCouponApplied] = useState(null);
+  const [masterBootcampBlocked, setMasterBootcampBlocked] = useState(false);
 
   useEffect(() => {
     fetchBootcamp();
@@ -47,6 +48,18 @@ export default function LiveBootcampDetail() {
           .maybeSingle();
 
         setEnrollment(enrollData || null);
+
+        // Check master_bootcamp_id attendance
+        if (data?.master_bootcamp_id) {
+          try {
+            const { data: checkData } = await supabase.rpc('check_master_bootcamp_attendance', {
+              p_live_bootcamp_id: id
+            });
+            if (checkData?.already_attended) {
+              setMasterBootcampBlocked(true);
+            }
+          } catch { /* rpc may not exist yet */ }
+        }
       }
     } catch (err) {
       console.error('Error fetching bootcamp:', err);
@@ -118,8 +131,29 @@ export default function LiveBootcampDetail() {
       await showAlert('Please log in to enroll in this bootcamp.', 'Login Required', 'info');
       return;
     }
+
+    // Check master bootcamp block before registration
+    if (masterBootcampBlocked) {
+      await showAlert('You have already attended this bootcamp.', 'Already Attended', 'info');
+      return;
+    }
+
     setRegistering(true);
     try {
+      // Double-check master bootcamp attendance server-side
+      if (bootcamp.master_bootcamp_id) {
+        try {
+          const { data: checkData } = await supabase.rpc('check_master_bootcamp_attendance', {
+            p_live_bootcamp_id: bootcamp.id
+          });
+          if (checkData?.already_attended) {
+            setMasterBootcampBlocked(true);
+            await showAlert('You have already attended this bootcamp.', 'Already Attended', 'info');
+            setRegistering(false);
+            return;
+          }
+        } catch { /* rpc may not exist yet */ }
+      }
       // Always refresh session before any operation
       const { data: sessionData, error: sessionError } = await supabase.auth.refreshSession();
       if (sessionError || !sessionData?.session) {
@@ -491,7 +525,7 @@ export default function LiveBootcampDetail() {
               <div className="lbd-sidebar-card-body">
                 <div className="lbd-sidebar-actions">
                   {/* Coupon */}
-                  {!isEnrolled && status !== 'completed' && bootcamp.price > 0 && (
+                  {!isEnrolled && status !== 'completed' && !masterBootcampBlocked && bootcamp.price > 0 && (
                     <div className="lbd-coupon">
                       <input
                         type="text"
@@ -516,8 +550,8 @@ export default function LiveBootcampDetail() {
                     </p>
                   )}
 
-                  {/* Enroll Button */}
-                  {!isEnrolled && status !== 'completed' && (
+                  {/* Enroll Button — blocked if master bootcamp already attended */}
+                  {!isEnrolled && status !== 'completed' && !masterBootcampBlocked && (
                     <button className="btn lbd-btn-primary" onClick={handleRegister} disabled={registering}>
                       {registering ? 'Processing...' : (() => {
                         const fp = calculateFinalPrice();
@@ -527,8 +561,16 @@ export default function LiveBootcampDetail() {
                     </button>
                   )}
 
+                  {/* Master bootcamp already attended — block message */}
+                  {!isEnrolled && masterBootcampBlocked && (
+                    <div className="lbd-join-message warning" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 16px', background: '#fef3c7', borderRadius: '8px', color: '#92400e', fontSize: '0.85rem', fontWeight: 500 }}>
+                      <FiAlertCircle />
+                      <span>You have already attended this bootcamp</span>
+                    </div>
+                  )}
+
                   {/* Join Live */}
-                  {isEnrolled && !isCompleted && (status === 'upcoming' || status === 'active') && (
+                  {isEnrolled && !isCompleted && !masterBootcampBlocked && (status === 'upcoming' || status === 'active') && (
                     <button className="btn lbd-btn-primary" onClick={handleJoinLive}>
                       <FiExternalLink /> { (enrollment?.status === 'ENTERED' || enrollment?.status === 'JOINED') ? 'Re-enter Live Session' : 'Join Live Session' }
                     </button>
