@@ -49,28 +49,28 @@ export default function BlogDetail() {
   const canEdit = user && (role === 'admin' || blog.author_id === user.id);
 
   const handleDelete = async () => {
-    const confirmed = await showConfirm(
+    showConfirm(
       'Are you sure you want to delete this blog post? This action cannot be undone.',
+      async () => {
+        setDeleting(true);
+        try {
+          const { error } = await supabase
+            .from('blogs')
+            .delete()
+            .eq('id', blog.id);
+
+          if (error) throw error;
+          await showAlert('Blog post deleted successfully.', 'Deleted', 'success');
+          navigate('/blog');
+        } catch (err) {
+          console.error('Error deleting blog:', err);
+          await showAlert('Failed to delete blog post.', 'Error', 'error');
+        } finally {
+          setDeleting(false);
+        }
+      },
       'Delete Blog Post'
     );
-    if (!confirmed) return;
-
-    setDeleting(true);
-    try {
-      const { error } = await supabase
-        .from('blogs')
-        .delete()
-        .eq('id', blog.id);
-
-      if (error) throw error;
-      await showAlert('Blog post deleted successfully.', 'Deleted', 'success');
-      navigate('/blog');
-    } catch (err) {
-      console.error('Error deleting blog:', err);
-      await showAlert('Failed to delete blog post.', 'Error', 'error');
-    } finally {
-      setDeleting(false);
-    }
   };
 
   return (
