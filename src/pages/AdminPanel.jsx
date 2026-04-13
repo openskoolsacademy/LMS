@@ -42,7 +42,7 @@ export default function AdminPanel() {
   const [couponForm, setCouponForm] = useState({ code: '', discount_type: 'percentage', discount_value: '', course_id: '', event_id: '', live_bootcamp_id: '', expiry_date: '', usage_limit: '' });
   const [couponSubmitting, setCouponSubmitting] = useState(false);
   const [editingJob, setEditingJob] = useState(null);
-  const [jobForm, setJobForm] = useState({ company_name: '', role: '', category: 'IT & Software', salary: '', location: '', job_type: 'Full-time', experience_level: 'Fresher', qualification: '', vacancies: '', description: '', venue: '', contact_details: '', date_time: '', apply_link: '', expiry_date: '', is_urgent: false, job_mode: 'apply_link' });
+  const [jobForm, setJobForm] = useState({ company_name: '', role: '', category: 'IT & Software', salary: '', location: '', job_type: 'Full-time', experience_level: '', qualification: '', vacancies: '', description: '', venue: '', contact_details: '', date_time: '', apply_link: '', expiry_date: '', is_urgent: false, job_mode: 'apply_link' });
   const [jobSubmitting, setJobSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
   const [activeMenu, setActiveMenu] = useState(null); // { id, type, rect }
@@ -1209,7 +1209,7 @@ export default function AdminPanel() {
                   <div className="ap-approvals animate-fade">
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
                       <h3>Manage Jobs</h3>
-                      <button className="btn btn-primary btn-sm" onClick={() => { setEditingJob(null); setJobForm({ company_name: '', role: '', category: 'IT & Software', salary: '', location: '', job_type: 'Full-time', experience_level: 'Fresher', qualification: '', vacancies: '', description: '', venue: '', contact_details: '', date_time: '', apply_link: '', expiry_date: '', is_urgent: false, job_mode: 'apply_link' }); setShowJobModal(true); }}>
+                      <button className="btn btn-primary btn-sm" onClick={() => { setEditingJob(null); setJobForm({ company_name: '', role: '', category: 'IT & Software', salary: '', location: '', job_type: 'Full-time', experience_level: '', qualification: '', vacancies: '', description: '', venue: '', contact_details: '', date_time: '', apply_link: '', expiry_date: '', is_urgent: false, job_mode: 'apply_link' }); setShowJobModal(true); }}>
                         + Add Job
                       </button>
                     </div>
@@ -2486,14 +2486,7 @@ export default function AdminPanel() {
             </div>
             <div className="form-group">
               <label>Experience Level *</label>
-              <select className="form-control" required value={jobForm.experience_level} onChange={e => setJobForm({...jobForm, experience_level: e.target.value})}>
-                <option value="Fresher">Fresher (0 years)</option>
-                <option value="Junior">Junior (0-2 years)</option>
-                <option value="Mid-Level">Mid-Level (2-5 years)</option>
-                <option value="Senior">Senior (5-8 years)</option>
-                <option value="Lead">Lead (8-12 years)</option>
-                <option value="Expert">Expert (12+ years)</option>
-              </select>
+              <input type="text" className="form-control" required placeholder="e.g. 0-2 Years / Freshers" value={jobForm.experience_level} onChange={e => setJobForm({...jobForm, experience_level: e.target.value})} />
             </div>
             <div className="form-group">
               <label>Salary <span style={{color:'var(--gray-400)', fontWeight:400}}>(optional — leave empty for "Not Disclosed")</span></label>
