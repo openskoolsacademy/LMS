@@ -344,7 +344,7 @@ export default function LiveBootcampDetail() {
               </div>
 
               <h1>{bootcamp.title}</h1>
-              <p className="lbd-header-desc">{bootcamp.description || 'Master in-demand skills with intensive, instructor-led live sessions.'}</p>
+              <p className="lbd-header-desc" dangerouslySetInnerHTML={{ __html: (bootcamp.description || 'Master in-demand skills with intensive, instructor-led live sessions.').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') }} />
 
               <div className="lbd-header-meta">
                 <div className="lbd-header-meta-item">
