@@ -251,7 +251,7 @@ export default function LiveBootcamps() {
                       <span><FiClock /> {bc.total_sessions} Sessions</span>
                     </div>
                     <h3>{bc.title}</h3>
-                    <p className="lb-desc">{bc.description || 'Master in-demand skills with live instructor-led sessions.'}</p>
+                    <p className="lb-desc">{(bc.description || 'Master in-demand skills with live instructor-led sessions.').replace(/\*\*(.*?)\*\*/g, '$1')}</p>
                     {bc.schedule_info && (
                       <p className="lb-schedule"><FiClock style={{ marginRight: 4 }} /> {bc.schedule_info}</p>
                     )}
