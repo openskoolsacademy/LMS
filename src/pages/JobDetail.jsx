@@ -518,10 +518,7 @@ export default function JobDetail() {
                         <span>Deadline: {new Date(job.expiry_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
                      </div>
                    )}
-                   <div className="meta-info">
-                      <FiShare2 />
-                      <span>Join 5,000+ others following ZO</span>
-                   </div>
+
                 </div>
               </div>
             </aside>
