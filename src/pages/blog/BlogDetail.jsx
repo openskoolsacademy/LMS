@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { resolveImageUrl } from '../../utils/imageUtils';
 import { useAuth } from '../../context/AuthContext';
-import { FiArrowLeft, FiClock, FiUser, FiEdit2 } from 'react-icons/fi';
+import { useAlert } from '../../context/AlertContext';
+import { FiArrowLeft, FiClock, FiUser, FiEdit2, FiTrash2 } from 'react-icons/fi';
 import DOMPurify from 'dompurify';
 import GlobalBanner from '../../components/ui/GlobalBanner';
 import './Blog.css';
@@ -12,8 +13,11 @@ import Loader from '../../components/ui/Loader';
 export default function BlogDetail() {
   const { slug } = useParams();
   const { user, role } = useAuth();
+  const { showAlert, showConfirm } = useAlert();
+  const navigate = useNavigate();
   const [blog, setBlog] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     const fetchBlog = async () => {
@@ -44,6 +48,31 @@ export default function BlogDetail() {
 
   const canEdit = user && (role === 'admin' || blog.author_id === user.id);
 
+  const handleDelete = async () => {
+    const confirmed = await showConfirm(
+      'Are you sure you want to delete this blog post? This action cannot be undone.',
+      'Delete Blog Post'
+    );
+    if (!confirmed) return;
+
+    setDeleting(true);
+    try {
+      const { error } = await supabase
+        .from('blogs')
+        .delete()
+        .eq('id', blog.id);
+
+      if (error) throw error;
+      await showAlert('Blog post deleted successfully.', 'Deleted', 'success');
+      navigate('/blog');
+    } catch (err) {
+      console.error('Error deleting blog:', err);
+      await showAlert('Failed to delete blog post.', 'Error', 'error');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   return (
     <div className="blog-reading-page">
       <div className="container">
@@ -53,9 +82,20 @@ export default function BlogDetail() {
             <FiArrowLeft /> Back to Blog
           </Link>
           {canEdit && (
-            <Link to={`/blog/edit/${slug}`} className="blog-edit-btn" id="blog-edit-button">
-              <FiEdit2 size={14} /> Edit Post
-            </Link>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <Link to={`/blog/edit/${slug}`} className="blog-edit-btn" id="blog-edit-button">
+                <FiEdit2 size={14} /> Edit Post
+              </Link>
+              <button
+                className="blog-edit-btn"
+                id="blog-delete-button"
+                style={{ background: '#fee2e2', color: '#dc2626', borderColor: '#fecaca' }}
+                onClick={handleDelete}
+                disabled={deleting}
+              >
+                <FiTrash2 size={14} /> {deleting ? 'Deleting...' : 'Delete'}
+              </button>
+            </div>
           )}
         </div>
 
