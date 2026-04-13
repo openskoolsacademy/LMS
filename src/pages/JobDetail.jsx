@@ -113,17 +113,18 @@ export default function JobDetail() {
     const tagW = ctx.measureText(tagText).width + 40;
     const tagH = 42;
     const tagR = 21;
+    const tagX = W - px - tagW;
     ctx.beginPath();
-    ctx.moveTo(px + tagR, y);
-    ctx.lineTo(px + tagW - tagR, y);
-    ctx.arcTo(px + tagW, y, px + tagW, y + tagR, tagR);
-    ctx.arcTo(px + tagW, y + tagH, px + tagW - tagR, y + tagH, tagR);
-    ctx.lineTo(px + tagR, y + tagH);
-    ctx.arcTo(px, y + tagH, px, y + tagH - tagR, tagR);
-    ctx.arcTo(px, y, px + tagR, y, tagR);
+    ctx.moveTo(tagX + tagR, y);
+    ctx.lineTo(tagX + tagW - tagR, y);
+    ctx.arcTo(tagX + tagW, y, tagX + tagW, y + tagR, tagR);
+    ctx.arcTo(tagX + tagW, y + tagH, tagX + tagW - tagR, y + tagH, tagR);
+    ctx.lineTo(tagX + tagR, y + tagH);
+    ctx.arcTo(tagX, y + tagH, tagX, y + tagH - tagR, tagR);
+    ctx.arcTo(tagX, y, tagX + tagR, y, tagR);
     ctx.fill();
     ctx.fillStyle = '#ffffff';
-    ctx.fillText(tagText, px + 20, y + 29);
+    ctx.fillText(tagText, tagX + 20, y + 29);
     y += 80;
 
     // Job Role Title
