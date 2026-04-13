@@ -106,9 +106,9 @@ export default function JobDetail() {
     const px = 72; // padding-x
     let y = 70;
 
-    // "WE ARE HIRING" tag
+    // "JOB OPPORTUNITY" tag
     ctx.fillStyle = '#008ad1';
-    const tagText = 'WE ARE HIRING';
+    const tagText = 'JOB OPPORTUNITY';
     ctx.font = 'bold 22px Arial, sans-serif';
     const tagW = ctx.measureText(tagText).width + 40;
     const tagH = 42;
@@ -124,7 +124,7 @@ export default function JobDetail() {
     ctx.fill();
     ctx.fillStyle = '#ffffff';
     ctx.fillText(tagText, px + 20, y + 29);
-    y += 68;
+    y += 80;
 
     // Job Role Title
     ctx.fillStyle = '#111827';
@@ -132,15 +132,15 @@ export default function JobDetail() {
     const roleLines = wrapText(ctx, job.role || '', W - px * 2);
     for (const line of roleLines) {
       ctx.fillText(line, px, y);
-      y += 64;
+      y += 68;
     }
-    y += 8;
+    y += 20;
 
     // Company Name
     ctx.fillStyle = '#008ad1';
     ctx.font = 'bold 34px Arial, sans-serif';
     ctx.fillText(job.company_name || '', px, y);
-    y += 56;
+    y += 60;
 
     // Divider line
     ctx.strokeStyle = '#e5e7eb';
