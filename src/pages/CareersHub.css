@@ -803,3 +803,29 @@
   .stat-item-pro strong { font-size: 1.5rem; }
   .stat-item-pro span { font-size: 0.75rem; }
 }
+
+/* ── Mobile-optimized category filter pills ──────────────── */
+@media (max-width: 768px) {
+  .careers-filter-row {
+    gap: 8px;
+    padding-bottom: 4px;
+    scroll-snap-type: x mandatory;
+  }
+  .careers-filter-pill {
+    padding: 8px 16px;
+    font-size: 0.78rem;
+    scroll-snap-align: start;
+    flex-shrink: 0;
+  }
+  .careers-filter-count {
+    font-size: 0.75rem;
+    flex-shrink: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .careers-filter-pill {
+    padding: 6px 12px;
+    font-size: 0.72rem;
+  }
+}

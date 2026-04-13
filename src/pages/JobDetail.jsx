@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { FiMapPin, FiBriefcase, FiClock, FiUsers, FiExternalLink, FiBookmark, FiShare2, FiCalendar, FiPhone, FiAward, FiInfo, FiChevronRight } from 'react-icons/fi';
+import { FiMapPin, FiBriefcase, FiClock, FiUsers, FiExternalLink, FiBookmark, FiShare2, FiCalendar, FiPhone, FiAward, FiInfo, FiChevronRight, FiTrendingUp } from 'react-icons/fi';
 import { FaWhatsapp, FaRupeeSign } from 'react-icons/fa';
 import { supabase } from '../lib/supabase';
 import Skeleton from '../components/ui/Skeleton';
@@ -67,7 +67,28 @@ export default function JobDetail() {
   };
 
   const handleWhatsAppShare = () => {
-    const text = `🔥 Job Alert!\n\n*${job.role}* at *${job.company_name}*\n📍 ${job.location || 'Remote'}\n💰 ${job.salary || 'Not Disclosed'}\n\nApply here: ${window.location.href}`;
+    const jobUrl = window.location.href;
+    
+    // Build description snippet (first 150 chars of description)
+    const descSnippet = job.description
+      ? job.description.substring(0, 150).trim() + (job.description.length > 150 ? '...' : '')
+      : 'Apply now for this exciting opportunity!';
+    
+    let text = '';
+    text += `Job Opportunity\n\n`;
+    text += `Job Role: ${job.role}\n`;
+    text += `Company: ${job.company_name}\n`;
+    text += `Location: ${job.location || 'Remote'}\n`;
+    text += `Experience: ${job.experience_level || 'Not Specified'}\n\n`;
+    text += `Job Description:\n`;
+    text += `${descSnippet}\n\n`;
+    text += `Apply Here:\n`;
+    text += `${jobUrl}\n\n`;
+    text += `━━━━━━━━━━━━━━━━\n`;
+    text += `*Open Skools Academy*\n`;
+    text += `ISO 9001:2015 Certified | NCS Registered\n`;
+    text += `www.openskools.com | 8189989150`;
+    
     const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
     window.open(url, '_blank');
   };
@@ -132,7 +153,7 @@ export default function JobDetail() {
               
               <h1 className="jd-title">{job.role}</h1>
               
-              <div className="jd-meta-grid">
+                <div className="jd-meta-grid">
                 <div className="jd-meta-item">
                   <FiBriefcase />
                   <span>{job.company_name}</span>
@@ -149,6 +170,12 @@ export default function JobDetail() {
                   <div className="jd-meta-item">
                     <FiClock />
                     <span>{job.job_type}</span>
+                  </div>
+                )}
+                {job.experience_level && (
+                  <div className="jd-meta-item">
+                    <FiTrendingUp />
+                    <span>{job.experience_level}</span>
                   </div>
                 )}
               </div>
@@ -179,6 +206,15 @@ export default function JobDetail() {
                        <div>
                          <label>Qualification</label>
                          <strong>{job.qualification}</strong>
+                       </div>
+                    </div>
+                  )}
+                  {job.experience_level && (
+                    <div className="stat-card">
+                       <FiTrendingUp />
+                       <div>
+                         <label>Experience Level</label>
+                         <strong>{job.experience_level}</strong>
                        </div>
                     </div>
                   )}

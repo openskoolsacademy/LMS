@@ -42,7 +42,7 @@ export default function AdminPanel() {
   const [couponForm, setCouponForm] = useState({ code: '', discount_type: 'percentage', discount_value: '', course_id: '', event_id: '', live_bootcamp_id: '', expiry_date: '', usage_limit: '' });
   const [couponSubmitting, setCouponSubmitting] = useState(false);
   const [editingJob, setEditingJob] = useState(null);
-  const [jobForm, setJobForm] = useState({ company_name: '', role: '', category: 'Freshers', salary: '', location: '', job_type: 'Full-time', qualification: '', vacancies: '', description: '', venue: '', contact_details: '', date_time: '', apply_link: '', expiry_date: '', is_urgent: false, job_mode: 'apply_link' });
+  const [jobForm, setJobForm] = useState({ company_name: '', role: '', category: 'IT & Software', salary: '', location: '', job_type: 'Full-time', experience_level: 'Fresher', qualification: '', vacancies: '', description: '', venue: '', contact_details: '', date_time: '', apply_link: '', expiry_date: '', is_urgent: false, job_mode: 'apply_link' });
   const [jobSubmitting, setJobSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
   const [activeMenu, setActiveMenu] = useState(null); // { id, type, rect }
@@ -1209,7 +1209,7 @@ export default function AdminPanel() {
                   <div className="ap-approvals animate-fade">
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
                       <h3>Manage Jobs</h3>
-                      <button className="btn btn-primary btn-sm" onClick={() => { setEditingJob(null); setJobForm({ company_name: '', role: '', category: 'Freshers', salary: '', location: '', job_type: 'Full-time', qualification: '', vacancies: '', description: '', venue: '', contact_details: '', date_time: '', apply_link: '', expiry_date: '', is_urgent: false, job_mode: 'apply_link' }); setShowJobModal(true); }}>
+                      <button className="btn btn-primary btn-sm" onClick={() => { setEditingJob(null); setJobForm({ company_name: '', role: '', category: 'IT & Software', salary: '', location: '', job_type: 'Full-time', experience_level: 'Fresher', qualification: '', vacancies: '', description: '', venue: '', contact_details: '', date_time: '', apply_link: '', expiry_date: '', is_urgent: false, job_mode: 'apply_link' }); setShowJobModal(true); }}>
                         + Add Job
                       </button>
                     </div>
@@ -2459,10 +2459,20 @@ export default function AdminPanel() {
             <div className="form-group">
               <label>Category *</label>
               <select className="form-control" required value={jobForm.category} onChange={e => setJobForm({...jobForm, category: e.target.value})}>
-                <option value="Walkin">Walkin</option>
-                <option value="Online">Online</option>
-                <option value="Work From Home">Work From Home</option>
-                <option value="Freshers">Freshers</option>
+                <option value="IT & Software">IT & Software</option>
+                <option value="Marketing & Sales">Marketing & Sales</option>
+                <option value="Design & Creative">Design & Creative</option>
+                <option value="Healthcare">Healthcare</option>
+                <option value="Education & Training">Education & Training</option>
+                <option value="Engineering">Engineering</option>
+                <option value="Finance & Accounting">Finance & Accounting</option>
+                <option value="Customer Support">Customer Support</option>
+                <option value="HR & Administration">HR & Administration</option>
+                <option value="Data Science & Analytics">Data Science & Analytics</option>
+                <option value="Content & Media">Content & Media</option>
+                <option value="Legal">Legal</option>
+                <option value="Operations & Logistics">Operations & Logistics</option>
+                <option value="Others">Others</option>
               </select>
             </div>
             <div className="form-group">
@@ -2472,6 +2482,17 @@ export default function AdminPanel() {
                 <option value="Part-time">Part-time</option>
                 <option value="Contract">Contract</option>
                 <option value="Internship">Internship</option>
+              </select>
+            </div>
+            <div className="form-group">
+              <label>Experience Level *</label>
+              <select className="form-control" required value={jobForm.experience_level} onChange={e => setJobForm({...jobForm, experience_level: e.target.value})}>
+                <option value="Fresher">Fresher (0 years)</option>
+                <option value="Junior">Junior (0-2 years)</option>
+                <option value="Mid-Level">Mid-Level (2-5 years)</option>
+                <option value="Senior">Senior (5-8 years)</option>
+                <option value="Lead">Lead (8-12 years)</option>
+                <option value="Expert">Expert (12+ years)</option>
               </select>
             </div>
             <div className="form-group">

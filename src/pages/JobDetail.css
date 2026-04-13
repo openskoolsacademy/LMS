@@ -179,9 +179,15 @@
   gap: 16px;
 }
 
+@media (min-width: 480px) {
+  .jd-quick-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 @media (min-width: 640px) {
   .jd-quick-stats {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
   }
 }
 

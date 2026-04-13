@@ -11,7 +11,7 @@ import WhatsAppCTA from '../components/ui/WhatsAppCTA';
 import RecommendedCourses from '../components/ui/RecommendedCourses';
 import './CareersHub.css';
 
-const JOB_CATEGORIES = ['All', 'Walkin', 'Online', 'Work From Home', 'Freshers'];
+const JOB_CATEGORIES = ['All', 'IT & Software', 'Marketing & Sales', 'Design & Creative', 'Healthcare', 'Education & Training', 'Engineering', 'Finance & Accounting', 'Customer Support', 'HR & Administration', 'Data Science & Analytics', 'Content & Media', 'Others'];
 
 export default function CareersHub() {
   const [jobs, setJobs] = useState([]);
@@ -66,20 +66,13 @@ export default function CareersHub() {
   const jobMatchesCategory = (job, cat) => {
     if (cat === 'All') return true;
     
-    // 1. Explicit database category match
+    // Direct category match
     if (job.category === cat) return true;
     
-    // 2. Inferred matching based on job properties
-    if (cat === 'Walkin') {
-      return job.job_mode === 'walkin' || job.job_mode === 'both' || !!job.venue;
-    }
-    if (cat === 'Online' || cat === 'Work From Home') {
-      const loc = (job.location || '').toLowerCase();
-      return loc.includes('remote') || loc.includes('home') || loc.includes('online');
-    }
-    if (cat === 'Freshers') {
-      const expr = (job.qualification || '').toLowerCase();
-      return expr.includes('fresher') || expr.includes('0 year');
+    // Legacy support: map old categories to new ones
+    if (cat === 'Others') {
+      const knownCats = ['IT & Software', 'Marketing & Sales', 'Design & Creative', 'Healthcare', 'Education & Training', 'Engineering', 'Finance & Accounting', 'Customer Support', 'HR & Administration', 'Data Science & Analytics', 'Content & Media', 'Legal', 'Operations & Logistics'];
+      return !knownCats.includes(job.category) && job.category !== 'All';
     }
     
     return false;
@@ -282,6 +275,11 @@ export default function CareersHub() {
                     {job.category && (
                       <div className="job-card__detail">
                         <FiBriefcase /> {job.category}
+                      </div>
+                    )}
+                    {job.experience_level && (
+                      <div className="job-card__detail">
+                        <FiTrendingUp /> {job.experience_level}
                       </div>
                     )}
                     {job.date_time && (
