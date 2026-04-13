@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FiZap, FiTrendingUp, FiCalendar, FiClock, FiAward, FiStar, FiTarget } from 'react-icons/fi';
-import { FaFire, FaTrophy, FaCrown } from 'react-icons/fa';
+import { FaFire, FaTrophy, FaCrown, FaWhatsapp } from 'react-icons/fa';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
+import { useAlert } from '../context/AlertContext';
 import GlobalBanner from '../components/ui/GlobalBanner';
 import './Leaderboard.css';
 
@@ -19,7 +20,8 @@ const TABS = [
 ];
 
 export default function Leaderboard() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
+  const { showAlert } = useAlert();
   const [tab, setTab] = useState('alltime');
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -134,6 +136,291 @@ export default function Leaderboard() {
   const getInitials = (name) => (name || 'U').split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
   const isMe = (row) => user && row.user_id === user.id;
 
+  // ── Leaderboard Image Generation ─────────────────────────
+  const wrapText = (ctx, text, maxWidth) => {
+    const words = text.split(' ');
+    const lines = [];
+    let currentLine = '';
+    for (const word of words) {
+      const testLine = currentLine ? currentLine + ' ' + word : word;
+      if (ctx.measureText(testLine).width > maxWidth && currentLine) {
+        lines.push(currentLine);
+        currentLine = word;
+      } else {
+        currentLine = testLine;
+      }
+    }
+    if (currentLine) lines.push(currentLine);
+    return lines;
+  };
+
+  const generateLeaderboardImage = () => {
+    const W = 1080, H = 1350;
+    const canvas = document.createElement('canvas');
+    canvas.width = W;
+    canvas.height = H;
+    const ctx = canvas.getContext('2d');
+
+    // Background
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, W, H);
+
+    // Top accent bar
+    const grad = ctx.createLinearGradient(0, 0, W, 0);
+    grad.addColorStop(0, '#008ad1');
+    grad.addColorStop(1, '#0db1e0');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, W, 8);
+
+    const px = 72;
+    let y = 70;
+
+    // "LEADERBOARD" badge (top-right)
+    ctx.fillStyle = '#008ad1';
+    const tagText = 'LEADERBOARD';
+    ctx.font = 'bold 22px Arial, sans-serif';
+    const tagW = ctx.measureText(tagText).width + 40;
+    const tagH = 42;
+    const tagR = 21;
+    const tagX = W - px - tagW;
+    ctx.beginPath();
+    ctx.moveTo(tagX + tagR, y);
+    ctx.lineTo(tagX + tagW - tagR, y);
+    ctx.arcTo(tagX + tagW, y, tagX + tagW, y + tagR, tagR);
+    ctx.arcTo(tagX + tagW, y + tagH, tagX + tagW - tagR, y + tagH, tagR);
+    ctx.lineTo(tagX + tagR, y + tagH);
+    ctx.arcTo(tagX, y + tagH, tagX, y + tagH - tagR, tagR);
+    ctx.arcTo(tagX, y, tagX + tagR, y, tagR);
+    ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText(tagText, tagX + 20, y + 29);
+    y += 80;
+
+    // User's rank highlight
+    const userName = profile?.name || 'Student';
+    ctx.fillStyle = '#111827';
+    ctx.font = 'bold 54px Arial, sans-serif';
+    const nameLines = wrapText(ctx, userName, W - px * 2);
+    for (const line of nameLines) {
+      ctx.fillText(line, px, y);
+      y += 68;
+    }
+    y += 10;
+
+    // Rank & Points
+    ctx.fillStyle = '#008ad1';
+    ctx.font = 'bold 34px Arial, sans-serif';
+    ctx.fillText(`Rank #${myRank || '—'}  •  ${myRow?.points || 0} pts`, px, y);
+    y += 50;
+
+    // Streak
+    if (myRow?.streak > 0) {
+      ctx.fillStyle = '#f97316';
+      ctx.font = 'bold 28px Arial, sans-serif';
+      ctx.fillText(`🔥 ${myRow.streak}-day streak`, px, y);
+      y += 50;
+    }
+
+    // Tab label
+    const tabLabel = tab === 'alltime' ? 'All-Time' : tab === 'weekly' ? 'This Week' : 'Today';
+    ctx.fillStyle = '#6b7280';
+    ctx.font = '24px Arial, sans-serif';
+    ctx.fillText(`${tabLabel} Rankings`, px, y);
+    y += 40;
+
+    // Divider
+    ctx.strokeStyle = '#e5e7eb';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(px, y);
+    ctx.lineTo(W - px, y);
+    ctx.stroke();
+    y += 40;
+
+    // Top 3 table
+    const medalColors = ['#ffd700', '#c0c0c0', '#cd7f32'];
+    const medalLabels = ['1st', '2nd', '3rd'];
+    const top3 = data.slice(0, 3);
+
+    // Table header
+    ctx.fillStyle = '#f8fafc';
+    const headerH = 56;
+    const headerR = 12;
+    ctx.beginPath();
+    ctx.moveTo(px + headerR, y);
+    ctx.lineTo(W - px - headerR, y);
+    ctx.arcTo(W - px, y, W - px, y + headerR, headerR);
+    ctx.arcTo(W - px, y + headerH, W - px - headerR, y + headerH, headerR);
+    ctx.lineTo(px + headerR, y + headerH);
+    ctx.arcTo(px, y + headerH, px, y + headerH - headerR, headerR);
+    ctx.arcTo(px, y, px + headerR, y, headerR);
+    ctx.fill();
+
+    ctx.fillStyle = '#6b7280';
+    ctx.font = '600 22px Arial, sans-serif';
+    ctx.fillText('Rank', px + 24, y + 36);
+    ctx.fillText('Name', px + 180, y + 36);
+    ctx.fillText('Points', W - px - 280, y + 36);
+    ctx.fillText('Streak', W - px - 120, y + 36);
+    y += headerH + 8;
+
+    top3.forEach((row, idx) => {
+      const rowH = 80;
+      const rowY = y;
+      const isMeRow = user && row.user_id === user.id;
+
+      // Highlight user's row
+      if (isMeRow) {
+        ctx.fillStyle = '#eff6ff';
+        ctx.fillRect(px, rowY, W - px * 2, rowH);
+      }
+
+      // Bottom border
+      ctx.strokeStyle = '#f3f4f6';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(px, rowY + rowH);
+      ctx.lineTo(W - px, rowY + rowH);
+      ctx.stroke();
+
+      // Medal circle
+      const medalCX = px + 60;
+      const medalCY = rowY + rowH / 2;
+      ctx.fillStyle = medalColors[idx] || '#e5e7eb';
+      ctx.beginPath();
+      ctx.arc(medalCX, medalCY, 22, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 18px Arial, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(medalLabels[idx], medalCX, medalCY + 6);
+      ctx.textAlign = 'left';
+
+      // Name
+      ctx.fillStyle = isMeRow ? '#008ad1' : '#111827';
+      ctx.font = 'bold 28px Arial, sans-serif';
+      const displayName = isMeRow ? 'You' : (row.name || 'Unknown').split(' ')[0];
+      ctx.fillText(displayName, px + 180, rowY + rowH / 2 + 10);
+
+      // Points
+      ctx.fillStyle = '#111827';
+      ctx.font = 'bold 28px Arial, sans-serif';
+      ctx.fillText(`${row.points}`, W - px - 280, rowY + rowH / 2 + 10);
+
+      // Streak
+      ctx.fillStyle = row.streak > 0 ? '#f97316' : '#9ca3af';
+      ctx.font = 'bold 24px Arial, sans-serif';
+      ctx.fillText(row.streak > 0 ? `${row.streak}d 🔥` : '—', W - px - 120, rowY + rowH / 2 + 10);
+
+      y += rowH;
+    });
+
+    // If user is not in top 3, show their position separately
+    if (myRank && myRank > 3 && myRow) {
+      y += 20;
+      ctx.fillStyle = '#6b7280';
+      ctx.font = '600 20px Arial, sans-serif';
+      ctx.fillText('• • •', W / 2 - 20, y);
+      y += 30;
+
+      const rowH = 80;
+      ctx.fillStyle = '#eff6ff';
+      const rowR = 12;
+      ctx.beginPath();
+      ctx.moveTo(px + rowR, y);
+      ctx.lineTo(W - px - rowR, y);
+      ctx.arcTo(W - px, y, W - px, y + rowR, rowR);
+      ctx.arcTo(W - px, y + rowH, W - px - rowR, y + rowH, rowR);
+      ctx.lineTo(px + rowR, y + rowH);
+      ctx.arcTo(px, y + rowH, px, y + rowH - rowR, rowR);
+      ctx.arcTo(px, y, px + rowR, y, rowR);
+      ctx.fill();
+
+      // Rank number
+      ctx.fillStyle = '#008ad1';
+      ctx.font = 'bold 28px Arial, sans-serif';
+      ctx.fillText(`#${myRank}`, px + 24, y + rowH / 2 + 10);
+
+      // Name
+      ctx.fillStyle = '#008ad1';
+      ctx.font = 'bold 28px Arial, sans-serif';
+      ctx.fillText('You', px + 180, y + rowH / 2 + 10);
+
+      // Points
+      ctx.fillStyle = '#111827';
+      ctx.font = 'bold 28px Arial, sans-serif';
+      ctx.fillText(`${myRow.points}`, W - px - 280, y + rowH / 2 + 10);
+
+      // Streak
+      ctx.fillStyle = myRow.streak > 0 ? '#f97316' : '#9ca3af';
+      ctx.font = 'bold 24px Arial, sans-serif';
+      ctx.fillText(myRow.streak > 0 ? `${myRow.streak}d 🔥` : '—', W - px - 120, y + rowH / 2 + 10);
+
+      y += rowH;
+    }
+
+    // "Try it" link
+    y = Math.max(y + 50, H - 270);
+    ctx.fillStyle = '#008ad1';
+    ctx.font = 'bold 26px Arial, sans-serif';
+    ctx.fillText('Challenge me: www.openskools.com', px, y);
+
+    // Footer
+    const footerH = 160;
+    const footerY = H - footerH;
+    const footGrad = ctx.createLinearGradient(0, footerY, W, footerY);
+    footGrad.addColorStop(0, '#008ad1');
+    footGrad.addColorStop(1, '#0068a3');
+    ctx.fillStyle = footGrad;
+    ctx.fillRect(0, footerY, W, footerH);
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 32px Arial, sans-serif';
+    ctx.fillText('Open Skools Academy', px, footerY + 52);
+
+    ctx.font = '22px Arial, sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    ctx.fillText('ISO 9001:2015 Certified  |  NCS Registered', px, footerY + 90);
+
+    ctx.font = 'bold 24px Arial, sans-serif';
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText('www.openskools.com  |  8189989150', px, footerY + 128);
+
+    return canvas;
+  };
+
+  const handleShareLeaderboard = async () => {
+    try {
+      const canvas = generateLeaderboardImage();
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+      const fileName = `Leaderboard-Rank-${myRank}-Open-Skools.png`;
+      const file = new File([blob], fileName, { type: 'image/png' });
+
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: 'My Leaderboard Rank - Open Skools',
+          text: `*Leaderboard Update:*\n\n*My Rank:* #${myRank}\n*Points:* ${myRow?.points || 0} pts\n*Challenge me:* ${window.location.origin}/leaderboard`,
+        });
+      } else {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showAlert('Leaderboard poster downloaded! You can share it on WhatsApp.', 'Image Saved', 'success');
+      }
+    } catch (err) {
+      if (err.name !== 'AbortError') {
+        console.error('Share error:', err);
+        showAlert('Could not share. Try again.', 'Error', 'error');
+      }
+    }
+  };
+
   return (
     <div className="lb-page section">
       <GlobalBanner location="Leaderboard" />
@@ -153,6 +440,11 @@ export default function Leaderboard() {
             <div className="lb-my-rank-badge">
               Your Rank: <strong>#{myRank}</strong> • {myRow?.points} pts
             </div>
+          )}
+          {user && myRank && (
+            <button className="btn btn-whatsapp-outline" onClick={handleShareLeaderboard} style={{marginTop: 16, background: '#f0fdf4', border: '1.5px solid #bbf7d0', color: '#166534'}}>
+              <FaWhatsapp /> Share My Rank
+            </button>
           )}
         </div>
 

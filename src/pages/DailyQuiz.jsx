@@ -5,7 +5,7 @@ import {
   FiAward, FiTrendingUp, FiAlertCircle, FiStar, FiDatabase, FiHelpCircle,
   FiCalendar, FiCheck, FiLock, FiFilter, FiInfo
 } from 'react-icons/fi';
-import { FaFire } from 'react-icons/fa';
+import { FaFire, FaWhatsapp } from 'react-icons/fa';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { useAlert } from '../context/AlertContext';
@@ -302,6 +302,259 @@ export default function DailyQuiz() {
 
   const formatTime = (s) => `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, '0')}`;
   const formatSeconds = (s) => s != null && s > 0 ? `${Math.floor(s / 60)}m ${s % 60}s` : null;
+
+  // ── Quiz Result Image Generation ─────────────────────────
+  const wrapText = (ctx, text, maxWidth) => {
+    const words = text.split(' ');
+    const lines = [];
+    let currentLine = '';
+    for (const word of words) {
+      const testLine = currentLine ? currentLine + ' ' + word : word;
+      if (ctx.measureText(testLine).width > maxWidth && currentLine) {
+        lines.push(currentLine);
+        currentLine = word;
+      } else {
+        currentLine = testLine;
+      }
+    }
+    if (currentLine) lines.push(currentLine);
+    return lines;
+  };
+
+  const generateQuizResultImage = () => {
+    const W = 1080, H = 1350;
+    const canvas = document.createElement('canvas');
+    canvas.width = W;
+    canvas.height = H;
+    const ctx = canvas.getContext('2d');
+
+    // Background
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, W, H);
+
+    // Top accent bar
+    const grad = ctx.createLinearGradient(0, 0, W, 0);
+    grad.addColorStop(0, '#008ad1');
+    grad.addColorStop(1, '#0db1e0');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, W, 8);
+
+    const px = 72;
+    let y = 70;
+
+    // "QUIZ RESULT" badge (top-right)
+    ctx.fillStyle = '#008ad1';
+    const tagText = 'QUIZ RESULT';
+    ctx.font = 'bold 22px Arial, sans-serif';
+    const tagW = ctx.measureText(tagText).width + 40;
+    const tagH = 42;
+    const tagR = 21;
+    const tagX = W - px - tagW;
+    ctx.beginPath();
+    ctx.moveTo(tagX + tagR, y);
+    ctx.lineTo(tagX + tagW - tagR, y);
+    ctx.arcTo(tagX + tagW, y, tagX + tagW, y + tagR, tagR);
+    ctx.arcTo(tagX + tagW, y + tagH, tagX + tagW - tagR, y + tagH, tagR);
+    ctx.lineTo(tagX + tagR, y + tagH);
+    ctx.arcTo(tagX, y + tagH, tagX, y + tagH - tagR, tagR);
+    ctx.arcTo(tagX, y, tagX + tagR, y, tagR);
+    ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText(tagText, tagX + 20, y + 29);
+    y += 80;
+
+    // User name
+    const userName = profile?.name || 'Student';
+    ctx.fillStyle = '#111827';
+    ctx.font = 'bold 54px Arial, sans-serif';
+    const nameLines = wrapText(ctx, userName, W - px * 2);
+    for (const line of nameLines) {
+      ctx.fillText(line, px, y);
+      y += 68;
+    }
+    y += 10;
+
+    // Sub-heading
+    ctx.fillStyle = '#008ad1';
+    ctx.font = 'bold 30px Arial, sans-serif';
+    ctx.fillText('Daily Quiz Challenge', px, y);
+    y += 50;
+
+    // Quiz date
+    ctx.fillStyle = '#6b7280';
+    ctx.font = '24px Arial, sans-serif';
+    const dateDisplay = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+    ctx.fillText(dateDisplay, px, y);
+    y += 50;
+
+    // Divider
+    ctx.strokeStyle = '#e5e7eb';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(px, y);
+    ctx.lineTo(W - px, y);
+    ctx.stroke();
+    y += 50;
+
+    // Score ring (centered)
+    const ringCX = W / 2;
+    const ringCY = y + 130;
+    const ringR = 120;
+    const scoreVal = result?.score || 0;
+    const isPassing = scoreVal >= 60;
+
+    // Ring background
+    ctx.strokeStyle = '#e5e7eb';
+    ctx.lineWidth = 18;
+    ctx.beginPath();
+    ctx.arc(ringCX, ringCY, ringR, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Ring fill
+    ctx.strokeStyle = isPassing ? '#10b981' : '#f59e0b';
+    ctx.lineWidth = 18;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.arc(ringCX, ringCY, ringR, -Math.PI / 2, -Math.PI / 2 + (scoreVal / 100) * Math.PI * 2);
+    ctx.stroke();
+    ctx.lineCap = 'butt';
+
+    // Score text in center
+    ctx.fillStyle = '#111827';
+    ctx.font = 'bold 72px Arial, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(`${scoreVal}%`, ringCX, ringCY + 20);
+
+    // Label under score
+    ctx.fillStyle = '#6b7280';
+    ctx.font = '24px Arial, sans-serif';
+    ctx.fillText('Score', ringCX, ringCY + 55);
+    ctx.textAlign = 'left';
+
+    y = ringCY + ringR + 60;
+
+    // Divider
+    ctx.strokeStyle = '#e5e7eb';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(px, y);
+    ctx.lineTo(W - px, y);
+    ctx.stroke();
+    y += 50;
+
+    // Stats grid (2x2)
+    const statBoxW = (W - px * 2 - 40) / 2;
+    const statBoxH = 100;
+    const drawStatBox = (x, yPos, label, value, color) => {
+      // Box background
+      ctx.fillStyle = '#f8fafc';
+      ctx.beginPath();
+      const r = 16;
+      ctx.moveTo(x + r, yPos);
+      ctx.lineTo(x + statBoxW - r, yPos);
+      ctx.arcTo(x + statBoxW, yPos, x + statBoxW, yPos + r, r);
+      ctx.arcTo(x + statBoxW, yPos + statBoxH, x + statBoxW - r, yPos + statBoxH, r);
+      ctx.lineTo(x + r, yPos + statBoxH);
+      ctx.arcTo(x, yPos + statBoxH, x, yPos + statBoxH - r, r);
+      ctx.arcTo(x, yPos, x + r, yPos, r);
+      ctx.fill();
+
+      // Label
+      ctx.fillStyle = '#6b7280';
+      ctx.font = '600 22px Arial, sans-serif';
+      ctx.fillText(label, x + 24, yPos + 38);
+
+      // Value
+      ctx.fillStyle = color;
+      ctx.font = 'bold 36px Arial, sans-serif';
+      ctx.fillText(value, x + 24, yPos + 78);
+    };
+
+    const correctCount = result?.correct_count || 0;
+    const totalQ = result?.total_questions || 0;
+    const wrongCount = totalQ - correctCount;
+    const pointsEarned = result?.points_earned || 0;
+
+    drawStatBox(px, y, 'Correct', `${correctCount}/${totalQ}`, '#10b981');
+    drawStatBox(px + statBoxW + 40, y, 'Wrong', `${wrongCount}/${totalQ}`, '#ef4444');
+    y += statBoxH + 24;
+    drawStatBox(px, y, 'Points Earned', `+${pointsEarned}`, '#008ad1');
+    drawStatBox(px + statBoxW + 40, y, 'Streak', `${userStreak} days`, '#f97316');
+    y += statBoxH + 40;
+
+    // Total earned line
+    const totalEarned = (result?.points_earned || 0) + (result?.streak_bonus || 0);
+    ctx.fillStyle = '#111827';
+    ctx.font = 'bold 30px Arial, sans-serif';
+    ctx.fillText(`Total Earned: +${totalEarned} pts`, px, y);
+    y += 30;
+
+    // "Try it" link
+    y = Math.max(y + 30, H - 270);
+    ctx.fillStyle = '#008ad1';
+    ctx.font = 'bold 26px Arial, sans-serif';
+    ctx.fillText('Take the Quiz: www.openskools.com', px, y);
+
+    // Footer
+    const footerH = 160;
+    const footerY = H - footerH;
+    const footGrad = ctx.createLinearGradient(0, footerY, W, footerY);
+    footGrad.addColorStop(0, '#008ad1');
+    footGrad.addColorStop(1, '#0068a3');
+    ctx.fillStyle = footGrad;
+    ctx.fillRect(0, footerY, W, footerH);
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 32px Arial, sans-serif';
+    ctx.fillText('Open Skools Academy', px, footerY + 52);
+
+    ctx.font = '22px Arial, sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    ctx.fillText('ISO 9001:2015 Certified  |  NCS Registered', px, footerY + 90);
+
+    ctx.font = 'bold 24px Arial, sans-serif';
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText('www.openskools.com  |  8189989150', px, footerY + 128);
+
+    return canvas;
+  };
+
+  const handleShareQuizResult = async () => {
+    try {
+      const canvas = generateQuizResultImage();
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+      const fileName = `Quiz-Result-${todayStr}-Open-Skools.png`;
+      const file = new File([blob], fileName, { type: 'image/png' });
+
+      const scoreVal = result?.score || 0;
+      const correctCount = result?.correct_count || 0;
+      const totalQ = result?.total_questions || 0;
+      const pointsEarned = result?.points_earned || 0;
+
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: 'My Quiz Result - Open Skools',
+          text: `*Quiz Result:*\n\n*Score:* ${scoreVal}%\n*Correct:* ${correctCount}/${totalQ}\n*Points:* +${pointsEarned}\n*Try it:* ${window.location.origin}/daily-quiz`,
+        });
+      } else {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showAlert('Quiz result poster downloaded! You can share it on WhatsApp.', 'Image Saved', 'success');
+      }
+    } catch (err) {
+      if (err.name !== 'AbortError') {
+        console.error('Share error:', err);
+        showAlert('Could not share. Try again.', 'Error', 'error');
+      }
+    }
+  };
 
   const NEXT_TIER = [
     { label: 'Bronze', pts: 100, icon: <FiAward style={{color: '#cd7f32'}}/> },
@@ -638,6 +891,9 @@ export default function DailyQuiz() {
                 <Link to="/leaderboard" className="btn btn-primary btn-lg">
                   <FiTrendingUp /> View Leaderboard
                 </Link>
+                <button className="btn btn-whatsapp-outline btn-lg" onClick={handleShareQuizResult} style={{background: '#f0fdf4', border: '1.5px solid #bbf7d0', color: '#166534'}}>
+                  <FaWhatsapp /> Share Result
+                </button>
                 <Link to="/dashboard" className="btn btn-outline">
                   <FiArrowLeft /> Dashboard
                 </Link>
