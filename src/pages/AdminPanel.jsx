@@ -1209,7 +1209,7 @@ export default function AdminPanel() {
                   <div className="ap-approvals animate-fade">
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
                       <h3>Manage Jobs</h3>
-                      <button className="btn btn-primary btn-sm" onClick={() => { setEditingJob(null); setJobForm({ company_name: '', role: '', category: 'IT & Software', salary: '', location: '', job_type: 'Full-time', experience_level: '', qualification: '', vacancies: '', description: '', venue: '', contact_details: '', date_time: '', apply_link: '', expiry_date: '', is_urgent: false, job_mode: 'apply_link' }); setShowJobModal(true); }}>
+                      <button className="btn btn-primary btn-sm" onClick={() => { setEditingJob(null); setJobForm({ company_name: '', role: '', category: 'Freshers', salary: '', location: '', job_type: 'Full-time', experience_level: '', qualification: '', vacancies: '', description: '', venue: '', contact_details: '', date_time: '', apply_link: '', expiry_date: '', is_urgent: false, job_mode: 'apply_link' }); setShowJobModal(true); }}>
                         + Add Job
                       </button>
                     </div>

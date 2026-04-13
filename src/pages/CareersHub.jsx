@@ -11,7 +11,7 @@ import WhatsAppCTA from '../components/ui/WhatsAppCTA';
 import RecommendedCourses from '../components/ui/RecommendedCourses';
 import './CareersHub.css';
 
-const JOB_CATEGORIES = ['All', 'IT & Software', 'Marketing & Sales', 'Design & Creative', 'Healthcare', 'Education & Training', 'Engineering', 'Finance & Accounting', 'Customer Support', 'HR & Administration', 'Data Science & Analytics', 'Content & Media', 'Others'];
+const JOB_CATEGORIES = ['All', 'Freshers', 'Walkin', 'Online', 'Work From Home'];
 
 export default function CareersHub() {
   const [jobs, setJobs] = useState([]);
@@ -65,17 +65,7 @@ export default function CareersHub() {
   // Smart Category Matcher
   const jobMatchesCategory = (job, cat) => {
     if (cat === 'All') return true;
-    
-    // Direct category match
-    if (job.category === cat) return true;
-    
-    // Legacy support: map old categories to new ones
-    if (cat === 'Others') {
-      const knownCats = ['IT & Software', 'Marketing & Sales', 'Design & Creative', 'Healthcare', 'Education & Training', 'Engineering', 'Finance & Accounting', 'Customer Support', 'HR & Administration', 'Data Science & Analytics', 'Content & Media', 'Legal', 'Operations & Logistics'];
-      return !knownCats.includes(job.category) && job.category !== 'All';
-    }
-    
-    return false;
+    return job.category === cat;
   };
 
   // Filter jobs — hide jobs expired beyond 7-day grace period
