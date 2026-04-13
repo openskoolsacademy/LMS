@@ -66,31 +66,211 @@ export default function JobDetail() {
     }
   };
 
-  const handleWhatsAppShare = () => {
-    const jobUrl = window.location.href;
-    
-    // Build description snippet (first 150 chars of description)
-    const descSnippet = job.description
-      ? job.description.substring(0, 150).trim() + (job.description.length > 150 ? '...' : '')
-      : 'Apply now for this exciting opportunity!';
-    
-    let text = '';
-    text += `Job Opportunity\n\n`;
-    text += `Job Role: ${job.role}\n`;
-    text += `Company: ${job.company_name}\n`;
-    text += `Location: ${job.location || 'Remote'}\n`;
-    text += `Experience: ${job.experience_level || 'Not Specified'}\n\n`;
-    text += `Job Description:\n`;
-    text += `${descSnippet}\n\n`;
-    text += `Apply Here:\n`;
-    text += `${jobUrl}\n\n`;
-    text += `━━━━━━━━━━━━━━━━\n`;
-    text += `*Open Skools Academy*\n`;
-    text += `ISO 9001:2015 Certified | NCS Registered\n`;
-    text += `www.openskools.com | 8189989150`;
-    
-    const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
-    window.open(url, '_blank');
+  // Helper: wrap text on canvas and return array of lines
+  const wrapText = (ctx, text, maxWidth) => {
+    const words = text.split(' ');
+    const lines = [];
+    let currentLine = '';
+    for (const word of words) {
+      const testLine = currentLine ? currentLine + ' ' + word : word;
+      if (ctx.measureText(testLine).width > maxWidth && currentLine) {
+        lines.push(currentLine);
+        currentLine = word;
+      } else {
+        currentLine = testLine;
+      }
+    }
+    if (currentLine) lines.push(currentLine);
+    return lines;
+  };
+
+  const generateJobImage = () => {
+    const W = 1080, H = 1350;
+    const canvas = document.createElement('canvas');
+    canvas.width = W;
+    canvas.height = H;
+    const ctx = canvas.getContext('2d');
+
+    // ── Background ──
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, W, H);
+
+    // Top accent bar
+    const grad = ctx.createLinearGradient(0, 0, W, 0);
+    grad.addColorStop(0, '#008ad1');
+    grad.addColorStop(1, '#0db1e0');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, W, 8);
+
+    // ── Header section ──
+    const px = 72; // padding-x
+    let y = 70;
+
+    // "WE ARE HIRING" tag
+    ctx.fillStyle = '#008ad1';
+    const tagText = 'WE ARE HIRING';
+    ctx.font = 'bold 22px Arial, sans-serif';
+    const tagW = ctx.measureText(tagText).width + 40;
+    const tagH = 42;
+    const tagR = 21;
+    ctx.beginPath();
+    ctx.moveTo(px + tagR, y);
+    ctx.lineTo(px + tagW - tagR, y);
+    ctx.arcTo(px + tagW, y, px + tagW, y + tagR, tagR);
+    ctx.arcTo(px + tagW, y + tagH, px + tagW - tagR, y + tagH, tagR);
+    ctx.lineTo(px + tagR, y + tagH);
+    ctx.arcTo(px, y + tagH, px, y + tagH - tagR, tagR);
+    ctx.arcTo(px, y, px + tagR, y, tagR);
+    ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText(tagText, px + 20, y + 29);
+    y += 68;
+
+    // Job Role Title
+    ctx.fillStyle = '#111827';
+    ctx.font = 'bold 54px Arial, sans-serif';
+    const roleLines = wrapText(ctx, job.role || '', W - px * 2);
+    for (const line of roleLines) {
+      ctx.fillText(line, px, y);
+      y += 64;
+    }
+    y += 8;
+
+    // Company Name
+    ctx.fillStyle = '#008ad1';
+    ctx.font = 'bold 34px Arial, sans-serif';
+    ctx.fillText(job.company_name || '', px, y);
+    y += 56;
+
+    // Divider line
+    ctx.strokeStyle = '#e5e7eb';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(px, y);
+    ctx.lineTo(W - px, y);
+    ctx.stroke();
+    y += 40;
+
+    // ── Info rows ──
+    const drawInfoRow = (label, value) => {
+      ctx.fillStyle = '#6b7280';
+      ctx.font = '600 24px Arial, sans-serif';
+      ctx.fillText(label, px, y);
+      ctx.fillStyle = '#111827';
+      ctx.font = 'bold 28px Arial, sans-serif';
+      const valLines = wrapText(ctx, value, W - px * 2 - 220);
+      ctx.fillText(valLines[0] || '', px + 220, y);
+      if (valLines[1]) {
+        y += 36;
+        ctx.fillText(valLines[1], px + 220, y);
+      }
+      y += 48;
+    };
+
+    drawInfoRow('Location', job.location || 'Remote');
+    if (job.experience_level) drawInfoRow('Experience', job.experience_level);
+    drawInfoRow('Job Type', job.job_type || 'Full-time');
+    if (job.salary) drawInfoRow('Salary', job.salary);
+    if (job.qualification) drawInfoRow('Qualification', job.qualification);
+    if (job.vacancies) drawInfoRow('Vacancies', `${job.vacancies} Openings`);
+
+    // Walk-in details
+    if (job.venue) drawInfoRow('Venue', job.venue);
+    if (job.date_time) drawInfoRow('Date & Time', job.date_time);
+
+    // ── Job Description ──
+    if (job.description) {
+      y += 8;
+      ctx.strokeStyle = '#e5e7eb';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(px, y);
+      ctx.lineTo(W - px, y);
+      ctx.stroke();
+      y += 36;
+
+      ctx.fillStyle = '#111827';
+      ctx.font = 'bold 28px Arial, sans-serif';
+      ctx.fillText('Job Description', px, y);
+      y += 36;
+
+      ctx.fillStyle = '#374151';
+      ctx.font = '24px Arial, sans-serif';
+      const descSnippet = job.description.substring(0, 250).trim() + (job.description.length > 250 ? '...' : '');
+      const descLines = wrapText(ctx, descSnippet, W - px * 2);
+      for (let i = 0; i < Math.min(descLines.length, 5); i++) {
+        ctx.fillText(descLines[i], px, y);
+        y += 34;
+      }
+    }
+
+    // ── Apply link text ──
+    y = Math.max(y + 30, H - 270);
+    ctx.fillStyle = '#008ad1';
+    ctx.font = 'bold 26px Arial, sans-serif';
+    ctx.fillText('Apply Here: www.openskools.com', px, y);
+    y += 20;
+
+    // ── Footer ──
+    const footerH = 160;
+    const footerY = H - footerH;
+
+    // Footer bg
+    const footGrad = ctx.createLinearGradient(0, footerY, W, footerY);
+    footGrad.addColorStop(0, '#008ad1');
+    footGrad.addColorStop(1, '#0068a3');
+    ctx.fillStyle = footGrad;
+    ctx.fillRect(0, footerY, W, footerH);
+
+    // Footer text
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 32px Arial, sans-serif';
+    ctx.fillText('Open Skools Academy', px, footerY + 52);
+
+    ctx.font = '22px Arial, sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    ctx.fillText('ISO 9001:2015 Certified  |  NCS Registered', px, footerY + 90);
+
+    ctx.font = 'bold 24px Arial, sans-serif';
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText('www.openskools.com  |  8189989150', px, footerY + 128);
+
+    return canvas;
+  };
+
+  const handleWhatsAppShare = async () => {
+    try {
+      const canvas = generateJobImage();
+      
+      // Convert canvas to blob
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+      const file = new File([blob], `${(job.role || 'job').replace(/\s+/g, '-')}-Open-Skools.png`, { type: 'image/png' });
+
+      // Try Web Share API (works on mobile — direct share to WhatsApp)
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: `${job.role} at ${job.company_name}`,
+          text: `Job Opportunity: ${job.role} at ${job.company_name}\nApply: ${window.location.href}`,
+        });
+      } else {
+        // Fallback: download the image
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${(job.role || 'job').replace(/\s+/g, '-')}-Open-Skools.png`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showAlert('Job poster downloaded! You can share it on WhatsApp.', 'Image Saved', 'success');
+      }
+    } catch (err) {
+      if (err.name !== 'AbortError') {
+        console.error('Share error:', err);
+        showAlert('Could not share. Try again.', 'Error', 'error');
+      }
+    }
   };
 
   if (loading) {
@@ -320,7 +500,7 @@ export default function JobDetail() {
                   )}
 
                   <button className="btn btn-whatsapp-outline btn-lg full-btn" onClick={handleWhatsAppShare}>
-                    <FaWhatsapp /> Share on WhatsApp
+                    <FaWhatsapp /> Share Job Poster
                   </button>
 
                   <button 
