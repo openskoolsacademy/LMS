@@ -252,7 +252,7 @@ export default function JobDetail() {
         await navigator.share({
           files: [file],
           title: `${job.role} at ${job.company_name}`,
-          text: `Job Opportunity: ${job.role} at ${job.company_name}\nApply: ${window.location.href}`,
+          text: `*Job Opportunity:*\n\n*Role:* ${job.role}\n*Company:* ${job.company_name}\n*More Details:* ${window.location.href}`,
         });
       } else {
         // Fallback: download the image
