@@ -430,7 +430,9 @@ export default function LiveBootcampDetail() {
             <span className="lbd-section-label">Overview</span>
             <h2 className="lbd-section-title">About This Bootcamp</h2>
             <div className="lbd-about-text">
-              {bootcamp.description || 'Join us for this intensive live bootcamp. Learn from industry experts and gain practical knowledge that you can apply immediately.'}
+              {(bootcamp.description || 'Join us for this intensive live bootcamp. Learn from industry experts and gain practical knowledge that you can apply immediately.').split('\n').filter(p => p.trim()).map((para, i) => (
+                <p key={i} dangerouslySetInnerHTML={{ __html: para.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') }} />
+              ))}
             </div>
 
             {/* Learning Outcomes */}
@@ -440,7 +442,7 @@ export default function LiveBootcampDetail() {
                 <h2 className="lbd-section-title">Learning Outcomes</h2>
                 <ul className="lbd-achieve-list">
                   {bootcamp.learning_outcomes.flatMap(o => o.split('\n')).map(o => o.trim()).filter(Boolean).map((outcome, i) => (
-                    <li key={i}><FiCheckCircle /> {outcome}</li>
+                    <li key={i}><FiCheckCircle /> <span dangerouslySetInnerHTML={{ __html: outcome.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') }} /></li>
                   ))}
                 </ul>
               </>
@@ -453,7 +455,7 @@ export default function LiveBootcampDetail() {
               {bootcamp.achievements && bootcamp.achievements.length > 0 ? (
                 <>
                   {bootcamp.achievements.flatMap(o => o.split('\n')).map(o => o.trim()).filter(Boolean).map((outcome, i) => (
-                    <li key={`achieve-${i}`}><FiCheckCircle /> {outcome}</li>
+                    <li key={`achieve-${i}`}><FiCheckCircle /> <span dangerouslySetInnerHTML={{ __html: outcome.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') }} /></li>
                   ))}
                   {bootcamp.enable_certificate && (
                     <li><FiCheckCircle /> Earn a verifiable certificate of completion</li>
