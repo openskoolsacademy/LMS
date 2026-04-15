@@ -112,9 +112,33 @@ export default function AdminPanel() {
           .from('certificates')
           .select('*, course:courses(title)')
           .eq('user_id', u.id);
+        // Fetch event attendance
+        const { data: eventAtt } = await supabase
+          .from('event_attendance')
+          .select('*, event:events(id, title, event_date, thumbnail_url, enable_certificate)')
+          .eq('user_id', u.id);
+        // Fetch bootcamp enrollments
+        const { data: bootcampEnr } = await supabase
+          .from('live_bootcamp_enrollments')
+          .select('*, bootcamp:live_bootcamps(id, title, start_date, thumbnail_url, enable_certificate)')
+          .eq('user_id', u.id);
+        // Fetch quiz attempts 
+        const { data: dailyQuizAtt } = await supabase
+          .from('daily_quiz_attempts')
+          .select('*')
+          .eq('user_id', u.id);
+        const { data: assessAtt } = await supabase
+          .from('assessment_attempts')
+          .select('*, assessment:assessments(title, course:courses(title))')
+          .eq('user_id', u.id);
+
         setProfileExtras({
           enrollments: enrollments || [],
           certificates: certs || [],
+          events: eventAtt || [],
+          bootcamps: bootcampEnr || [],
+          dailyQuizzes: dailyQuizAtt || [],
+          assessments: assessAtt || []
         });
       } else if (u.role === 'instructor') {
         // Fetch all courses (any status)
@@ -184,7 +208,7 @@ export default function AdminPanel() {
     async function fetchAdminData() {
       setLoading(true);
       const year = new Date().getFullYear();
-      const [usersRes, coursesRes, requestsRes, paymentsRes, enrollRes, blogsRes, jobsRes, messagesRes, couponsRes, reviewsRes] = await Promise.all([
+      const [usersRes, coursesRes, requestsRes, paymentsRes, enrollRes, blogsRes, jobsRes, messagesRes, couponsRes, reviewsRes, eventAttRes, bootcampEnrollRes] = await Promise.all([
         supabase.from('users').select('*').order('created_at', { ascending: false }),
         supabase.from('courses').select('*, instructor:users(name)').order('created_at', { ascending: false }),
         supabase.from('instructor_requests').select('*').order('created_at', { ascending: false }),
@@ -197,7 +221,9 @@ export default function AdminPanel() {
         supabase.from('jobs').select('*').order('created_at', { ascending: false }),
         supabase.from('contact_messages').select('*').order('created_at', { ascending: false }),
         supabase.from('coupons').select('*, course:courses(title)').order('created_at', { ascending: false }),
-        supabase.from('course_reviews').select('*, user:users(name, avatar_url), course:courses(title)').order('created_at', { ascending: false })
+        supabase.from('course_reviews').select('*, user:users(name, avatar_url), course:courses(title)').order('created_at', { ascending: false }),
+        supabase.from('event_attendance').select('*, user:users(name), event:events(title)').order('created_at', { ascending: false }).limit(50),
+        supabase.from('live_bootcamp_enrollments').select('*, user:users(name), bootcamp:live_bootcamps(title)').order('created_at', { ascending: false }).limit(50)
       ]);
       
       if (!usersRes.error) setUsers(usersRes.data || []);
@@ -225,7 +251,26 @@ export default function AdminPanel() {
         }
       }
       if (!messagesRes.error) setMessages(messagesRes.data || []);
-      if (!paymentsRes.error) setPayments(paymentsRes.data || []);
+      
+      let allPayments = [...(paymentsRes.data || [])];
+      
+      // Combine event payments
+      if (!eventAttRes?.error && eventAttRes?.data) {
+        const paidEvents = eventAttRes.data.filter(e => e.amount_paid > 0).map(e => ({
+          ...e, amount: e.amount_paid, type: 'event', item_title: e.event?.title || 'Unknown Event', created_at: e.created_at || (new Date()).toISOString()
+        }));
+        allPayments = [...allPayments, ...paidEvents];
+      }
+      
+      // Combine bootcamp payments
+      if (!bootcampEnrollRes?.error && bootcampEnrollRes?.data) {
+        const paidBootcamps = bootcampEnrollRes.data.filter(b => b.amount_paid > 0).map(b => ({
+          ...b, amount: b.amount_paid, type: 'bootcamp', item_title: b.bootcamp?.title || 'Unknown Bootcamp', created_at: b.created_at || (new Date()).toISOString()
+        }));
+        allPayments = [...allPayments, ...paidBootcamps];
+      }
+      
+      if (!paymentsRes.error) setPayments(allPayments);
       if (!couponsRes.error) setCoupons(couponsRes.data || []);
       if (!reviewsRes.error) setCourseReviews(reviewsRes.data || []);
       
@@ -241,14 +286,15 @@ export default function AdminPanel() {
         if (bootcampsData) setAdminBootcamps(bootcampsData);
       } catch { /* live_bootcamps table may not exist yet */ }
       
-      if (!paymentsRes.error && paymentsRes.data) {
-        const total = paymentsRes.data.reduce((acc, p) => acc + Number(p.amount), 0);
+      if (allPayments && allPayments.length > 0) {
+        const total = allPayments.reduce((acc, p) => acc + Number(p.amount || 0), 0);
         setRevenue(total);
         
         const monthly = new Array(12).fill(0);
-        paymentsRes.data.forEach(p => {
+        allPayments.forEach(p => {
+          if (!p.created_at) return;
           const month = new Date(p.created_at).getMonth();
-          monthly[month] += Number(p.amount);
+          monthly[month] += Number(p.amount || 0);
         });
         setMonthlyRevenue(monthly);
       }
@@ -258,7 +304,13 @@ export default function AdminPanel() {
         ...(usersRes.data || []).map(u => ({ id: `u-${u.id}`, type: 'user', title: 'New User Registered', message: `<strong>${u.name}</strong> (${u.email}) joined the platform.`, time: u.created_at })),
         ...(coursesRes.data || []).map(c => ({ id: `c-${c.id}`, type: 'course', title: 'New Course Published', message: `<strong>"${c.title}"</strong> was created by ${c.instructor?.name || 'an instructor'}.`, time: c.created_at })),
         ...(enrollRes.data || []).map(e => ({ id: `e-${e.id}`, type: 'enroll', title: 'New Student Enrolled', message: `<strong>${e.user?.name}</strong> enrolled in <strong>"${e.course?.title}"</strong>.`, time: e.enrolled_at })),
-        ...(paymentsRes.data || []).map(p => ({ id: `p-${p.id}`, type: 'payment', title: 'Course Sale', message: `<strong>${p.user?.name}</strong> purchased <strong>"${p.course?.title}"</strong> for ₹${p.amount}.`, time: p.created_at }))
+        ...(eventAttRes?.data || []).filter(e => !e.amount_paid).map(e => ({ id: `ea-${e.id}`, type: 'enroll', title: 'Free Event Registration', message: `<strong>${e.user?.name}</strong> registered for <strong>"${e.event?.title}"</strong>.`, time: e.created_at })),
+        ...(bootcampEnrollRes?.data || []).filter(b => !b.amount_paid).map(b => ({ id: `ba-${b.id}`, type: 'enroll', title: 'Free Bootcamp Enrollment', message: `<strong>${b.user?.name}</strong> enrolled in <strong>"${b.bootcamp?.title}"</strong>.`, time: b.created_at })),
+        ...allPayments.map(p => {
+          if (p.type === 'event') return { id: `pep-${p.id}`, type: 'payment', title: 'Event Payment', message: `<strong>${p.user?.name}</strong> purchased <strong>"${p.item_title}"</strong> for ₹${p.amount}.`, time: p.created_at };
+          if (p.type === 'bootcamp') return { id: `pbp-${p.id}`, type: 'payment', title: 'Bootcamp Payment', message: `<strong>${p.user?.name}</strong> purchased <strong>"${p.item_title}"</strong> for ₹${p.amount}.`, time: p.created_at };
+          return { id: `p-${p.id}`, type: 'payment', title: 'Course Sale', message: `<strong>${p.user?.name}</strong> purchased <strong>"${p.course?.title}"</strong> for ₹${p.amount}.`, time: p.created_at };
+        })
       ].sort((a, b) => new Date(b.time) - new Date(a.time));
 
       setRecentActivities(activities);
@@ -2022,17 +2074,15 @@ export default function AdminPanel() {
               {/* STUDENT: Enrolled courses + certificates */}
               {!profileLoading && profileUser.role === 'student' && profileExtras && (
                 <div className="ap-profile-section">
-                  <h4><FiBookOpen /> Enrolled Courses ({profileExtras.enrollments.length})</h4>
-                  {profileExtras.enrollments.length === 0 ? (
+                  <h4><FiBookOpen /> Recorded Courses ({profileExtras.enrollments?.length || 0})</h4>
+                  {(!profileExtras.enrollments || profileExtras.enrollments.length === 0) ? (
                     <p className="ap-profile-empty">No courses enrolled yet.</p>
                   ) : (
-                    <div className="ap-profile-table-wrap">
+                    <div className="ap-profile-table-wrap" style={{ marginBottom: '24px' }}>
                       <table className="ap-profile-table">
-                        <thead><tr><th>Course</th><th>Category</th><th>Progress</th><th>Certificate</th></tr></thead>
+                        <thead><tr><th>Course</th><th>Category</th><th>Progress</th></tr></thead>
                         <tbody>
-                          {profileExtras.enrollments.map((enr, i) => {
-                            const hasCert = profileExtras.certificates.some(c => c.course_id === enr.course?.id);
-                            return (
+                          {profileExtras.enrollments.map((enr, i) => (
                               <tr key={i}>
                                 <td>
                                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -2047,22 +2097,141 @@ export default function AdminPanel() {
                                     <span>{enr.progress || 0}%</span>
                                   </div>
                                 </td>
-                                <td>
-                                  {hasCert ? (
-                                    <span className="badge badge-success" style={{ fontSize: '.688rem' }}>✓ Earned</span>
-                                  ) : enr.progress === 100 ? (
-                                    <span className="badge badge-warning" style={{ fontSize: '.688rem' }}>Unclaimed</span>
-                                  ) : (
-                                    <span style={{ fontSize: '.75rem', color: 'var(--gray-400)' }}>—</span>
-                                  )}
-                                </td>
                               </tr>
-                            );
-                          })}
+                          ))}
                         </tbody>
                       </table>
                     </div>
                   )}
+
+                  <h4><FiVideo /> Events ({profileExtras.events?.length || 0})</h4>
+                  {(!profileExtras.events || profileExtras.events.length === 0) ? (
+                    <p className="ap-profile-empty">No events attended yet.</p>
+                  ) : (
+                    <div className="ap-profile-table-wrap" style={{ marginBottom: '24px' }}>
+                      <table className="ap-profile-table">
+                        <thead><tr><th>Event</th><th>Date</th><th>Status</th></tr></thead>
+                        <tbody>
+                          {profileExtras.events.map((ev, i) => (
+                              <tr key={i}>
+                                <td>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                    <img src={resolveImageUrl(ev.event?.thumbnail_url) || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=60'} alt="" style={{ width: 36, height: 36, borderRadius: 6, objectFit: 'cover' }} />
+                                    <span style={{ fontWeight: 600, fontSize: '.875rem' }}>{ev.event?.title || 'Unknown Event'}</span>
+                                  </div>
+                                </td>
+                                <td><span style={{ fontSize: '.75rem' }}>{ev.event?.event_date ? new Date(ev.event.event_date).toLocaleDateString() : 'N/A'}</span></td>
+                                <td><span className={`badge badge-${ev.status === 'JOINED' || ev.attended ? 'success' : 'primary'}`} style={{ fontSize: '.688rem' }}>{ev.status || (ev.attended ? 'JOINED' : 'REGISTERED')}</span></td>
+                              </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+
+                  <h4><FiUsers /> Bootcamps ({profileExtras.bootcamps?.length || 0})</h4>
+                  {(!profileExtras.bootcamps || profileExtras.bootcamps.length === 0) ? (
+                    <p className="ap-profile-empty">No bootcamps joined yet.</p>
+                  ) : (
+                    <div className="ap-profile-table-wrap" style={{ marginBottom: '24px' }}>
+                      <table className="ap-profile-table">
+                        <thead><tr><th>Bootcamp</th><th>Date</th><th>Status</th></tr></thead>
+                        <tbody>
+                          {profileExtras.bootcamps.map((bc, i) => (
+                              <tr key={i}>
+                                <td>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                    <img src={resolveImageUrl(bc.bootcamp?.thumbnail_url) || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=60'} alt="" style={{ width: 36, height: 36, borderRadius: 6, objectFit: 'cover' }} />
+                                    <span style={{ fontWeight: 600, fontSize: '.875rem' }}>{bc.bootcamp?.title || 'Unknown Bootcamp'}</span>
+                                  </div>
+                                </td>
+                                <td><span style={{ fontSize: '.75rem' }}>{bc.bootcamp?.start_date ? new Date(bc.bootcamp.start_date).toLocaleDateString() : 'N/A'}</span></td>
+                                <td><span className={`badge badge-${bc.status === 'JOINED' || bc.completed ? 'success' : 'primary'}`} style={{ fontSize: '.688rem' }}>{bc.status || (bc.completed ? 'JOINED' : 'REGISTERED')}</span></td>
+                              </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+
+                  <h4><FiCheckCircle /> Quiz & Assessments Details</h4>
+                  {(!profileExtras.dailyQuizzes?.length && !profileExtras.assessments?.length) ? (
+                    <p className="ap-profile-empty">No quizzes or assessments taken yet.</p>
+                  ) : (
+                    <div className="ap-profile-table-wrap" style={{ marginBottom: '24px' }}>
+                      <table className="ap-profile-table">
+                        <thead><tr><th>Type & Title</th><th>Date Taken</th><th>Score</th><th>Status</th></tr></thead>
+                        <tbody>
+                          {profileExtras.dailyQuizzes?.map((qz, i) => (
+                              <tr key={`dq-${i}`}>
+                                <td><span style={{ fontWeight: 600, fontSize: '.875rem' }}>Daily Quiz ({new Date(qz.quiz_date).toLocaleDateString()})</span></td>
+                                <td><span style={{ fontSize: '.75rem' }}>{new Date(qz.submitted_at || qz.created_at).toLocaleDateString()}</span></td>
+                                <td><span style={{ fontWeight: 600 }}>{qz.score} / {qz.total_questions}</span></td>
+                                <td><span className="badge badge-info" style={{ fontSize: '.688rem' }}>Quiz</span></td>
+                              </tr>
+                          ))}
+                          {profileExtras.assessments?.map((ass, i) => (
+                              <tr key={`ass-${i}`}>
+                                <td><span style={{ fontWeight: 600, fontSize: '.875rem' }}>{ass.assessment?.title || 'Assessment'} <span style={{color:'var(--gray-400)', fontSize:'0.7rem', display:'block'}}>{ass.assessment?.course?.title}</span></span></td>
+                                <td><span style={{ fontSize: '.75rem' }}>{new Date(ass.submitted_at || ass.created_at).toLocaleDateString()}</span></td>
+                                <td><span style={{ fontWeight: 600 }}>{ass.score}%</span></td>
+                                <td><span className={`badge badge-${ass.passed ? 'success' : 'danger'}`} style={{ fontSize: '.688rem' }}>{ass.passed ? 'PASSED' : 'FAILED'}</span></td>
+                              </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+
+                  <h4><FiAward /> Certificates & Completion</h4>
+                  <div className="ap-profile-table-wrap" style={{ marginBottom: '24px' }}>
+                    <table className="ap-profile-table">
+                      <thead><tr><th>Item</th><th>Type</th><th>Certificate Status</th></tr></thead>
+                      <tbody>
+                        {/* Course Certificates */}
+                         {profileExtras.enrollments?.map((enr, i) => {
+                           const cert = profileExtras.certificates?.find(c => c.course_id === enr.course?.id);
+                           if (!cert && enr.progress < 100) return null;
+                           return (
+                             <tr key={`cert-c-${i}`}>
+                               <td style={{ fontWeight: 600, fontSize: '.875rem' }}>{enr.course?.title}</td>
+                               <td><span className="badge badge-light" style={{ fontSize: '.65rem' }}>COURSE</span></td>
+                               <td>
+                                 {cert ? <span className="badge badge-success" style={{ fontSize: '.688rem' }}>Completed</span> : <span className="badge badge-warning" style={{ fontSize: '.688rem' }}>Pending Issue</span>}
+                               </td>
+                             </tr>
+                           )
+                         })}
+                         {/* Event Certificates */}
+                         {profileExtras.events?.filter(ev => ev.event?.enable_certificate && (ev.status === 'JOINED' || ev.attended)).map((ev, i) => (
+                           <tr key={`cert-e-${i}`}>
+                             <td style={{ fontWeight: 600, fontSize: '.875rem' }}>{ev.event?.title}</td>
+                             <td><span className="badge badge-light" style={{ fontSize: '.65rem' }}>EVENT</span></td>
+                             <td>
+                               {ev.certificate_issued ? <span className="badge badge-success" style={{ fontSize: '.688rem' }}>Completed</span> : <span className="badge badge-warning" style={{ fontSize: '.688rem' }}>Pending Issue</span>}
+                             </td>
+                           </tr>
+                         ))}
+                         {/* Bootcamp Certificates */}
+                         {profileExtras.bootcamps?.filter(bc => bc.bootcamp?.enable_certificate && (bc.status === 'JOINED' || bc.completed)).map((bc, i) => (
+                           <tr key={`cert-b-${i}`}>
+                             <td style={{ fontWeight: 600, fontSize: '.875rem' }}>{bc.bootcamp?.title}</td>
+                             <td><span className="badge badge-light" style={{ fontSize: '.65rem' }}>BOOTCAMP</span></td>
+                             <td>
+                               {bc.certificate_issued ? <span className="badge badge-success" style={{ fontSize: '.688rem' }}>Completed</span> : <span className="badge badge-warning" style={{ fontSize: '.688rem' }}>Pending Issue</span>}
+                             </td>
+                           </tr>
+                         ))}
+                         {(!profileExtras.enrollments?.some(e => e.progress===100 || profileExtras.certificates?.some(c => c.course_id===e.course?.id)) && 
+                           !profileExtras.events?.some(e => e.event?.enable_certificate && (e.status === 'JOINED' || e.attended)) &&
+                           !profileExtras.bootcamps?.some(b => b.bootcamp?.enable_certificate && (b.status === 'JOINED' || b.completed))
+                          ) && (
+                           <tr><td colSpan="3" style={{textAlign: 'center', fontSize: '0.8rem', color: 'var(--gray-500)'}}>No completed or pending certificates.</td></tr>
+                         )}
+                      </tbody>
+                    </table>
+                  </div>
+
                 </div>
               )}
 

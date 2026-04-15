@@ -61,7 +61,7 @@ export default function RevenueAnalytics({ payments, courses, users }) {
       const q = searchQuery.toLowerCase();
       const matchesSearch = !q || 
                            (p.user?.name || '').toLowerCase().includes(q) || 
-                           (p.course?.title || '').toLowerCase().includes(q) || 
+                           (p.item_title || p.course?.title || '').toLowerCase().includes(q) || 
                            (p.id || '').toLowerCase().includes(q);
 
       return matchesDate && matchesCourse && matchesStatus && matchesMethod && matchesUserType && matchesSearch;
@@ -75,7 +75,7 @@ export default function RevenueAnalytics({ payments, courses, users }) {
     const aov = totalOrders > 0 ? totalRev / totalOrders : 0;
     
     const courseCounts = filteredData.reduce((acc, p) => {
-      const title = p.course?.title || 'Unknown';
+      const title = p.item_title || p.course?.title || 'Unknown';
       acc[title] = (acc[title] || 0) + 1;
       return acc;
     }, {});
@@ -105,10 +105,10 @@ export default function RevenueAnalytics({ payments, courses, users }) {
       'S.No': index + 1,
       'Date': new Date(p.created_at).toLocaleDateString(),
       'User Name': p.user?.name || 'Unknown',
-      'Course Name': p.course?.title || 'Unknown',
+      'Item Name': p.item_title || p.course?.title || 'Unknown',
       'Amount (₹)': p.amount,
       'Method': p.payment_method || 'UPI',
-      'Status': p.status,
+      'Status': p.status || 'completed',
       'Transaction ID': p.id
     }));
     exportToExcel(exportData, 'Revenue_Report');
@@ -135,9 +135,9 @@ export default function RevenueAnalytics({ payments, courses, users }) {
             </div>
           </div>
           <div className="filter-group">
-            <label>Course</label>
+            <label>Item / Course</label>
             <select value={courseFilter} onChange={e => setCourseFilter(e.target.value)}>
-              <option value="all">All Courses</option>
+              <option value="all">All Items</option>
               {courses.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
             </select>
           </div>
@@ -266,7 +266,7 @@ export default function RevenueAnalytics({ payments, courses, users }) {
                 <th>S.No</th>
                 <th>Date</th>
                 <th>User Details</th>
-                <th>Course</th>
+                <th>Item Purchased</th>
                 <th>Amount</th>
                 <th>Method</th>
                 <th>Status</th>
@@ -286,18 +286,18 @@ export default function RevenueAnalytics({ payments, courses, users }) {
                   <td>
                     <div className="td-user">
                       <strong>{p.user?.name || 'Unknown'}</strong>
-                      <small>ID: {p.user_id.slice(0,8)}</small>
+                      <small>ID: {p.user_id?.slice(0,8) || '-'}</small>
                     </div>
                   </td>
-                  <td>{p.course?.title || 'Unknown'}</td>
+                  <td>{p.item_title || p.course?.title || 'Unknown'}</td>
                   <td className="fw-bold">₹{p.amount}</td>
                   <td><span className="method-pill">{p.payment_method || 'UPI'}</span></td>
                   <td>
-                    <span className={`status-pill ${p.status}`}>
-                      {p.status === 'completed' ? 'Paid' : p.status}
+                    <span className={`status-pill ${p.status || 'completed'}`}>
+                      {p.status === 'completed' || !p.status ? 'Paid' : p.status}
                     </span>
                   </td>
-                  <td><code className="text-muted">{p.id.slice(0,12)}...</code></td>
+                  <td><code className="text-muted">{p.id?.slice(0,12) || '-'}...</code></td>
                 </tr>
               ))}
             </tbody>
