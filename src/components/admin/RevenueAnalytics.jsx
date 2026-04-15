@@ -17,6 +17,7 @@ export default function RevenueAnalytics({ payments, courses, users }) {
   const [statusFilter, setStatusFilter] = useState('completed'); // Default to completed
   const [methodFilter, setMethodFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [typeFilter, setTypeFilter] = useState('all');
   const [viewType, setViewType] = useState('combined'); // 'revenue', 'orders', 'combined'
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
@@ -38,6 +39,7 @@ export default function RevenueAnalytics({ payments, courses, users }) {
     setUserTypeFilter('all');
     setStatusFilter('completed');
     setMethodFilter('all');
+    setTypeFilter('all');
     setSearchQuery('');
   };
 
@@ -48,6 +50,7 @@ export default function RevenueAnalytics({ payments, courses, users }) {
       const matchesDate = (!dateRange.from || pDate >= new Date(dateRange.from)) && 
                           (!dateRange.to || pDate <= new Date(dateRange.to + 'T23:59:59'));
       const matchesCourse = courseFilter === 'all' || p.course_id === courseFilter;
+      const matchesType = typeFilter === 'all' || (p.type || 'course') === typeFilter;
       const matchesStatus = statusFilter === 'all' || p.status === statusFilter;
       // Note: method and transaction_id might be missing in DB, fallback to 'UPI' for demo if null
       const matchesMethod = methodFilter === 'all' || (p.payment_method || 'UPI') === methodFilter;
@@ -64,9 +67,9 @@ export default function RevenueAnalytics({ payments, courses, users }) {
                            (p.item_title || p.course?.title || '').toLowerCase().includes(q) || 
                            (p.id || '').toLowerCase().includes(q);
 
-      return matchesDate && matchesCourse && matchesStatus && matchesMethod && matchesUserType && matchesSearch;
+      return matchesDate && matchesCourse && matchesType && matchesStatus && matchesMethod && matchesUserType && matchesSearch;
     });
-  }, [payments, dateRange, courseFilter, statusFilter, methodFilter, userTypeFilter, searchQuery, users]);
+  }, [payments, dateRange, courseFilter, typeFilter, statusFilter, methodFilter, userTypeFilter, searchQuery, users]);
 
   // KPI Calculations
   const kpis = useMemo(() => {
@@ -151,6 +154,12 @@ export default function RevenueAnalytics({ payments, courses, users }) {
             </select>
           </div>
           <div className="filter-group action-group">
+            <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)} style={{ marginBottom: 4 }}>
+              <option value="all">All Types</option>
+              <option value="course">Courses</option>
+              <option value="event">Events</option>
+              <option value="bootcamp">Bootcamps</option>
+            </select>
             <button className="btn-reset" onClick={resetFilters}><FiRefreshCw /> Reset</button>
             <button className="btn-export" onClick={handleExport}><FiDownload /> Export Excel</button>
           </div>
@@ -266,6 +275,7 @@ export default function RevenueAnalytics({ payments, courses, users }) {
                 <th>S.No</th>
                 <th>Date</th>
                 <th>User Details</th>
+                <th>Type</th>
                 <th>Item Purchased</th>
                 <th>Amount</th>
                 <th>Method</th>
@@ -288,6 +298,11 @@ export default function RevenueAnalytics({ payments, courses, users }) {
                       <strong>{p.user?.name || 'Unknown'}</strong>
                       <small>ID: {p.user_id?.slice(0,8) || '-'}</small>
                     </div>
+                  </td>
+                  <td>
+                    <span className={`method-pill ${p.type === 'event' ? 'event-type' : p.type === 'bootcamp' ? 'bootcamp-type' : 'course-type'}`}>
+                      {p.type === 'event' ? 'Event' : p.type === 'bootcamp' ? 'Bootcamp' : 'Course'}
+                    </span>
                   </td>
                   <td>{p.item_title || p.course?.title || 'Unknown'}</td>
                   <td className="fw-bold">₹{p.amount}</td>

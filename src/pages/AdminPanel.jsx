@@ -87,6 +87,7 @@ export default function AdminPanel() {
   const [reviewQuestions, setReviewQuestions] = useState([]);
   const [selectedMessage, setSelectedMessage] = useState(null);
   const [approvalSubTab, setApprovalSubTab] = useState('courses'); // 'courses', 'instructors', 'blogs'
+  const [profileTab, setProfileTab] = useState('overview');
   
   const dropdownRef = useRef(null);
 
@@ -100,53 +101,63 @@ export default function AdminPanel() {
     setProfileUser(u);
     setProfileExtras(null);
     setProfileLoading(true);
+    setProfileTab('overview');
     try {
-      if (u.role === 'student') {
-        // Fetch enrollments with course info
-        const { data: enrollments } = await supabase
-          .from('enrollments')
-          .select('*, course:courses(id, title, category, thumbnail_url, price)')
-          .eq('user_id', u.id);
-        // Fetch certificates
-        const { data: certs } = await supabase
-          .from('certificates')
-          .select('*, course:courses(title)')
-          .eq('user_id', u.id);
-        // Fetch event attendance
-        const { data: eventAtt } = await supabase
-          .from('event_attendance')
-          .select('*, event:events(id, title, event_date, thumbnail_url, enable_certificate)')
-          .eq('user_id', u.id);
-        // Fetch bootcamp enrollments
-        const { data: bootcampEnr } = await supabase
-          .from('live_bootcamp_enrollments')
-          .select('*, bootcamp:live_bootcamps(id, title, start_date, thumbnail_url, enable_certificate)')
-          .eq('user_id', u.id);
-        // Fetch quiz attempts 
-        const { data: dailyQuizAtt } = await supabase
-          .from('daily_quiz_attempts')
-          .select('*')
-          .eq('user_id', u.id);
-        const { data: assessAtt } = await supabase
-          .from('assessment_attempts')
-          .select('*, assessment:assessments(title, course:courses(title))')
-          .eq('user_id', u.id);
+      // ── Universal data: fetch for ALL roles ──
+      const [
+        { data: enrollments },
+        { data: certs },
+        { data: eventAtt },
+        { data: bootcampEnr },
+        { data: dailyQuizAtt },
+        { data: assessAtt },
+        { data: userPayments }
+      ] = await Promise.all([
+        supabase.from('enrollments').select('*, course:courses(id, title, category, thumbnail_url, price)').eq('user_id', u.id),
+        supabase.from('certificates').select('*, course:courses(title)').eq('user_id', u.id),
+        supabase.from('event_attendance').select('*, event:events(id, title, event_date, thumbnail_url, enable_certificate, instructor_name)').eq('user_id', u.id),
+        supabase.from('live_bootcamp_enrollments').select('*, bootcamp:live_bootcamps(id, title, start_date, end_date, thumbnail_url, enable_certificate, instructor_name)').eq('user_id', u.id),
+        supabase.from('daily_quiz_attempts').select('*').eq('user_id', u.id),
+        supabase.from('assessment_attempts').select('*, assessment:assessments(title, course:courses(title))').eq('user_id', u.id),
+        supabase.from('payments').select('*, course:courses(title)').eq('user_id', u.id).order('created_at', { ascending: false })
+      ]);
 
-        setProfileExtras({
-          enrollments: enrollments || [],
-          certificates: certs || [],
-          events: eventAtt || [],
-          bootcamps: bootcampEnr || [],
-          dailyQuizzes: dailyQuizAtt || [],
-          assessments: assessAtt || []
-        });
-      } else if (u.role === 'instructor') {
-        // Fetch all courses (any status)
+      // Combine all payment sources into one list
+      let allUserPayments = [...(userPayments || [])];
+      if (eventAtt) {
+        const paidEvents = eventAtt.filter(e => e.amount_paid > 0).map(e => ({
+          id: e.id, amount: e.amount_paid, status: 'completed', created_at: e.created_at,
+          item_name: e.event?.title || 'Event Registration', type: 'event',
+          payment_method: e.payment_method || 'Online', razorpay_payment_id: e.razorpay_payment_id || null
+        }));
+        allUserPayments = [...allUserPayments, ...paidEvents];
+      }
+      if (bootcampEnr) {
+        const paidBootcamps = bootcampEnr.filter(b => b.amount_paid > 0).map(b => ({
+          id: b.id, amount: b.amount_paid, status: 'completed', created_at: b.created_at,
+          item_name: b.bootcamp?.title || 'Bootcamp Enrollment', type: 'bootcamp',
+          payment_method: b.payment_method || 'Online', razorpay_payment_id: b.razorpay_payment_id || null
+        }));
+        allUserPayments = [...allUserPayments, ...paidBootcamps];
+      }
+      allUserPayments.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+      const extras = {
+        enrollments: enrollments || [],
+        certificates: certs || [],
+        events: eventAtt || [],
+        bootcamps: bootcampEnr || [],
+        dailyQuizzes: dailyQuizAtt || [],
+        assessments: assessAtt || [],
+        payments: allUserPayments
+      };
+
+      // ── Role-specific additional data ──
+      if (u.role === 'instructor') {
         const { data: instrCourses } = await supabase
           .from('courses')
           .select('id, title, category, status, price, student_count, created_at')
           .eq('instructor_id', u.id);
-        // Fetch payments for instructor's courses
         const courseIds = (instrCourses || []).map(c => c.id);
         let totalRevenue = 0;
         if (courseIds.length > 0) {
@@ -157,21 +168,18 @@ export default function AdminPanel() {
             .eq('status', 'completed');
           totalRevenue = (payments || []).reduce((acc, p) => acc + (p.amount || 0), 0);
         }
-        setProfileExtras({
-          courses: instrCourses || [],
-          revenue: totalRevenue,
-        });
+        extras.courses = instrCourses || [];
+        extras.revenue = totalRevenue;
       } else if (u.role === 'author') {
-        // Fetch all blogs by this author
         const { data: authorBlogs } = await supabase
           .from('blogs')
           .select('id, title, slug, excerpt, cover_image, status, created_at')
           .eq('author_id', u.id)
           .order('created_at', { ascending: false });
-        setProfileExtras({
-          blogs: authorBlogs || [],
-        });
+        extras.blogs = authorBlogs || [];
       }
+
+      setProfileExtras(extras);
     } catch (err) {
       console.error('Error fetching profile extras:', err);
     } finally {
@@ -257,7 +265,7 @@ export default function AdminPanel() {
       // Combine event payments
       if (!eventAttRes?.error && eventAttRes?.data) {
         const paidEvents = eventAttRes.data.filter(e => e.amount_paid > 0).map(e => ({
-          ...e, amount: e.amount_paid, type: 'event', item_title: e.event?.title || 'Unknown Event', created_at: e.created_at || (new Date()).toISOString()
+          ...e, amount: e.amount_paid, status: 'completed', type: 'event', item_title: e.event?.title || 'Unknown Event', created_at: e.created_at || (new Date()).toISOString()
         }));
         allPayments = [...allPayments, ...paidEvents];
       }
@@ -265,7 +273,7 @@ export default function AdminPanel() {
       // Combine bootcamp payments
       if (!bootcampEnrollRes?.error && bootcampEnrollRes?.data) {
         const paidBootcamps = bootcampEnrollRes.data.filter(b => b.amount_paid > 0).map(b => ({
-          ...b, amount: b.amount_paid, type: 'bootcamp', item_title: b.bootcamp?.title || 'Unknown Bootcamp', created_at: b.created_at || (new Date()).toISOString()
+          ...b, amount: b.amount_paid, status: 'completed', type: 'bootcamp', item_title: b.bootcamp?.title || 'Unknown Bootcamp', created_at: b.created_at || (new Date()).toISOString()
         }));
         allPayments = [...allPayments, ...paidBootcamps];
       }
@@ -1942,10 +1950,11 @@ export default function AdminPanel() {
           </div> {/* End ap-content-column */}
         </div> {/* End ap-layout-main */}
 
-        {/* User Profile Modal */}
-        <Modal isOpen={!!profileUser} onClose={() => setProfileUser(null)} title="User Profile" size="lg">
+         {/* User Profile Modal — Comprehensive Tabbed View */}
+        <Modal isOpen={!!profileUser} onClose={() => setProfileUser(null)} title="User Profile" size="fullscreen">
           {profileUser && (
             <div className="ap-profile-modal">
+              {/* ── Hero Header ── */}
               <div className="ap-profile-hero">
                 <div className="ap-profile-avatar">
                   {profileUser.avatar_url ? (
@@ -1961,388 +1970,747 @@ export default function AdminPanel() {
                       ID: {generateUserCode(profileUser.id)}
                     </span>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                     <span className={`badge badge-${profileUser.role === 'admin' ? 'danger' : profileUser.role === 'instructor' ? 'primary' : 'success'}`} style={{ fontSize: '.75rem', padding: '4px 12px' }}>
                       {profileUser.role?.toUpperCase()}
                     </span>
+                    <span style={{ fontSize: '.8rem', color: 'var(--gray-500)' }}>
+                      <FiCalendar style={{ marginRight: 4, verticalAlign: 'middle' }} />
+                      Joined {new Date(profileUser.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    </span>
+                    {profileUser.email && (
+                      <span style={{ fontSize: '.8rem', color: 'var(--gray-500)' }}>
+                        <FiMail style={{ marginRight: 4, verticalAlign: 'middle' }} />
+                        {profileUser.email}
+                      </span>
+                    )}
+                    {profileUser.contact_number && (
+                      <span style={{ fontSize: '.8rem', color: 'var(--gray-500)' }}>
+                        <FiPhone style={{ marginRight: 4, verticalAlign: 'middle' }} />
+                        {profileUser.contact_number}
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
 
-              <div className="ap-profile-grid">
-                <div className="ap-profile-field">
-                  <div className="ap-profile-field-icon"><FiMail /></div>
-                  <div>
-                    <span className="ap-profile-label">Email</span>
-                    <p>{profileUser.email}</p>
-                  </div>
-                </div>
-
-                <div className="ap-profile-field">
-                  <div className="ap-profile-field-icon"><FiCalendar /></div>
-                  <div>
-                    <span className="ap-profile-label">Joined</span>
-                    <p>{new Date(profileUser.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
-                  </div>
-                </div>
-
-                {profileUser.location && (
-                  <div className="ap-profile-field">
-                    <div className="ap-profile-field-icon"><FiMapPin /></div>
-                    <div>
-                      <span className="ap-profile-label">Location</span>
-                      <p>{profileUser.location}</p>
-                    </div>
-                  </div>
-                )}
-
-                {profileUser.contact_number && (
-                  <div className="ap-profile-field">
-                    <div className="ap-profile-field-icon"><FiPhone /></div>
-                    <div>
-                      <span className="ap-profile-label">Contact</span>
-                      <p>{profileUser.contact_number}</p>
-                    </div>
-                  </div>
-                )}
-
-                {profileUser.qualification && (
-                  <div className="ap-profile-field">
-                    <div className="ap-profile-field-icon"><FiAward /></div>
-                    <div>
-                      <span className="ap-profile-label">Qualification</span>
-                      <p>{profileUser.qualification}</p>
-                    </div>
-                  </div>
-                )}
-
-                {profileUser.experience && (
-                  <div className="ap-profile-field">
-                    <div className="ap-profile-field-icon"><FiBriefcase /></div>
-                    <div>
-                      <span className="ap-profile-label">Experience</span>
-                      <p>{profileUser.experience}</p>
-                    </div>
-                  </div>
-                )}
-
-                {profileUser.gender && (
-                  <div className="ap-profile-field">
-                    <div className="ap-profile-field-icon"><FiUsers /></div>
-                    <div>
-                      <span className="ap-profile-label">Gender</span>
-                      <p>{profileUser.gender}</p>
-                    </div>
-                  </div>
-                )}
-
-                {profileUser.dob && (
-                  <div className="ap-profile-field">
-                    <div className="ap-profile-field-icon"><FiCalendar /></div>
-                    <div>
-                      <span className="ap-profile-label">Date of Birth</span>
-                      <p>{new Date(profileUser.dob).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
-                    </div>
-                  </div>
-                )}
-
-                {profileUser.linkedin_url && (
-                  <div className="ap-profile-field">
-                    <div className="ap-profile-field-icon"><FiLinkedin /></div>
-                    <div>
-                      <span className="ap-profile-label">LinkedIn</span>
-                      <a href={profileUser.linkedin_url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)', textDecoration: 'none', fontWeight: 600, fontSize: '.875rem' }}>View Profile →</a>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {profileUser.bio && (
-                <div className="ap-profile-bio">
-                  <h4>About</h4>
-                  <p>{profileUser.bio}</p>
-                </div>
-              )}
-
-              {/* Role-specific data */}
+              {/* ── Loading State ── */}
               {profileLoading && (
-                <div style={{ textAlign: 'center', padding: '24px', color: 'var(--gray-400)' }}>
-                  Loading activity data...
+                <div style={{ textAlign: 'center', padding: '60px 24px', color: 'var(--gray-400)' }}>
+                  <div className="ap-profile-spinner" />
+                  <p style={{ marginTop: 16, fontSize: '.9rem' }}>Loading complete user profile...</p>
                 </div>
               )}
 
-              {/* STUDENT: Enrolled courses + certificates */}
-              {!profileLoading && profileUser.role === 'student' && profileExtras && (
-                <div className="ap-profile-section">
-                  <h4><FiBookOpen /> Recorded Courses ({profileExtras.enrollments?.length || 0})</h4>
-                  {(!profileExtras.enrollments || profileExtras.enrollments.length === 0) ? (
-                    <p className="ap-profile-empty">No courses enrolled yet.</p>
-                  ) : (
-                    <div className="ap-profile-table-wrap" style={{ marginBottom: '24px' }}>
-                      <table className="ap-profile-table">
-                        <thead><tr><th>Course</th><th>Category</th><th>Progress</th></tr></thead>
-                        <tbody>
-                          {profileExtras.enrollments.map((enr, i) => (
-                              <tr key={i}>
-                                <td>
-                                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                                    <img src={resolveImageUrl(enr.course?.thumbnail_url) || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=60'} alt="" style={{ width: 36, height: 36, borderRadius: 6, objectFit: 'cover' }} />
-                                    <span style={{ fontWeight: 600, fontSize: '.875rem' }}>{enr.course?.title || 'Unknown'}</span>
-                                  </div>
-                                </td>
-                                <td><span style={{ fontSize: '.75rem', color: 'var(--gray-500)' }}>{enr.course?.category}</span></td>
-                                <td>
-                                  <div className="ap-mini-progress">
-                                    <div className="ap-mini-bar"><div className="ap-mini-fill" style={{ width: `${enr.progress || 0}%` }} /></div>
-                                    <span>{enr.progress || 0}%</span>
-                                  </div>
-                                </td>
-                              </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
+              {/* ═══════════ UNIVERSAL PROFILE — ALL ROLES ═══════════ */}
+              {!profileLoading && profileExtras && (() => {
+                const completedCerts = [
+                  ...(profileExtras.certificates || []),
+                  ...(profileExtras.events?.filter(e => e.certificate_issued) || []),
+                  ...(profileExtras.bootcamps?.filter(b => b.certificate_issued) || [])
+                ];
+                const pendingCerts = [
+                  ...(profileExtras.enrollments?.filter(e => e.progress >= 100 && !profileExtras.certificates?.find(c => c.course_id === e.course?.id)) || []),
+                  ...(profileExtras.events?.filter(e => e.event?.enable_certificate && (e.status === 'JOINED' || e.attended) && !e.certificate_issued) || []),
+                  ...(profileExtras.bootcamps?.filter(b => b.bootcamp?.enable_certificate && (b.status === 'JOINED' || b.completed) && !b.certificate_issued) || [])
+                ];
+                const totalSpent = (profileExtras.payments || []).reduce((a, p) => a + Number(p.amount || 0), 0);
 
-                  <h4><FiVideo /> Events ({profileExtras.events?.length || 0})</h4>
-                  {(!profileExtras.events || profileExtras.events.length === 0) ? (
-                    <p className="ap-profile-empty">No events attended yet.</p>
-                  ) : (
-                    <div className="ap-profile-table-wrap" style={{ marginBottom: '24px' }}>
-                      <table className="ap-profile-table">
-                        <thead><tr><th>Event</th><th>Date</th><th>Status</th></tr></thead>
-                        <tbody>
-                          {profileExtras.events.map((ev, i) => (
-                              <tr key={i}>
-                                <td>
-                                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                                    <img src={resolveImageUrl(ev.event?.thumbnail_url) || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=60'} alt="" style={{ width: 36, height: 36, borderRadius: 6, objectFit: 'cover' }} />
-                                    <span style={{ fontWeight: 600, fontSize: '.875rem' }}>{ev.event?.title || 'Unknown Event'}</span>
-                                  </div>
-                                </td>
-                                <td><span style={{ fontSize: '.75rem' }}>{ev.event?.event_date ? new Date(ev.event.event_date).toLocaleDateString() : 'N/A'}</span></td>
-                                <td><span className={`badge badge-${ev.status === 'JOINED' || ev.attended ? 'success' : 'primary'}`} style={{ fontSize: '.688rem' }}>{ev.status || (ev.attended ? 'JOINED' : 'REGISTERED')}</span></td>
-                              </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                return (
+                  <>
+                    {/* ── Summary Stats Cards ── */}
+                    <div className="ap-profile-stats-row">
+                      <div className="ap-pstat-card" onClick={() => setProfileTab('courses')}>
+                        <div className="ap-pstat-icon" style={{ background: 'rgba(0, 138, 209, 0.1)', color: '#008ad1' }}><FiBookOpen /></div>
+                        <div className="ap-pstat-info">
+                          <strong>{profileExtras.enrollments?.length || 0}</strong>
+                          <span>Courses</span>
+                        </div>
+                      </div>
+                      <div className="ap-pstat-card" onClick={() => setProfileTab('events')}>
+                        <div className="ap-pstat-icon" style={{ background: 'rgba(139, 92, 246, 0.1)', color: '#8b5cf6' }}><FiVideo /></div>
+                        <div className="ap-pstat-info">
+                          <strong>{profileExtras.events?.length || 0}</strong>
+                          <span>Events</span>
+                        </div>
+                      </div>
+                      <div className="ap-pstat-card" onClick={() => setProfileTab('bootcamps')}>
+                        <div className="ap-pstat-icon" style={{ background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b' }}><FiZap /></div>
+                        <div className="ap-pstat-info">
+                          <strong>{profileExtras.bootcamps?.length || 0}</strong>
+                          <span>Bootcamps</span>
+                        </div>
+                      </div>
+                      <div className="ap-pstat-card" onClick={() => setProfileTab('certificates')}>
+                        <div className="ap-pstat-icon" style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981' }}><FiAward /></div>
+                        <div className="ap-pstat-info">
+                          <strong>{completedCerts.length}</strong>
+                          <span>Certificates</span>
+                        </div>
+                      </div>
+                      <div className="ap-pstat-card" onClick={() => setProfileTab('quizzes')}>
+                        <div className="ap-pstat-icon" style={{ background: 'rgba(236, 72, 153, 0.1)', color: '#ec4899' }}><FiCheckSquare /></div>
+                        <div className="ap-pstat-info">
+                          <strong>{(profileExtras.dailyQuizzes?.length || 0) + (profileExtras.assessments?.length || 0)}</strong>
+                          <span>Quizzes</span>
+                        </div>
+                      </div>
+                      <div className="ap-pstat-card" onClick={() => setProfileTab('payments')}>
+                        <div className="ap-pstat-icon" style={{ background: 'rgba(34, 197, 94, 0.1)', color: '#22c55e' }}><FiDollarSign /></div>
+                        <div className="ap-pstat-info">
+                          <strong>₹{totalSpent.toLocaleString('en-IN')}</strong>
+                          <span>Total Spent</span>
+                        </div>
+                      </div>
                     </div>
-                  )}
 
-                  <h4><FiUsers /> Bootcamps ({profileExtras.bootcamps?.length || 0})</h4>
-                  {(!profileExtras.bootcamps || profileExtras.bootcamps.length === 0) ? (
-                    <p className="ap-profile-empty">No bootcamps joined yet.</p>
-                  ) : (
-                    <div className="ap-profile-table-wrap" style={{ marginBottom: '24px' }}>
-                      <table className="ap-profile-table">
-                        <thead><tr><th>Bootcamp</th><th>Date</th><th>Status</th></tr></thead>
-                        <tbody>
-                          {profileExtras.bootcamps.map((bc, i) => (
-                              <tr key={i}>
-                                <td>
-                                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                                    <img src={resolveImageUrl(bc.bootcamp?.thumbnail_url) || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=60'} alt="" style={{ width: 36, height: 36, borderRadius: 6, objectFit: 'cover' }} />
-                                    <span style={{ fontWeight: 600, fontSize: '.875rem' }}>{bc.bootcamp?.title || 'Unknown Bootcamp'}</span>
-                                  </div>
-                                </td>
-                                <td><span style={{ fontSize: '.75rem' }}>{bc.bootcamp?.start_date ? new Date(bc.bootcamp.start_date).toLocaleDateString() : 'N/A'}</span></td>
-                                <td><span className={`badge badge-${bc.status === 'JOINED' || bc.completed ? 'success' : 'primary'}`} style={{ fontSize: '.688rem' }}>{bc.status || (bc.completed ? 'JOINED' : 'REGISTERED')}</span></td>
-                              </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                    {/* ── Tab Navigation ── */}
+                    <div className="ap-profile-tabs">
+                      {(() => {
+                        const tabs = [
+                          { key: 'overview', label: 'Overview', icon: <FiGrid /> },
+                          { key: 'courses', label: 'Courses', icon: <FiBookOpen />, count: profileExtras.enrollments?.length || 0 },
+                          { key: 'events', label: 'Events', icon: <FiVideo />, count: profileExtras.events?.length || 0 },
+                          { key: 'bootcamps', label: 'Bootcamps', icon: <FiZap />, count: profileExtras.bootcamps?.length || 0 },
+                          { key: 'certificates', label: 'Certificates', icon: <FiAward />, count: completedCerts.length + pendingCerts.length },
+                          { key: 'quizzes', label: 'Quizzes', icon: <FiCheckSquare />, count: (profileExtras.dailyQuizzes?.length || 0) + (profileExtras.assessments?.length || 0) },
+                          { key: 'payments', label: 'Payments', icon: <FiDollarSign />, count: profileExtras.payments?.length || 0 },
+                        ];
+                        if (profileUser.role === 'instructor' && profileExtras.courses) {
+                          tabs.push({ key: 'published', label: 'Published Courses', icon: <FiStar />, count: profileExtras.courses.length });
+                        }
+                        if (profileUser.role === 'author' && profileExtras.blogs) {
+                          tabs.push({ key: 'blogs', label: 'Blog Posts', icon: <FiFileText />, count: profileExtras.blogs.length });
+                        }
+                        return tabs.map(t => (
+                          <button key={t.key} className={`ap-profile-tab ${profileTab === t.key ? 'active' : ''}`} onClick={() => setProfileTab(t.key)}>
+                            {t.icon} {t.label}
+                            {t.count !== undefined && <span className="ap-ptab-count">{t.count}</span>}
+                          </button>
+                        ));
+                      })()}
                     </div>
-                  )}
 
-                  <h4><FiCheckCircle /> Quiz & Assessments Details</h4>
-                  {(!profileExtras.dailyQuizzes?.length && !profileExtras.assessments?.length) ? (
-                    <p className="ap-profile-empty">No quizzes or assessments taken yet.</p>
-                  ) : (
-                    <div className="ap-profile-table-wrap" style={{ marginBottom: '24px' }}>
-                      <table className="ap-profile-table">
-                        <thead><tr><th>Type & Title</th><th>Date Taken</th><th>Score</th><th>Status</th></tr></thead>
-                        <tbody>
-                          {profileExtras.dailyQuizzes?.map((qz, i) => (
-                              <tr key={`dq-${i}`}>
-                                <td><span style={{ fontWeight: 600, fontSize: '.875rem' }}>Daily Quiz ({new Date(qz.quiz_date).toLocaleDateString()})</span></td>
-                                <td><span style={{ fontSize: '.75rem' }}>{new Date(qz.submitted_at || qz.created_at).toLocaleDateString()}</span></td>
-                                <td><span style={{ fontWeight: 600 }}>{qz.score} / {qz.total_questions}</span></td>
-                                <td><span className="badge badge-info" style={{ fontSize: '.688rem' }}>Quiz</span></td>
-                              </tr>
-                          ))}
-                          {profileExtras.assessments?.map((ass, i) => (
-                              <tr key={`ass-${i}`}>
-                                <td><span style={{ fontWeight: 600, fontSize: '.875rem' }}>{ass.assessment?.title || 'Assessment'} <span style={{color:'var(--gray-400)', fontSize:'0.7rem', display:'block'}}>{ass.assessment?.course?.title}</span></span></td>
-                                <td><span style={{ fontSize: '.75rem' }}>{new Date(ass.submitted_at || ass.created_at).toLocaleDateString()}</span></td>
-                                <td><span style={{ fontWeight: 600 }}>{ass.score}%</span></td>
-                                <td><span className={`badge badge-${ass.passed ? 'success' : 'danger'}`} style={{ fontSize: '.688rem' }}>{ass.passed ? 'PASSED' : 'FAILED'}</span></td>
-                              </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-
-                  <h4><FiAward /> Certificates & Completion</h4>
-                  <div className="ap-profile-table-wrap" style={{ marginBottom: '24px' }}>
-                    <table className="ap-profile-table">
-                      <thead><tr><th>Item</th><th>Type</th><th>Certificate Status</th></tr></thead>
-                      <tbody>
-                        {/* Course Certificates */}
-                         {profileExtras.enrollments?.map((enr, i) => {
-                           const cert = profileExtras.certificates?.find(c => c.course_id === enr.course?.id);
-                           if (!cert && enr.progress < 100) return null;
-                           return (
-                             <tr key={`cert-c-${i}`}>
-                               <td style={{ fontWeight: 600, fontSize: '.875rem' }}>{enr.course?.title}</td>
-                               <td><span className="badge badge-light" style={{ fontSize: '.65rem' }}>COURSE</span></td>
-                               <td>
-                                 {cert ? <span className="badge badge-success" style={{ fontSize: '.688rem' }}>Completed</span> : <span className="badge badge-warning" style={{ fontSize: '.688rem' }}>Pending Issue</span>}
-                               </td>
-                             </tr>
-                           )
-                         })}
-                         {/* Event Certificates */}
-                         {profileExtras.events?.filter(ev => ev.event?.enable_certificate && (ev.status === 'JOINED' || ev.attended)).map((ev, i) => (
-                           <tr key={`cert-e-${i}`}>
-                             <td style={{ fontWeight: 600, fontSize: '.875rem' }}>{ev.event?.title}</td>
-                             <td><span className="badge badge-light" style={{ fontSize: '.65rem' }}>EVENT</span></td>
-                             <td>
-                               {ev.certificate_issued ? <span className="badge badge-success" style={{ fontSize: '.688rem' }}>Completed</span> : <span className="badge badge-warning" style={{ fontSize: '.688rem' }}>Pending Issue</span>}
-                             </td>
-                           </tr>
-                         ))}
-                         {/* Bootcamp Certificates */}
-                         {profileExtras.bootcamps?.filter(bc => bc.bootcamp?.enable_certificate && (bc.status === 'JOINED' || bc.completed)).map((bc, i) => (
-                           <tr key={`cert-b-${i}`}>
-                             <td style={{ fontWeight: 600, fontSize: '.875rem' }}>{bc.bootcamp?.title}</td>
-                             <td><span className="badge badge-light" style={{ fontSize: '.65rem' }}>BOOTCAMP</span></td>
-                             <td>
-                               {bc.certificate_issued ? <span className="badge badge-success" style={{ fontSize: '.688rem' }}>Completed</span> : <span className="badge badge-warning" style={{ fontSize: '.688rem' }}>Pending Issue</span>}
-                             </td>
-                           </tr>
-                         ))}
-                         {(!profileExtras.enrollments?.some(e => e.progress===100 || profileExtras.certificates?.some(c => c.course_id===e.course?.id)) && 
-                           !profileExtras.events?.some(e => e.event?.enable_certificate && (e.status === 'JOINED' || e.attended)) &&
-                           !profileExtras.bootcamps?.some(b => b.bootcamp?.enable_certificate && (b.status === 'JOINED' || b.completed))
-                          ) && (
-                           <tr><td colSpan="3" style={{textAlign: 'center', fontSize: '0.8rem', color: 'var(--gray-500)'}}>No completed or pending certificates.</td></tr>
-                         )}
-                      </tbody>
-                    </table>
-                  </div>
-
-                </div>
-              )}
-
-              {/* INSTRUCTOR: Published courses + revenue */}
-              {!profileLoading && profileUser.role === 'instructor' && profileExtras && (
-                <div className="ap-profile-section">
-                  {/* Revenue + Stats summary */}
-                  <div className="ap-instr-stats">
-                    <div className="ap-instr-stat">
-                      <FiDollarSign />
-                      <div><span>Total Revenue</span><strong>₹{profileExtras.revenue.toLocaleString('en-IN')}</strong></div>
-                    </div>
-                    <div className="ap-instr-stat">
-                      <FiBookOpen />
-                      <div><span>Published</span><strong>{profileExtras.courses.filter(c => c.status === 'approved').length}</strong></div>
-                    </div>
-                    <div className="ap-instr-stat">
-                      <FiClock />
-                      <div><span>Pending Approval ({profileExtras.courses.filter(c => c.status === 'pending').length})</span><strong>{profileExtras.courses.filter(c => c.status === 'pending').length}</strong></div>
-                    </div>
-                    <div className="ap-instr-stat">
-                      <FiUsers />
-                      <div><span>Total Students</span><strong>{profileExtras.courses.reduce((a, c) => a + (c.student_count || 0), 0)}</strong></div>
-                    </div>
-                  </div>
-
-                  <h4><FiBookOpen /> Courses ({profileExtras.courses.length})</h4>
-                  {profileExtras.courses.length === 0 ? (
-                    <p className="ap-profile-empty">No courses created yet.</p>
-                  ) : (
-                    <div className="ap-profile-table-wrap">
-                      <table className="ap-profile-table">
-                        <thead><tr><th>Course</th><th>Category</th><th>Price</th><th>Students</th><th>Status</th></tr></thead>
-                        <tbody>
-                          {profileExtras.courses.map((c, i) => (
-                            <tr key={i}>
-                              <td><span style={{ fontWeight: 600, fontSize: '.875rem' }}>{c.title}</span></td>
-                              <td><span style={{ fontSize: '.75rem', color: 'var(--gray-500)' }}>{c.category}</span></td>
-                              <td><strong style={{ fontSize: '.875rem' }}>₹{c.price}</strong></td>
-                              <td><span style={{ fontSize: '.875rem' }}>{c.student_count || 0}</span></td>
-                              <td>
-                                <span className={`badge badge-${c.status === 'approved' ? 'success' : c.status === 'pending' ? 'warning' : 'danger'}`} style={{ fontSize: '.688rem' }}>
-                                  {c.status?.toUpperCase()}
-                                </span>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* AUTHOR: Blog posts */}
-              {!profileLoading && profileUser.role === 'author' && profileExtras && (
-                <div className="ap-profile-section">
-                  {/* Blog Stats summary */}
-                  <div className="ap-instr-stats">
-                    <div className="ap-instr-stat">
-                      <FiFileText />
-                      <div><span>Total Blogs</span><strong>{profileExtras.blogs.length}</strong></div>
-                    </div>
-                    <div className="ap-instr-stat">
-                      <FiCheckCircle />
-                      <div><span>Published</span><strong>{profileExtras.blogs.filter(b => b.status === 'published').length}</strong></div>
-                    </div>
-                    <div className="ap-instr-stat">
-                      <FiClock />
-                      <div><span>Pending Review</span><strong>{profileExtras.blogs.filter(b => b.status === 'pending').length}</strong></div>
-                    </div>
-                    <div className="ap-instr-stat">
-                      <FiEye />
-                      <div><span>Drafts</span><strong>{profileExtras.blogs.filter(b => b.status === 'draft').length}</strong></div>
-                    </div>
-                  </div>
-
-                  <h4><FiFileText /> Blog Posts ({profileExtras.blogs.length})</h4>
-                  {profileExtras.blogs.length === 0 ? (
-                    <p className="ap-profile-empty">No blog posts created yet.</p>
-                  ) : (
-                    <div className="ap-profile-table-wrap">
-                      <table className="ap-profile-table">
-                        <thead><tr><th>Blog Title</th><th>Excerpt</th><th>Status</th><th>Published</th></tr></thead>
-                        <tbody>
-                          {profileExtras.blogs.map((b, i) => (
-                            <tr key={i}>
-                              <td>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                                  <img src={b.cover_image || 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=60'} alt="" style={{ width: 36, height: 36, borderRadius: 6, objectFit: 'cover' }} />
-                                  <span style={{ fontWeight: 600, fontSize: '.875rem' }}>{b.title}</span>
+                    {/* ═══ Overview Tab ═══ */}
+                    {profileTab === 'overview' && (
+                      <div className="ap-profile-tab-content animate-fade">
+                        {/* Personal Details Grid */}
+                        <div className="ap-profile-section">
+                          <h4><FiUser /> Personal Details</h4>
+                          <div className="ap-profile-grid">
+                            <div className="ap-profile-field">
+                              <div className="ap-profile-field-icon"><FiMail /></div>
+                              <div>
+                                <span className="ap-profile-label">Email</span>
+                                <p>{profileUser.email}</p>
+                              </div>
+                            </div>
+                            <div className="ap-profile-field">
+                              <div className="ap-profile-field-icon"><FiCalendar /></div>
+                              <div>
+                                <span className="ap-profile-label">Joined</span>
+                                <p>{new Date(profileUser.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                              </div>
+                            </div>
+                            {profileUser.contact_number && (
+                              <div className="ap-profile-field">
+                                <div className="ap-profile-field-icon"><FiPhone /></div>
+                                <div>
+                                  <span className="ap-profile-label">Contact</span>
+                                  <p>{profileUser.contact_number}</p>
                                 </div>
-                              </td>
-                              <td><span style={{ fontSize: '.75rem', color: 'var(--gray-500)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{b.excerpt || '—'}</span></td>
-                              <td>
-                                <span className={`badge badge-${b.status === 'published' ? 'success' : b.status === 'pending' ? 'warning' : 'secondary'}`} style={{ fontSize: '.688rem' }}>
-                                  {b.status?.toUpperCase()}
-                                </span>
-                              </td>
-                              <td><span style={{ fontSize: '.75rem', color: 'var(--gray-500)' }}>{new Date(b.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span></td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                </div>
-              )}
+                              </div>
+                            )}
+                            {profileUser.location && (
+                              <div className="ap-profile-field">
+                                <div className="ap-profile-field-icon"><FiMapPin /></div>
+                                <div>
+                                  <span className="ap-profile-label">Location</span>
+                                  <p>{profileUser.location}</p>
+                                </div>
+                              </div>
+                            )}
+                            {profileUser.qualification && (
+                              <div className="ap-profile-field">
+                                <div className="ap-profile-field-icon"><FiAward /></div>
+                                <div>
+                                  <span className="ap-profile-label">Qualification</span>
+                                  <p>{profileUser.qualification}</p>
+                                </div>
+                              </div>
+                            )}
+                            {profileUser.experience && (
+                              <div className="ap-profile-field">
+                                <div className="ap-profile-field-icon"><FiBriefcase /></div>
+                                <div>
+                                  <span className="ap-profile-label">Experience</span>
+                                  <p>{profileUser.experience}</p>
+                                </div>
+                              </div>
+                            )}
+                            {profileUser.gender && (
+                              <div className="ap-profile-field">
+                                <div className="ap-profile-field-icon"><FiUsers /></div>
+                                <div>
+                                  <span className="ap-profile-label">Gender</span>
+                                  <p>{profileUser.gender}</p>
+                                </div>
+                              </div>
+                            )}
+                            {profileUser.dob && (
+                              <div className="ap-profile-field">
+                                <div className="ap-profile-field-icon"><FiCalendar /></div>
+                                <div>
+                                  <span className="ap-profile-label">Date of Birth</span>
+                                  <p>{new Date(profileUser.dob).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                                </div>
+                              </div>
+                            )}
+                            {profileUser.linkedin_url && (
+                              <div className="ap-profile-field">
+                                <div className="ap-profile-field-icon"><FiLinkedin /></div>
+                                <div>
+                                  <span className="ap-profile-label">LinkedIn</span>
+                                  <a href={profileUser.linkedin_url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)', textDecoration: 'none', fontWeight: 600, fontSize: '.875rem' }}>View Profile →</a>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {profileUser.bio && (
+                          <div className="ap-profile-bio">
+                            <h4>About</h4>
+                            <p>{profileUser.bio}</p>
+                          </div>
+                        )}
+
+                        {/* Instructor Revenue Summary (on Overview) */}
+                        {profileUser.role === 'instructor' && profileExtras.courses && (
+                          <div className="ap-profile-section" style={{ marginTop: 24 }}>
+                            <h4><FiTrendingUp /> Instructor Stats</h4>
+                            <div className="ap-instr-stats">
+                              <div className="ap-instr-stat"><FiDollarSign /><div><span>Total Revenue</span><strong>₹{(profileExtras.revenue || 0).toLocaleString('en-IN')}</strong></div></div>
+                              <div className="ap-instr-stat"><FiBookOpen /><div><span>Published Courses</span><strong>{profileExtras.courses.filter(c => c.status === 'approved').length}</strong></div></div>
+                              <div className="ap-instr-stat"><FiClock /><div><span>Pending Approval</span><strong>{profileExtras.courses.filter(c => c.status === 'pending').length}</strong></div></div>
+                              <div className="ap-instr-stat"><FiUsers /><div><span>Total Students</span><strong>{profileExtras.courses.reduce((a, c) => a + (c.student_count || 0), 0)}</strong></div></div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Author Blog Summary (on Overview) */}
+                        {profileUser.role === 'author' && profileExtras.blogs && (
+                          <div className="ap-profile-section" style={{ marginTop: 24 }}>
+                            <h4><FiFileText /> Author Stats</h4>
+                            <div className="ap-instr-stats">
+                              <div className="ap-instr-stat"><FiFileText /><div><span>Total Blogs</span><strong>{profileExtras.blogs.length}</strong></div></div>
+                              <div className="ap-instr-stat"><FiCheckCircle /><div><span>Published</span><strong>{profileExtras.blogs.filter(b => b.status === 'published').length}</strong></div></div>
+                              <div className="ap-instr-stat"><FiClock /><div><span>Pending</span><strong>{profileExtras.blogs.filter(b => b.status === 'pending').length}</strong></div></div>
+                              <div className="ap-instr-stat"><FiEye /><div><span>Drafts</span><strong>{profileExtras.blogs.filter(b => b.status === 'draft').length}</strong></div></div>
+                            </div>
+                          </div>
+                        )}
+                        {/* Quick Activity Summary */}
+                        <div className="ap-profile-section" style={{ marginTop: 24 }}>
+                          <h4><FiActivity /> Activity Summary</h4>
+                          <div className="ap-profile-activity-grid">
+                            <div className="ap-pactivity-card">
+                              <div className="ap-pactivity-header">
+                                <FiBookOpen style={{ color: '#008ad1' }} />
+                                <strong>Recent Courses</strong>
+                              </div>
+                              {profileExtras.enrollments?.length > 0 ? (
+                                <ul className="ap-pactivity-list">
+                                  {profileExtras.enrollments.slice(0, 3).map((e, i) => (
+                                    <li key={i}><span>{e.course?.title || 'Unknown'}</span><span className="ap-pactivity-badge">{e.progress || 0}%</span></li>
+                                  ))}
+                                </ul>
+                              ) : <p className="ap-pactivity-empty">None</p>}
+                            </div>
+                            <div className="ap-pactivity-card">
+                              <div className="ap-pactivity-header">
+                                <FiVideo style={{ color: '#8b5cf6' }} />
+                                <strong>Recent Events</strong>
+                              </div>
+                              {profileExtras.events?.length > 0 ? (
+                                <ul className="ap-pactivity-list">
+                                  {profileExtras.events.slice(0, 3).map((e, i) => (
+                                    <li key={i}>
+                                      <span>{e.event?.title || 'Unknown'}</span>
+                                      <span className={`badge badge-${e.status === 'JOINED' || e.attended ? 'success' : 'primary'}`} style={{ fontSize: '.6rem' }}>{e.status || (e.attended ? 'JOINED' : 'REG')}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              ) : <p className="ap-pactivity-empty">None</p>}
+                            </div>
+                            <div className="ap-pactivity-card">
+                              <div className="ap-pactivity-header">
+                                <FiZap style={{ color: '#f59e0b' }} />
+                                <strong>Recent Bootcamps</strong>
+                              </div>
+                              {profileExtras.bootcamps?.length > 0 ? (
+                                <ul className="ap-pactivity-list">
+                                  {profileExtras.bootcamps.slice(0, 3).map((b, i) => (
+                                    <li key={i}>
+                                      <span>{b.bootcamp?.title || 'Unknown'}</span>
+                                      <span className={`badge badge-${b.status === 'JOINED' || b.completed ? 'success' : 'primary'}`} style={{ fontSize: '.6rem' }}>{b.status || (b.completed ? 'JOINED' : 'REG')}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              ) : <p className="ap-pactivity-empty">None</p>}
+                            </div>
+                            <div className="ap-pactivity-card">
+                              <div className="ap-pactivity-header">
+                                <FiAward style={{ color: '#10b981' }} />
+                                <strong>Certificate Status</strong>
+                              </div>
+                              <ul className="ap-pactivity-list">
+                                <li><span>✅ Completed</span><span className="ap-pactivity-badge" style={{ background: '#dcfce7', color: '#16a34a' }}>{completedCerts.length}</span></li>
+                                <li><span>⏳ Pending</span><span className="ap-pactivity-badge" style={{ background: '#fef3c7', color: '#d97706' }}>{pendingCerts.length}</span></li>
+                              </ul>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* ═══ Courses Tab ═══ */}
+                    {profileTab === 'courses' && (
+                      <div className="ap-profile-tab-content animate-fade">
+                        <div className="ap-profile-section">
+                          <h4><FiBookOpen /> Enrolled Courses ({profileExtras.enrollments?.length || 0})</h4>
+                          {(!profileExtras.enrollments || profileExtras.enrollments.length === 0) ? (
+                            <p className="ap-profile-empty">No courses enrolled yet.</p>
+                          ) : (
+                            <div className="ap-profile-table-wrap">
+                              <table className="ap-profile-table">
+                                <thead><tr><th>Course</th><th>Category</th><th>Price</th><th>Progress</th><th>Enrolled On</th><th>Status</th></tr></thead>
+                                <tbody>
+                                  {profileExtras.enrollments.map((enr, i) => (
+                                    <tr key={i}>
+                                      <td>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                          <img src={resolveImageUrl(enr.course?.thumbnail_url) || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=60'} alt="" style={{ width: 40, height: 40, borderRadius: 8, objectFit: 'cover' }} />
+                                          <span style={{ fontWeight: 600, fontSize: '.875rem' }}>{enr.course?.title || 'Unknown'}</span>
+                                        </div>
+                                      </td>
+                                      <td><span className="badge badge-light" style={{ fontSize: '.7rem' }}>{enr.course?.category || '—'}</span></td>
+                                      <td><strong style={{ fontSize: '.85rem' }}>₹{enr.course?.price || 0}</strong></td>
+                                      <td>
+                                        <div className="ap-mini-progress">
+                                          <div className="ap-mini-bar"><div className="ap-mini-fill" style={{ width: `${enr.progress || 0}%` }} /></div>
+                                          <span>{enr.progress || 0}%</span>
+                                        </div>
+                                      </td>
+                                      <td><span style={{ fontSize: '.75rem', color: 'var(--gray-500)' }}>{enr.created_at ? new Date(enr.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}</span></td>
+                                      <td>
+                                        {enr.progress >= 100 ? (
+                                          <span className="badge badge-success" style={{ fontSize: '.688rem' }}>COMPLETED</span>
+                                        ) : enr.progress > 0 ? (
+                                          <span className="badge badge-info" style={{ fontSize: '.688rem' }}>IN PROGRESS</span>
+                                        ) : (
+                                          <span className="badge badge-light" style={{ fontSize: '.688rem' }}>NOT STARTED</span>
+                                        )}
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* ═══ Events Tab ═══ */}
+                    {profileTab === 'events' && (
+                      <div className="ap-profile-tab-content animate-fade">
+                        <div className="ap-profile-section">
+                          <h4><FiVideo /> Events ({profileExtras.events?.length || 0})</h4>
+                          {(!profileExtras.events || profileExtras.events.length === 0) ? (
+                            <p className="ap-profile-empty">No events registered yet.</p>
+                          ) : (
+                            <div className="ap-profile-table-wrap">
+                              <table className="ap-profile-table">
+                                <thead><tr><th>Event</th><th>Instructor</th><th>Event Date</th><th>Status</th><th>Payment</th><th>Certificate</th></tr></thead>
+                                <tbody>
+                                  {profileExtras.events.map((ev, i) => (
+                                    <tr key={i}>
+                                      <td>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                          <img src={resolveImageUrl(ev.event?.thumbnail_url) || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=60'} alt="" style={{ width: 40, height: 40, borderRadius: 8, objectFit: 'cover' }} />
+                                          <span style={{ fontWeight: 600, fontSize: '.875rem' }}>{ev.event?.title || 'Unknown Event'}</span>
+                                        </div>
+                                      </td>
+                                      <td><span style={{ fontSize: '.8rem', color: 'var(--gray-500)' }}>{ev.event?.instructor_name || '—'}</span></td>
+                                      <td><span style={{ fontSize: '.8rem' }}>{ev.event?.event_date ? new Date(ev.event.event_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'N/A'}</span></td>
+                                      <td>
+                                        <span className={`badge badge-${ev.status === 'JOINED' || ev.attended ? 'success' : ev.status === 'ENTERED' ? 'info' : 'primary'}`} style={{ fontSize: '.688rem' }}>
+                                          {ev.status || (ev.attended ? 'JOINED' : 'REGISTERED')}
+                                        </span>
+                                      </td>
+                                      <td><span style={{ fontSize: '.85rem', fontWeight: 600 }}>{ev.amount_paid > 0 ? `₹${ev.amount_paid}` : 'Free'}</span></td>
+                                      <td>
+                                        {ev.certificate_issued ? (
+                                          <span style={{ color: '#10b981', fontWeight: 600, fontSize: '.8rem' }}><FiAward style={{ marginRight: 4 }} />{ev.certificate_id || 'Issued'}</span>
+                                        ) : ev.event?.enable_certificate ? (
+                                          <span className="badge badge-warning" style={{ fontSize: '.65rem' }}>Pending</span>
+                                        ) : (
+                                          <span style={{ color: 'var(--gray-400)', fontSize: '.8rem' }}>—</span>
+                                        )}
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* ═══ Bootcamps Tab ═══ */}
+                    {profileTab === 'bootcamps' && (
+                      <div className="ap-profile-tab-content animate-fade">
+                        <div className="ap-profile-section">
+                          <h4><FiZap /> Bootcamps ({profileExtras.bootcamps?.length || 0})</h4>
+                          {(!profileExtras.bootcamps || profileExtras.bootcamps.length === 0) ? (
+                            <p className="ap-profile-empty">No bootcamps enrolled yet.</p>
+                          ) : (
+                            <div className="ap-profile-table-wrap">
+                              <table className="ap-profile-table">
+                                <thead><tr><th>Bootcamp</th><th>Instructor</th><th>Start Date</th><th>End Date</th><th>Status</th><th>Payment</th><th>Certificate</th></tr></thead>
+                                <tbody>
+                                  {profileExtras.bootcamps.map((bc, i) => (
+                                    <tr key={i}>
+                                      <td>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                          <img src={resolveImageUrl(bc.bootcamp?.thumbnail_url) || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=60'} alt="" style={{ width: 40, height: 40, borderRadius: 8, objectFit: 'cover' }} />
+                                          <span style={{ fontWeight: 600, fontSize: '.875rem' }}>{bc.bootcamp?.title || 'Unknown Bootcamp'}</span>
+                                        </div>
+                                      </td>
+                                      <td><span style={{ fontSize: '.8rem', color: 'var(--gray-500)' }}>{bc.bootcamp?.instructor_name || '—'}</span></td>
+                                      <td><span style={{ fontSize: '.8rem' }}>{bc.bootcamp?.start_date ? new Date(bc.bootcamp.start_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}</span></td>
+                                      <td><span style={{ fontSize: '.8rem' }}>{bc.bootcamp?.end_date ? new Date(bc.bootcamp.end_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}</span></td>
+                                      <td>
+                                        <span className={`badge badge-${bc.status === 'JOINED' || bc.completed ? 'success' : bc.status === 'ENTERED' ? 'info' : 'primary'}`} style={{ fontSize: '.688rem' }}>
+                                          {bc.status || (bc.completed ? 'JOINED' : 'REGISTERED')}
+                                        </span>
+                                      </td>
+                                      <td><span style={{ fontSize: '.85rem', fontWeight: 600 }}>{bc.amount_paid > 0 ? `₹${bc.amount_paid}` : 'Free'}</span></td>
+                                      <td>
+                                        {bc.certificate_issued ? (
+                                          <span style={{ color: '#10b981', fontWeight: 600, fontSize: '.8rem' }}><FiAward style={{ marginRight: 4 }} />{bc.certificate_id || 'Issued'}</span>
+                                        ) : bc.bootcamp?.enable_certificate ? (
+                                          <span className="badge badge-warning" style={{ fontSize: '.65rem' }}>Pending</span>
+                                        ) : (
+                                          <span style={{ color: 'var(--gray-400)', fontSize: '.8rem' }}>—</span>
+                                        )}
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* ═══ Certificates Tab ═══ */}
+                    {profileTab === 'certificates' && (
+                      <div className="ap-profile-tab-content animate-fade">
+                        <div className="ap-profile-section">
+                          {/* Completed Certificates */}
+                          <h4><FiAward /> Completed Certificates ({completedCerts.length})</h4>
+                          {completedCerts.length === 0 ? (
+                            <p className="ap-profile-empty">No certificates earned yet.</p>
+                          ) : (
+                            <div className="ap-profile-table-wrap" style={{ marginBottom: 24 }}>
+                              <table className="ap-profile-table">
+                                <thead><tr><th>Item</th><th>Type</th><th>Certificate ID</th><th>Issued Date</th><th>Status</th></tr></thead>
+                                <tbody>
+                                  {profileExtras.certificates?.map((cert, i) => (
+                                    <tr key={`cc-${i}`}>
+                                      <td style={{ fontWeight: 600, fontSize: '.875rem' }}>{cert.course?.title || 'Course'}</td>
+                                      <td><span className="badge badge-primary" style={{ fontSize: '.65rem' }}>COURSE</span></td>
+                                      <td><span style={{ fontFamily: 'monospace', color: '#8b5cf6', fontWeight: 600, fontSize: '.8rem' }}>{cert.certificate_id || cert.id?.slice(0, 8)}</span></td>
+                                      <td><span style={{ fontSize: '.75rem' }}>{cert.created_at ? new Date(cert.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}</span></td>
+                                      <td><span className="badge badge-success" style={{ fontSize: '.688rem' }}>✅ Completed</span></td>
+                                    </tr>
+                                  ))}
+                                  {profileExtras.events?.filter(e => e.certificate_issued).map((ev, i) => (
+                                    <tr key={`ce-${i}`}>
+                                      <td style={{ fontWeight: 600, fontSize: '.875rem' }}>{ev.event?.title || 'Event'}</td>
+                                      <td><span className="badge badge-info" style={{ fontSize: '.65rem' }}>EVENT</span></td>
+                                      <td><span style={{ fontFamily: 'monospace', color: '#8b5cf6', fontWeight: 600, fontSize: '.8rem' }}>{ev.certificate_id || '—'}</span></td>
+                                      <td><span style={{ fontSize: '.75rem' }}>{ev.certificate_issued_at ? new Date(ev.certificate_issued_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}</span></td>
+                                      <td><span className="badge badge-success" style={{ fontSize: '.688rem' }}>✅ Completed</span></td>
+                                    </tr>
+                                  ))}
+                                  {profileExtras.bootcamps?.filter(b => b.certificate_issued).map((bc, i) => (
+                                    <tr key={`cb-${i}`}>
+                                      <td style={{ fontWeight: 600, fontSize: '.875rem' }}>{bc.bootcamp?.title || 'Bootcamp'}</td>
+                                      <td><span className="badge badge-warning" style={{ fontSize: '.65rem' }}>BOOTCAMP</span></td>
+                                      <td><span style={{ fontFamily: 'monospace', color: '#8b5cf6', fontWeight: 600, fontSize: '.8rem' }}>{bc.certificate_id || '—'}</span></td>
+                                      <td><span style={{ fontSize: '.75rem' }}>{bc.certificate_issued_at ? new Date(bc.certificate_issued_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}</span></td>
+                                      <td><span className="badge badge-success" style={{ fontSize: '.688rem' }}>✅ Completed</span></td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          )}
+
+                          {/* Pending Certificates */}
+                          <h4 style={{ marginTop: 24 }}><FiClock /> Pending Certificates ({pendingCerts.length})</h4>
+                          {pendingCerts.length === 0 ? (
+                            <p className="ap-profile-empty">No pending certificates.</p>
+                          ) : (
+                            <div className="ap-profile-table-wrap">
+                              <table className="ap-profile-table">
+                                <thead><tr><th>Item</th><th>Type</th><th>Reason</th><th>Status</th></tr></thead>
+                                <tbody>
+                                  {profileExtras.enrollments?.filter(e => e.progress >= 100 && !profileExtras.certificates?.find(c => c.course_id === e.course?.id)).map((enr, i) => (
+                                    <tr key={`pc-${i}`}>
+                                      <td style={{ fontWeight: 600, fontSize: '.875rem' }}>{enr.course?.title}</td>
+                                      <td><span className="badge badge-primary" style={{ fontSize: '.65rem' }}>COURSE</span></td>
+                                      <td><span style={{ fontSize: '.75rem', color: 'var(--gray-500)' }}>Course 100% complete — certificate not yet issued</span></td>
+                                      <td><span className="badge badge-warning" style={{ fontSize: '.688rem' }}>⏳ Pending</span></td>
+                                    </tr>
+                                  ))}
+                                  {profileExtras.events?.filter(e => e.event?.enable_certificate && (e.status === 'JOINED' || e.attended) && !e.certificate_issued).map((ev, i) => (
+                                    <tr key={`pe-${i}`}>
+                                      <td style={{ fontWeight: 600, fontSize: '.875rem' }}>{ev.event?.title}</td>
+                                      <td><span className="badge badge-info" style={{ fontSize: '.65rem' }}>EVENT</span></td>
+                                      <td><span style={{ fontSize: '.75rem', color: 'var(--gray-500)' }}>Attended event — certificate not yet issued</span></td>
+                                      <td><span className="badge badge-warning" style={{ fontSize: '.688rem' }}>⏳ Pending</span></td>
+                                    </tr>
+                                  ))}
+                                  {profileExtras.bootcamps?.filter(b => b.bootcamp?.enable_certificate && (b.status === 'JOINED' || b.completed) && !b.certificate_issued).map((bc, i) => (
+                                    <tr key={`pb-${i}`}>
+                                      <td style={{ fontWeight: 600, fontSize: '.875rem' }}>{bc.bootcamp?.title}</td>
+                                      <td><span className="badge badge-warning" style={{ fontSize: '.65rem' }}>BOOTCAMP</span></td>
+                                      <td><span style={{ fontSize: '.75rem', color: 'var(--gray-500)' }}>Completed bootcamp — certificate not yet issued</span></td>
+                                      <td><span className="badge badge-warning" style={{ fontSize: '.688rem' }}>⏳ Pending</span></td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* ═══ Quizzes Tab ═══ */}
+                    {profileTab === 'quizzes' && (
+                      <div className="ap-profile-tab-content animate-fade">
+                        <div className="ap-profile-section">
+                          {/* Daily Quizzes */}
+                          <h4><FiCheckSquare /> Daily Quizzes ({profileExtras.dailyQuizzes?.length || 0})</h4>
+                          {(!profileExtras.dailyQuizzes || profileExtras.dailyQuizzes.length === 0) ? (
+                            <p className="ap-profile-empty">No daily quizzes taken yet.</p>
+                          ) : (
+                            <div className="ap-profile-table-wrap" style={{ marginBottom: 24 }}>
+                              <table className="ap-profile-table">
+                                <thead><tr><th>Quiz Date</th><th>Submitted At</th><th>Score</th><th>Total</th><th>Percentage</th></tr></thead>
+                                <tbody>
+                                  {profileExtras.dailyQuizzes.map((qz, i) => (
+                                    <tr key={`dq-${i}`}>
+                                      <td><span style={{ fontWeight: 600, fontSize: '.875rem' }}>{new Date(qz.quiz_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span></td>
+                                      <td><span style={{ fontSize: '.75rem' }}>{new Date(qz.submitted_at || qz.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</span></td>
+                                      <td><strong style={{ color: '#008ad1' }}>{qz.score}</strong></td>
+                                      <td>{qz.total_questions}</td>
+                                      <td>
+                                        <div className="ap-mini-progress">
+                                          <div className="ap-mini-bar"><div className="ap-mini-fill" style={{ width: `${qz.total_questions ? Math.round((qz.score / qz.total_questions) * 100) : 0}%` }} /></div>
+                                          <span>{qz.total_questions ? Math.round((qz.score / qz.total_questions) * 100) : 0}%</span>
+                                        </div>
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          )}
+
+                          {/* Course Assessments */}
+                          <h4 style={{ marginTop: 24 }}><FiCheckCircle /> Course Assessments ({profileExtras.assessments?.length || 0})</h4>
+                          {(!profileExtras.assessments || profileExtras.assessments.length === 0) ? (
+                            <p className="ap-profile-empty">No course assessments taken yet.</p>
+                          ) : (
+                            <div className="ap-profile-table-wrap">
+                              <table className="ap-profile-table">
+                                <thead><tr><th>Assessment</th><th>Course</th><th>Date</th><th>Score</th><th>Result</th></tr></thead>
+                                <tbody>
+                                  {profileExtras.assessments.map((ass, i) => (
+                                    <tr key={`ass-${i}`}>
+                                      <td><span style={{ fontWeight: 600, fontSize: '.875rem' }}>{ass.assessment?.title || 'Assessment'}</span></td>
+                                      <td><span style={{ fontSize: '.75rem', color: 'var(--gray-500)' }}>{ass.assessment?.course?.title || '—'}</span></td>
+                                      <td><span style={{ fontSize: '.75rem' }}>{new Date(ass.submitted_at || ass.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span></td>
+                                      <td>
+                                        <div className="ap-mini-progress">
+                                          <div className="ap-mini-bar"><div className="ap-mini-fill" style={{ width: `${ass.score || 0}%`, background: ass.passed ? 'linear-gradient(90deg, #10b981, #34d399)' : 'linear-gradient(90deg, #ef4444, #f87171)' }} /></div>
+                                          <span>{ass.score}%</span>
+                                        </div>
+                                      </td>
+                                      <td>
+                                        <span className={`badge badge-${ass.passed ? 'success' : 'danger'}`} style={{ fontSize: '.688rem' }}>
+                                          {ass.passed ? '✅ PASSED' : '❌ FAILED'}
+                                        </span>
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* ═══ Payments Tab ═══ */}
+                    {profileTab === 'payments' && (
+                      <div className="ap-profile-tab-content animate-fade">
+                        <div className="ap-profile-section">
+                          {/* Payment Summary */}
+                          <div className="ap-instr-stats" style={{ marginBottom: 20 }}>
+                            <div className="ap-instr-stat">
+                              <FiDollarSign />
+                              <div><span>Total Spent</span><strong>₹{totalSpent.toLocaleString('en-IN')}</strong></div>
+                            </div>
+                            <div className="ap-instr-stat">
+                              <FiHash />
+                              <div><span>Transactions</span><strong>{profileExtras.payments?.length || 0}</strong></div>
+                            </div>
+                            <div className="ap-instr-stat">
+                              <FiCheckCircle />
+                              <div><span>Completed</span><strong>{profileExtras.payments?.filter(p => p.status === 'completed').length || 0}</strong></div>
+                            </div>
+                            <div className="ap-instr-stat">
+                              <FiClock />
+                              <div><span>Pending</span><strong>{profileExtras.payments?.filter(p => p.status !== 'completed').length || 0}</strong></div>
+                            </div>
+                          </div>
+
+                          <h4><FiDollarSign /> Payment History</h4>
+                          {(!profileExtras.payments || profileExtras.payments.length === 0) ? (
+                            <p className="ap-profile-empty">No payment records found.</p>
+                          ) : (
+                            <div className="ap-profile-table-wrap">
+                              <table className="ap-profile-table">
+                                <thead><tr><th>Item</th><th>Type</th><th>Amount</th><th>Status</th><th>Payment Method</th><th>Transaction ID</th><th>Date</th></tr></thead>
+                                <tbody>
+                                  {profileExtras.payments.map((p, i) => (
+                                    <tr key={`pay-${i}`}>
+                                      <td><span style={{ fontWeight: 600, fontSize: '.875rem' }}>{p.course?.title || p.item_name || 'Payment'}</span></td>
+                                      <td>
+                                        <span className={`badge badge-${p.type === 'event' ? 'info' : p.type === 'bootcamp' ? 'warning' : 'primary'}`} style={{ fontSize: '.65rem' }}>
+                                          {p.type === 'event' ? 'EVENT' : p.type === 'bootcamp' ? 'BOOTCAMP' : 'COURSE'}
+                                        </span>
+                                      </td>
+                                      <td><strong style={{ fontSize: '.95rem', color: '#008ad1' }}>₹{Number(p.amount || 0).toLocaleString('en-IN')}</strong></td>
+                                      <td>
+                                        <span className={`badge badge-${p.status === 'completed' ? 'success' : p.status === 'failed' ? 'danger' : 'warning'}`} style={{ fontSize: '.688rem' }}>
+                                          {(p.status || 'pending').toUpperCase()}
+                                        </span>
+                                      </td>
+                                      <td><span style={{ fontSize: '.8rem', color: 'var(--gray-500)' }}>{p.payment_method || p.method || '—'}</span></td>
+                                      <td><span style={{ fontFamily: 'monospace', fontSize: '.75rem', color: 'var(--gray-500)' }}>{p.razorpay_payment_id || p.transaction_id || p.id?.slice(0, 12) || '—'}</span></td>
+                                      <td><span style={{ fontSize: '.75rem' }}>{p.created_at ? new Date(p.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}</span></td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    {/* ═══ Instructor: Published Courses Tab ═══ */}
+                    {profileTab === 'published' && profileUser.role === 'instructor' && profileExtras.courses && (
+                      <div className="ap-profile-tab-content animate-fade">
+                        <div className="ap-profile-section">
+                          <div className="ap-instr-stats" style={{ marginBottom: 20 }}>
+                            <div className="ap-instr-stat"><FiDollarSign /><div><span>Total Revenue</span><strong>₹{(profileExtras.revenue || 0).toLocaleString('en-IN')}</strong></div></div>
+                            <div className="ap-instr-stat"><FiBookOpen /><div><span>Published</span><strong>{profileExtras.courses.filter(c => c.status === 'approved').length}</strong></div></div>
+                            <div className="ap-instr-stat"><FiClock /><div><span>Pending</span><strong>{profileExtras.courses.filter(c => c.status === 'pending').length}</strong></div></div>
+                            <div className="ap-instr-stat"><FiUsers /><div><span>Total Students</span><strong>{profileExtras.courses.reduce((a, c) => a + (c.student_count || 0), 0)}</strong></div></div>
+                          </div>
+
+                          <h4><FiBookOpen /> Published Courses ({profileExtras.courses.length})</h4>
+                          {profileExtras.courses.length === 0 ? (
+                            <p className="ap-profile-empty">No courses created yet.</p>
+                          ) : (
+                            <div className="ap-profile-table-wrap">
+                              <table className="ap-profile-table">
+                                <thead><tr><th>Course</th><th>Category</th><th>Price</th><th>Students</th><th>Status</th><th>Created</th></tr></thead>
+                                <tbody>
+                                  {profileExtras.courses.map((c, i) => (
+                                    <tr key={i}>
+                                      <td><span style={{ fontWeight: 600, fontSize: '.875rem' }}>{c.title}</span></td>
+                                      <td><span style={{ fontSize: '.75rem', color: 'var(--gray-500)' }}>{c.category}</span></td>
+                                      <td><strong style={{ fontSize: '.875rem' }}>₹{c.price}</strong></td>
+                                      <td><span style={{ fontSize: '.875rem' }}>{c.student_count || 0}</span></td>
+                                      <td><span className={`badge badge-${c.status === 'approved' ? 'success' : c.status === 'pending' ? 'warning' : 'danger'}`} style={{ fontSize: '.688rem' }}>{c.status?.toUpperCase()}</span></td>
+                                      <td><span style={{ fontSize: '.75rem', color: 'var(--gray-500)' }}>{new Date(c.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span></td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* ═══ Author: Blog Posts Tab ═══ */}
+                    {profileTab === 'blogs' && profileUser.role === 'author' && profileExtras.blogs && (
+                      <div className="ap-profile-tab-content animate-fade">
+                        <div className="ap-profile-section">
+                          <div className="ap-instr-stats" style={{ marginBottom: 20 }}>
+                            <div className="ap-instr-stat"><FiFileText /><div><span>Total Blogs</span><strong>{profileExtras.blogs.length}</strong></div></div>
+                            <div className="ap-instr-stat"><FiCheckCircle /><div><span>Published</span><strong>{profileExtras.blogs.filter(b => b.status === 'published').length}</strong></div></div>
+                            <div className="ap-instr-stat"><FiClock /><div><span>Pending</span><strong>{profileExtras.blogs.filter(b => b.status === 'pending').length}</strong></div></div>
+                            <div className="ap-instr-stat"><FiEye /><div><span>Drafts</span><strong>{profileExtras.blogs.filter(b => b.status === 'draft').length}</strong></div></div>
+                          </div>
+
+                          <h4><FiFileText /> Blog Posts ({profileExtras.blogs.length})</h4>
+                          {profileExtras.blogs.length === 0 ? (
+                            <p className="ap-profile-empty">No blog posts created yet.</p>
+                          ) : (
+                            <div className="ap-profile-table-wrap">
+                              <table className="ap-profile-table">
+                                <thead><tr><th>Blog Title</th><th>Excerpt</th><th>Status</th><th>Published</th></tr></thead>
+                                <tbody>
+                                  {profileExtras.blogs.map((b, i) => (
+                                    <tr key={i}>
+                                      <td>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                          <img src={b.cover_image || 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=60'} alt="" style={{ width: 36, height: 36, borderRadius: 6, objectFit: 'cover' }} />
+                                          <span style={{ fontWeight: 600, fontSize: '.875rem' }}>{b.title}</span>
+                                        </div>
+                                      </td>
+                                      <td><span style={{ fontSize: '.75rem', color: 'var(--gray-500)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{b.excerpt || '—'}</span></td>
+                                      <td><span className={`badge badge-${b.status === 'published' ? 'success' : b.status === 'pending' ? 'warning' : 'secondary'}`} style={{ fontSize: '.688rem' }}>{b.status?.toUpperCase()}</span></td>
+                                      <td><span style={{ fontSize: '.75rem', color: 'var(--gray-500)' }}>{new Date(b.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span></td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
             </div>
           )}
         </Modal>
+
 
         {/* Course Review Modal - FULL SCREEN */}
         <Modal isOpen={!!reviewCourse} onClose={() => setReviewCourse(null)} title="Course Review" size="fullscreen">

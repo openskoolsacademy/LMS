@@ -797,6 +797,159 @@
   .ap-instr-stats { grid-template-columns: repeat(2, 1fr); }
 }
 
+/* ============================== */
+/* PROFILE MODAL — Enhanced Tabs  */
+/* ============================== */
+
+/* Profile Stats Row */
+.ap-profile-stats-row {
+  display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px;
+  margin-bottom: 24px;
+}
+.ap-pstat-card {
+  display: flex; align-items: center; gap: 12px;
+  padding: 16px; background: var(--white);
+  border-radius: var(--radius); border: 1px solid var(--gray-100);
+  cursor: pointer; transition: all 0.25s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+.ap-pstat-card:hover {
+  border-color: var(--primary);
+  box-shadow: 0 4px 12px rgba(0, 138, 209, 0.08);
+  transform: translateY(-2px);
+}
+.ap-pstat-icon {
+  width: 40px; height: 40px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; flex-shrink: 0;
+}
+.ap-pstat-info { display: flex; flex-direction: column; min-width: 0; }
+.ap-pstat-info strong {
+  font-size: 1.2rem; font-weight: 800; color: var(--dark);
+  line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.ap-pstat-info span {
+  font-size: .65rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .04em; color: var(--gray-400); margin-top: 2px;
+}
+
+@media (max-width: 1200px) {
+  .ap-profile-stats-row { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 768px) {
+  .ap-profile-stats-row { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 480px) {
+  .ap-profile-stats-row { grid-template-columns: 1fr; }
+}
+
+/* Profile Tabs Navigation */
+.ap-profile-tabs {
+  display: flex; gap: 4px; flex-wrap: wrap;
+  padding: 6px; background: var(--gray-50);
+  border-radius: var(--radius-md); margin-bottom: 24px;
+  border: 1px solid var(--gray-100);
+}
+.ap-profile-tab {
+  display: flex; align-items: center; gap: 6px;
+  padding: 10px 16px; border: none; border-radius: var(--radius);
+  background: transparent; cursor: pointer;
+  font-size: .813rem; font-weight: 600; color: var(--gray-500);
+  transition: all 0.2s ease; white-space: nowrap;
+}
+.ap-profile-tab:hover {
+  background: var(--white); color: var(--dark);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+.ap-profile-tab.active {
+  background: var(--white); color: var(--primary);
+  box-shadow: 0 2px 8px rgba(0, 138, 209, 0.1);
+  border-bottom: 2px solid var(--primary);
+}
+.ap-profile-tab svg { font-size: .9rem; }
+.ap-ptab-count {
+  font-size: .625rem; font-weight: 700;
+  background: var(--gray-100); color: var(--gray-500);
+  min-width: 18px; height: 18px;
+  border-radius: 9px; display: flex; align-items: center; justify-content: center;
+  padding: 0 6px;
+}
+.ap-profile-tab.active .ap-ptab-count {
+  background: rgba(0, 138, 209, 0.1); color: var(--primary);
+}
+
+@media (max-width: 768px) {
+  .ap-profile-tabs { overflow-x: auto; flex-wrap: nowrap; }
+  .ap-profile-tab { padding: 8px 12px; font-size: .75rem; }
+}
+
+/* Profile Tab Content */
+.ap-profile-tab-content {
+  animation: fadeIn 0.3s ease;
+}
+
+/* Activity Summary Grid */
+.ap-profile-activity-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;
+}
+.ap-pactivity-card {
+  padding: 16px; background: var(--gray-50);
+  border-radius: var(--radius); border: 1px solid var(--gray-100);
+  transition: var(--transition);
+}
+.ap-pactivity-card:hover {
+  background: var(--white); box-shadow: var(--shadow-sm);
+}
+.ap-pactivity-header {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 12px; padding-bottom: 8px;
+  border-bottom: 1px solid var(--gray-100);
+}
+.ap-pactivity-header svg { font-size: 1rem; }
+.ap-pactivity-header strong {
+  font-size: .8rem; color: var(--dark); font-weight: 700;
+}
+.ap-pactivity-list {
+  list-style: none; padding: 0; margin: 0;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.ap-pactivity-list li {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 8px; font-size: .8rem; color: var(--gray-600);
+  padding: 4px 0;
+}
+.ap-pactivity-list li span:first-child {
+  flex: 1; white-space: nowrap; overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ap-pactivity-badge {
+  font-size: .65rem; font-weight: 700;
+  background: rgba(0, 138, 209, 0.1); color: #008ad1;
+  padding: 2px 8px; border-radius: 10px;
+  white-space: nowrap;
+}
+.ap-pactivity-empty {
+  font-size: .75rem; color: var(--gray-400);
+  font-style: italic; text-align: center; padding: 8px 0;
+}
+
+@media (max-width: 768px) {
+  .ap-profile-activity-grid { grid-template-columns: 1fr; }
+}
+
+/* Profile Loading Spinner */
+.ap-profile-spinner {
+  width: 36px; height: 36px;
+  border: 3px solid var(--gray-100);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: profileSpin 0.8s linear infinite;
+  margin: 0 auto;
+}
+@keyframes profileSpin {
+  to { transform: rotate(360deg); }
+}
+
 /* Activity Filters */
 .ap-activity-filters {
   display: flex; gap: 8px; flex-wrap: wrap;
@@ -1695,6 +1848,9 @@
   font-size: 0.75rem;
   font-weight: 700;
 }
+.method-pill.course-type { background: rgba(0, 138, 209, 0.1); color: #008ad1; }
+.method-pill.event-type { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; }
+.method-pill.bootcamp-type { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
 
 .status-pill {
   padding: 4px 10px;
