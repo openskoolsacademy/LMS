@@ -528,17 +528,20 @@ export default function JobDetail() {
       </main>
 
       {/* Recommended Courses - Professional Section */}
-      <section className="jd-related-courses section-bg">
+      <section className="jd-related-courses">
         <div className="container">
-          <div className="section-header">
-            <div>
-              <span className="section-badge">Skill Up</span>
+          <div className="jd-course-header">
+            <div className="jd-course-title-area">
+              <div className="section-badge">Skill Up</div>
               <h2>Boost Your Chances</h2>
               <p>Relevant courses for professional growth in this field.</p>
             </div>
+            <Link to="/courses" className="btn btn-outline btn-sm hidden md:flex">
+              View All Courses
+            </Link>
           </div>
           <div className="jd-courses-grid-wrapper">
-             <RecommendedCourses limit={4} />
+             <RecommendedCourses limit={4} hideHeader={true} />
           </div>
         </div>
       </section>

@@ -4,7 +4,7 @@ import { supabase } from '../../lib/supabase';
 import { resolveImageUrl } from '../../utils/imageUtils';
 import CourseCard from './CourseCard';
 
-export default function RecommendedCourses({ limit = 4 }) {
+export default function RecommendedCourses({ limit = 4, hideHeader = false }) {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -83,16 +83,18 @@ export default function RecommendedCourses({ limit = 4 }) {
   if (courses.length === 0) return null;
 
   return (
-    <div style={{ padding: '40px 0' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-        <div>
-          <h3 className="careers-section-title">Recommended Courses</h3>
-          <p className="careers-section-sub">Upskill yourself to land your dream job</p>
+    <div style={{ padding: hideHeader ? '0' : '40px 0' }}>
+      {!hideHeader && (
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+          <div>
+            <h3 className="careers-section-title">Recommended Courses</h3>
+            <p className="careers-section-sub">Upskill yourself to land your dream job</p>
+          </div>
+          <Link to="/courses" className="btn btn-outline btn-sm" style={{ whiteSpace: 'nowrap' }}>
+            View All Courses →
+          </Link>
         </div>
-        <Link to="/courses" className="btn btn-outline btn-sm" style={{ whiteSpace: 'nowrap' }}>
-          View All Courses →
-        </Link>
-      </div>
+      )}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4" style={{ gap: 24 }}>
         {courses.map(c => (
           <CourseCard key={c.id} course={c} />
