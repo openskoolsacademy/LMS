@@ -131,14 +131,21 @@ export default function JobDetail() {
       try {
         const logoImg = new Image();
         logoImg.crossOrigin = 'Anonymous';
-        logoImg.src = `https://corsproxy.io/?${encodeURIComponent(job.company_logo)}`;
+        // Use wsrv.nl which is very reliable for images and handles CORS
+        logoImg.src = `https://wsrv.nl/?url=${encodeURIComponent(job.company_logo)}&output=png`;
+        
         await new Promise((resolve) => {
           logoImg.onload = resolve;
           logoImg.onerror = () => {
+            console.error("Failed to load logo via proxy. Trying direct...");
+            // Fallback: try without proxy if proxy fails
             logoImg.crossOrigin = 'Anonymous';
             logoImg.src = job.company_logo;
             logoImg.onload = resolve;
-            logoImg.onerror = resolve;
+            logoImg.onerror = (e) => {
+              console.error("Failed direct logo load too:", e);
+              resolve();
+            };
           };
         });
         
