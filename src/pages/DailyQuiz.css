@@ -656,3 +656,104 @@
   .dq-review-card { padding: 16px; }
 }
 
+/* Points = Savings Discount Banner (Result Page) */
+.dq-discount-banner {
+  background: linear-gradient(135deg, #eff6ff 0%, #fef3c7 100%);
+  border: 2px solid #bfdbfe;
+  border-radius: 20px;
+  padding: 24px;
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  margin-top: 24px;
+  position: relative;
+  overflow: hidden;
+}
+.dq-discount-banner::before {
+  content: '';
+  position: absolute;
+  top: -30%;
+  right: -10%;
+  width: 180px;
+  height: 180px;
+  background: radial-gradient(circle, rgba(245,158,11,0.1) 0%, transparent 70%);
+  pointer-events: none;
+}
+.dq-discount-icon {
+  font-size: 1.8rem;
+  color: #f59e0b;
+  background: white;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(245,158,11,0.15);
+}
+.dq-discount-content { flex: 1; min-width: 0; }
+.dq-discount-content h4 {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #1f2937;
+  margin: 0 0 6px 0;
+}
+.dq-discount-content p {
+  font-size: 0.82rem;
+  color: #4b5563;
+  line-height: 1.55;
+  margin: 0 0 12px 0;
+}
+.dq-discount-links {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.dq-discount-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 14px;
+  border-radius: 10px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+.dq-discount-link.bootcamp {
+  background: #008ad1;
+  color: white;
+}
+.dq-discount-link.bootcamp:hover {
+  background: #006eb8;
+  transform: translateY(-1px);
+}
+.dq-discount-link.course {
+  background: white;
+  color: #008ad1;
+  border: 1.5px solid #bfdbfe;
+}
+.dq-discount-link.course:hover {
+  background: #eff6ff;
+  transform: translateY(-1px);
+}
+
+@media (max-width: 640px) {
+  .dq-discount-banner {
+    flex-direction: column;
+    padding: 18px;
+    gap: 12px;
+    text-align: center;
+    align-items: center;
+  }
+  .dq-discount-links {
+    justify-content: center;
+  }
+  .dq-discount-content h4 {
+    font-size: 0.95rem;
+  }
+  .dq-discount-content p {
+    font-size: 0.78rem;
+  }
+}

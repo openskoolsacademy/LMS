@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import {
   FiZap, FiClock, FiCheckCircle, FiXCircle, FiArrowLeft, FiArrowRight,
   FiAward, FiTrendingUp, FiAlertCircle, FiStar, FiDatabase, FiHelpCircle,
-  FiCalendar, FiCheck, FiLock, FiFilter, FiInfo
+  FiCalendar, FiCheck, FiLock, FiFilter, FiInfo, FiGift, FiBookOpen
 } from 'react-icons/fi';
 import { FaFire, FaWhatsapp } from 'react-icons/fa';
 import { supabase } from '../lib/supabase';
@@ -897,6 +897,19 @@ export default function DailyQuiz() {
                 <Link to="/dashboard" className="btn btn-outline">
                   <FiArrowLeft /> Dashboard
                 </Link>
+              </div>
+            </div>
+
+            {/* Points = Savings Banner */}
+            <div className="dq-discount-banner">
+              <div className="dq-discount-icon"><FiGift /></div>
+              <div className="dq-discount-content">
+                <h4>💰 Turn Your Points into Discounts!</h4>
+                <p>You just earned <strong>+{totalEarned} pts</strong> — use them for <strong>₹1-per-point discounts</strong> on Bootcamps (up to ₹3,000) and Courses (up to ₹100). The more you quiz, the more you save!</p>
+                <div className="dq-discount-links">
+                  <Link to="/live-bootcamps" className="dq-discount-link bootcamp"><FiZap /> Bootcamps</Link>
+                  <Link to="/courses" className="dq-discount-link course"><FiBookOpen /> Courses</Link>
+                </div>
               </div>
             </div>
 

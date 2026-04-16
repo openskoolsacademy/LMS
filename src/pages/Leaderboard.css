@@ -239,3 +239,102 @@
   border: 2px dashed var(--primary-200);
 }
 .lb-pinned-label { font-size: 0.75rem; font-weight: 700; color: var(--primary); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* Points = Savings Discount Banner */
+.lb-discount-banner {
+  background: linear-gradient(135deg, #eff6ff 0%, #fef3c7 100%);
+  border: 2px solid #bfdbfe;
+  border-radius: 20px;
+  padding: 28px;
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  margin-bottom: 32px;
+  position: relative;
+  overflow: hidden;
+}
+.lb-discount-banner::before {
+  content: '';
+  position: absolute;
+  top: -30%;
+  right: -10%;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(0,138,209,0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+.lb-discount-icon {
+  font-size: 2rem;
+  color: #f59e0b;
+  background: white;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(245,158,11,0.15);
+}
+.lb-discount-content { flex: 1; min-width: 0; }
+.lb-discount-content h4 {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #1f2937;
+  margin: 0 0 6px 0;
+}
+.lb-discount-content p {
+  font-size: 0.85rem;
+  color: #4b5563;
+  line-height: 1.55;
+  margin: 0 0 14px 0;
+}
+.lb-discount-links {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.lb-discount-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+.lb-discount-link.bootcamp {
+  background: #008ad1;
+  color: white;
+}
+.lb-discount-link.bootcamp:hover {
+  background: #006eb8;
+  transform: translateY(-1px);
+}
+.lb-discount-link.course {
+  background: white;
+  color: #008ad1;
+  border: 1.5px solid #bfdbfe;
+}
+.lb-discount-link.course:hover {
+  background: #eff6ff;
+  transform: translateY(-1px);
+}
+
+@media (max-width: 640px) {
+  .lb-discount-banner {
+    flex-direction: column;
+    padding: 20px;
+    gap: 14px;
+    text-align: center;
+    align-items: center;
+  }
+  .lb-discount-links {
+    justify-content: center;
+  }
+  .lb-discount-content h4 {
+    font-size: 1rem;
+  }
+}
