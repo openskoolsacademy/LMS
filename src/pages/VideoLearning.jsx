@@ -280,7 +280,7 @@ export default function VideoLearning() {
                       className={`vl-lesson-btn ${activeLesson === lesson.id ? 'active' : ''}`}
                       onClick={() => setActiveLesson(lesson.id)}
                     >
-                      <span className="vl-lesson-check" onClick={(e) => { e.stopPropagation(); toggleComplete(lesson.id); }}>
+                      <span className="vl-lesson-check">
                         {completed.includes(lesson.id) ? <FiCheckCircle className="completed" /> : <FiCircle />}
                       </span>
                       <span className="vl-lesson-title">{lesson.title}</span>
@@ -396,7 +396,7 @@ export default function VideoLearning() {
                   className={`vl-sidebar-lesson ${activeLesson === lesson.id ? 'active' : ''} ${completed.includes(lesson.id) ? 'done' : ''}`}
                   onClick={() => setActiveLesson(lesson.id)}
                 >
-                  <span className="vl-lesson-check" onClick={(e) => { e.stopPropagation(); toggleComplete(lesson.id); }}>
+                  <span className="vl-lesson-check">
                     {completed.includes(lesson.id) ? <FiCheckCircle className="completed" /> : <FiCircle />}
                   </span>
                   <div className="vl-sidebar-lesson-info">
