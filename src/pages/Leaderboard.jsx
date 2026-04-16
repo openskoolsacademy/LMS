@@ -618,7 +618,7 @@ export default function Leaderboard() {
           <div className="lb-discount-banner">
             <div className="lb-discount-icon"><FiGift /></div>
             <div className="lb-discount-content">
-              <h4>🎉 Your Points = Real Savings!</h4>
+              <h4>Your Points = Real Savings!</h4>
               <p>Every point you earn here can be redeemed as <strong>₹1 discount</strong> on Bootcamps (up to ₹3000) and Courses (up to ₹100). Keep climbing the leaderboard!</p>
               <div className="lb-discount-links">
                 <Link to="/live-bootcamps" className="lb-discount-link bootcamp"><FiZap /> Browse Bootcamps</Link>

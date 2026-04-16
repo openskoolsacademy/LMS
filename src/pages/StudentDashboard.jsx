@@ -636,7 +636,7 @@ export default function StudentDashboard() {
                     </div>
                     <div className="sdq-tier-bar"><div className="sdq-tier-fill" style={{ width: '100%', background: 'linear-gradient(90deg, #008ad1, #f59e0b, #ef4444)' }} /></div>
                     <p style={{ margin: '10px 0 0', fontSize: '0.82rem', color: '#6b7280', lineHeight: 1.5 }}>
-                      🎉 You've reached the highest rank! Use your <strong style={{ color: '#008ad1' }}>{userPoints} points</strong> to get discounts on <strong>Bootcamps</strong> or <strong>Courses</strong>. Keep earning to save more!
+                      You've reached the highest rank! Use your <strong style={{ color: '#008ad1' }}>{userPoints} points</strong> to get discounts on <strong>Bootcamps</strong> or <strong>Courses</strong>. Keep earning to save more!
                     </p>
                   </>
                 ) : (
