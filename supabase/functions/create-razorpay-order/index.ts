@@ -129,6 +129,13 @@ serve(async (req) => {
           }
       }
 
+      // If a points-based discount amount was passed, use it (must be <= calculated price)
+      const requestedPrice = requestedAmount ? Math.round(requestedAmount / 100) : null;
+      if (requestedPrice !== null && requestedPrice <= finalPrice && requestedPrice > 0) {
+        console.log(`Applying points override: ${finalPrice} -> ${requestedPrice}`);
+        finalPrice = requestedPrice;
+      }
+
       receiptId = `rcpt_${course_id.substring(0, 8)}_${Date.now().toString().slice(-6)}`;
     } else {
       throw new Error('Either course_id, event_id, or live_bootcamp_id is required');

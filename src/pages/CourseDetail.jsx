@@ -198,8 +198,13 @@ export default function CourseDetail() {
       console.log('Session refreshed. Token valid until:', sessionData?.session?.expires_at);
 
       // 1. Create order on the backend securely
+      const orderBody = { course_id: id, coupon_code: couponApplied ? couponApplied.code.toUpperCase() : null };
+      // When using points, override the amount so Razorpay charges the discounted price
+      if (discountMode === 'points' && pointsToUse > 0) {
+        orderBody.amount = finalPrice * 100; // amount in paise
+      }
       const { data: orderData, error: orderError } = await supabase.functions.invoke('create-razorpay-order', {
-        body: { course_id: id, coupon_code: couponApplied ? couponApplied.code.toUpperCase() : null }
+        body: orderBody
       });
 
       // Supabase functions.invoke may return the error in `data` instead of `error`
