@@ -27,7 +27,6 @@ export default function LiveBootcampDetail() {
   const [pointsBalance, setPointsBalance] = useState(0);
   const [pointsToUse, setPointsToUse] = useState(0);
   const [discountMode, setDiscountMode] = useState('none'); // 'none' | 'points' | 'coupon'
-  const [pendingRedemptionId, setPendingRedemptionId] = useState(null);
 
   useEffect(() => {
     fetchBootcamp();
@@ -194,29 +193,8 @@ export default function LiveBootcampDetail() {
         return;
       }
 
-      // ── Points Redemption: Lock points before payment ──
-      let redemptionId = null;
-      let actualPointsUsed = 0;
-
-      if (discountMode === 'points' && pointsToUse > 0) {
-        try {
-          const { data: redeemResult, error: redeemErr } = await supabase.rpc('redeem_points', {
-            p_user_id: user.id,
-            p_live_bootcamp_id: bootcamp.id,
-            p_points: pointsToUse,
-            p_bootcamp_price: bootcamp.price
-          });
-          if (redeemErr) throw new Error(redeemErr.message);
-          if (!redeemResult?.success) throw new Error(redeemResult?.error || 'Points redemption failed.');
-          redemptionId = redeemResult.redemption_id;
-          actualPointsUsed = redeemResult.points_used;
-          setPendingRedemptionId(redemptionId);
-        } catch (err) {
-          await showAlert(err.message, 'Points Error', 'error');
-          setRegistering(false);
-          return;
-        }
-      }
+      // Capture points to use for this transaction
+      const wantedPoints = (discountMode === 'points' && pointsToUse > 0) ? pointsToUse : 0;
 
       const finalPrice = calculateFinalPrice();
 
@@ -226,46 +204,18 @@ export default function LiveBootcampDetail() {
         });
 
         if (orderError) {
-          // Restore points if order creation fails
-          if (redemptionId) {
-            await supabase.rpc('cancel_point_redemption', { p_redemption_id: redemptionId });
-            setPendingRedemptionId(null);
-            setPointsBalance(prev => prev + actualPointsUsed);
-          }
           let errMsg = 'Order creation failed.';
           if (orderError.context && typeof orderError.context.json === 'function') {
             try { const body = await orderError.context.json(); errMsg = body.error || body.message || errMsg; } catch {}
           } else if (orderError.message) errMsg = orderError.message;
           throw new Error(errMsg);
         }
-        if (orderData?.error) {
-          if (redemptionId) {
-            await supabase.rpc('cancel_point_redemption', { p_redemption_id: redemptionId });
-            setPendingRedemptionId(null);
-            setPointsBalance(prev => prev + actualPointsUsed);
-          }
-          throw new Error(orderData.error);
-        }
-        if (!orderData?.id || !orderData?.amount) {
-          if (redemptionId) {
-            await supabase.rpc('cancel_point_redemption', { p_redemption_id: redemptionId });
-            setPendingRedemptionId(null);
-            setPointsBalance(prev => prev + actualPointsUsed);
-          }
-          throw new Error('Invalid order response.');
-        }
+        if (orderData?.error) throw new Error(orderData.error);
+        if (!orderData?.id || !orderData?.amount) throw new Error('Invalid order response.');
 
         if (typeof window.Razorpay === 'undefined') {
-          if (redemptionId) {
-            await supabase.rpc('cancel_point_redemption', { p_redemption_id: redemptionId });
-            setPendingRedemptionId(null);
-            setPointsBalance(prev => prev + actualPointsUsed);
-          }
           throw new Error('Razorpay SDK not loaded.');
         }
-
-        const capturedRedemptionId = redemptionId;
-        const capturedPointsUsed = actualPointsUsed;
 
         const options = {
           key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_live_SXsCOJNHFUtIJA',
@@ -289,10 +239,20 @@ export default function LiveBootcampDetail() {
               if (verifyError) throw verifyError;
               if (verifyData?.error) throw new Error(verifyData.error);
 
-              // Complete points redemption
-              if (capturedRedemptionId) {
-                await supabase.rpc('complete_point_redemption', { p_redemption_id: capturedRedemptionId });
-                setPendingRedemptionId(null);
+              // ── Deduct points ONLY after successful payment ──
+              let actualPointsUsed = 0;
+              if (wantedPoints > 0) {
+                const { data: redeemResult, error: redeemErr } = await supabase.rpc('redeem_points', {
+                  p_user_id: user.id,
+                  p_live_bootcamp_id: bootcamp.id,
+                  p_points: wantedPoints,
+                  p_bootcamp_price: bootcamp.price
+                });
+                if (!redeemErr && redeemResult?.success) {
+                  actualPointsUsed = redeemResult.points_used;
+                  // Mark as completed immediately
+                  await supabase.rpc('complete_point_redemption', { p_redemption_id: redeemResult.redemption_id });
+                }
               }
 
               if (couponApplied) {
@@ -305,19 +265,13 @@ export default function LiveBootcampDetail() {
                 registered: true,
                 payment_id: response.razorpay_payment_id,
                 amount_paid: finalPrice,
-                points_used: capturedPointsUsed
+                points_used: actualPointsUsed
               }]).select().single();
 
               setEnrollment(enrollData || { registered: true });
-              setPointsBalance(prev => prev - capturedPointsUsed);
+              if (actualPointsUsed > 0) setPointsBalance(prev => prev - actualPointsUsed);
               await showAlert('Payment successful! You are enrolled.', 'Success', 'success', { celebrate: true });
             } catch (err) {
-              // Payment verification failed — restore points
-              if (capturedRedemptionId) {
-                await supabase.rpc('cancel_point_redemption', { p_redemption_id: capturedRedemptionId });
-                setPendingRedemptionId(null);
-                setPointsBalance(prev => prev + capturedPointsUsed);
-              }
               await showAlert(err.message || 'Payment verification failed.', 'Error', 'error');
             } finally {
               setRegistering(false);
@@ -329,12 +283,6 @@ export default function LiveBootcampDetail() {
 
         const rzp = new window.Razorpay(options);
         rzp.on('payment.failed', async (response) => {
-          // Payment failed — restore points
-          if (capturedRedemptionId) {
-            await supabase.rpc('cancel_point_redemption', { p_redemption_id: capturedRedemptionId });
-            setPendingRedemptionId(null);
-            setPointsBalance(prev => prev + capturedPointsUsed);
-          }
           await showAlert(`Payment Failed: ${response.error.description}`, 'Error', 'error');
           setRegistering(false);
         });
@@ -343,9 +291,18 @@ export default function LiveBootcampDetail() {
       }
 
       // Free or fully discounted via coupon
-      if (redemptionId) {
-        await supabase.rpc('complete_point_redemption', { p_redemption_id: redemptionId });
-        setPendingRedemptionId(null);
+      let actualPointsUsed = 0;
+      if (wantedPoints > 0) {
+        const { data: redeemResult, error: redeemErr } = await supabase.rpc('redeem_points', {
+          p_user_id: user.id,
+          p_live_bootcamp_id: bootcamp.id,
+          p_points: wantedPoints,
+          p_bootcamp_price: bootcamp.price
+        });
+        if (!redeemErr && redeemResult?.success) {
+          actualPointsUsed = redeemResult.points_used;
+          await supabase.rpc('complete_point_redemption', { p_redemption_id: redeemResult.redemption_id });
+        }
       }
       if (couponApplied) {
         await supabase.from('coupons').update({ used_count: (couponApplied.used_count || 0) + 1 }).eq('id', couponApplied.id);
@@ -365,7 +322,7 @@ export default function LiveBootcampDetail() {
         } else throw enrollError;
       } else {
         setEnrollment(enrollData);
-        setPointsBalance(prev => prev - actualPointsUsed);
+        if (actualPointsUsed > 0) setPointsBalance(prev => prev - actualPointsUsed);
         await showAlert('You have been enrolled!', 'Success', 'success', { celebrate: true });
       }
     } catch (err) {
