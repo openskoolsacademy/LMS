@@ -54,14 +54,16 @@ export default function InstructorProfile() {
           title: c.title,
           description: c.description,
           category: c.category,
-          price: c.price,
+          price: c.offer_price || c.regular_price || c.price || 0,
+          offer_price: c.offer_price || null,
+          regular_price: c.regular_price || c.price || 0,
           level: c.level,
           thumbnail: resolveImageUrl(c.thumbnail_url) || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80&w=800',
           instructor: userData.name || 'Instructor',
           rating: stats.average_rating || 0,
           reviewsCount: stats.review_count || 0,
           studentsEnrolled: stats.student_count || 0,
-          originalPrice: c.price * 1.5,
+          originalPrice: c.offer_price ? (c.regular_price || c.price || 0) : null,
           bestseller: false,
           lastUpdated: new Date(c.updated_at).toLocaleDateString()
         };
