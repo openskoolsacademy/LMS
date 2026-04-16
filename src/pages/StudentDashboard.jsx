@@ -628,11 +628,26 @@ export default function StudentDashboard() {
 
               {/* Progress to next tier */}
               <div className="sdq-tier-card">
-                <div className="sdq-tier-info">
-                  <span>Progress to {nextTier.emoji} {nextTier.label}</span>
-                  <span>{userPoints} / {nextTier.pts} pts</span>
-                </div>
-                <div className="sdq-tier-bar"><div className="sdq-tier-fill" style={{ width: `${tierProgress}%` }} /></div>
+                {userPoints >= 3000 ? (
+                  <>
+                    <div className="sdq-tier-info">
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><FaCrown style={{ color: '#008ad1' }} /> Crown Achieved!</span>
+                      <span style={{ fontWeight: 800, color: '#008ad1' }}>{userPoints} pts</span>
+                    </div>
+                    <div className="sdq-tier-bar"><div className="sdq-tier-fill" style={{ width: '100%', background: 'linear-gradient(90deg, #008ad1, #f59e0b, #ef4444)' }} /></div>
+                    <p style={{ margin: '10px 0 0', fontSize: '0.82rem', color: '#6b7280', lineHeight: 1.5 }}>
+                      🎉 You've reached the highest rank! Use your <strong style={{ color: '#008ad1' }}>{userPoints} points</strong> to get discounts on <strong>Bootcamps</strong> or <strong>Courses</strong>. Keep earning to save more!
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <div className="sdq-tier-info">
+                      <span>Progress to {nextTier.emoji} {nextTier.label}</span>
+                      <span>{userPoints} / {nextTier.pts} pts</span>
+                    </div>
+                    <div className="sdq-tier-bar"><div className="sdq-tier-fill" style={{ width: `${tierProgress}%` }} /></div>
+                  </>
+                )}
               </div>
 
               {/* Points-to-Discount Value Cards */}
