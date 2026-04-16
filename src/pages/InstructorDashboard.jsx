@@ -36,7 +36,6 @@ export default function InstructorDashboard() {
     level: 'Beginner', 
     description: '', 
     thumbnail_url: '', 
-    video_url: '',
     learning_outcomes: '',
     requirements: ''
   });
@@ -205,29 +204,9 @@ export default function InstructorDashboard() {
       if (editCourseId) {
         const { error } = await supabase.from('courses').update(payload).eq('id', editCourseId);
         if (error) throw error;
-
-        // Handle Promo Video correctly on Update
-        if (formData.video_url) {
-          const { data: introLesson } = await supabase.from('lessons').select('id').eq('course_id', editCourseId).eq('title', 'Course Introduction').single();
-          if (introLesson) {
-            await supabase.from('lessons').update({ video_url: formData.video_url }).eq('id', introLesson.id);
-          } else {
-            await supabase.from('lessons').insert([{ course_id: editCourseId, title: 'Course Introduction', video_url: formData.video_url, order_index: 0, duration: 10 }]);
-          }
-        }
       } else {
         const { data: newCourse, error } = await supabase.from('courses').insert([payload]).select().single();
         if (error) throw error;
-        
-        if (formData.video_url) {
-          await supabase.from('lessons').insert([{
-            course_id: newCourse.id,
-            title: 'Course Introduction',
-            video_url: formData.video_url,
-            order_index: 0,
-            duration: 10
-          }]);
-        }
       }
       
       setShowModal(false);
@@ -249,7 +228,6 @@ export default function InstructorDashboard() {
       level: 'Beginner', 
       description: '', 
       thumbnail_url: '', 
-      video_url: '',
       learning_outcomes: '',
       requirements: ''
     });
@@ -258,10 +236,6 @@ export default function InstructorDashboard() {
   
   const openEdit = async (c) => { 
     setEditCourseId(c.id); 
-    
-    // Fetch Promo Video correctly
-    const { data: introLesson } = await supabase.from('lessons').select('video_url').eq('course_id', c.id).eq('title', 'Course Introduction').single();
-    const vidUrl = introLesson ? introLesson.video_url : '';
 
     setFormData({ 
       title: c.title, 
@@ -273,7 +247,6 @@ export default function InstructorDashboard() {
       level: c.level, 
       description: c.description, 
       thumbnail_url: c.thumbnail_url || '', 
-      video_url: vidUrl,
       learning_outcomes: Array.isArray(c.learning_outcomes) ? c.learning_outcomes.join('\n') : '',
       requirements: Array.isArray(c.requirements) ? c.requirements.join('\n') : ''
     });
@@ -848,10 +821,6 @@ export default function InstructorDashboard() {
               <div className="form-group">
                 <label>Thumbnail URL</label>
                 <input type="url" placeholder="Enter thumbnail image URL" value={formData.thumbnail_url} onChange={e => setFormData({...formData, thumbnail_url: e.target.value})} />
-              </div>
-              <div className="form-group">
-                <label>Intro Video URL</label>
-                <input type="url" placeholder="Enter promo video URL" value={formData.video_url} onChange={e => setFormData({...formData, video_url: e.target.value})} />
               </div>
             </div>
             <div className="form-actions">
