@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { FiPlay, FiClock, FiBookOpen, FiUsers, FiGlobe, FiAward, FiChevronDown, FiChevronUp, FiCheck, FiStar, FiTag, FiFileText, FiTrash2, FiEdit2 } from 'react-icons/fi';
+import { FiPlay, FiClock, FiBookOpen, FiUsers, FiGlobe, FiAward, FiChevronDown, FiChevronUp, FiCheck, FiStar, FiTag, FiFileText, FiTrash2, FiEdit2, FiGift, FiZap, FiMinus, FiPlus } from 'react-icons/fi';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { useAlert } from '../context/AlertContext';
@@ -35,12 +35,24 @@ export default function CourseDetail() {
   const [editRating, setEditRating] = useState(5);
   const [editComment, setEditComment] = useState('');
 
+  // Points-to-Discount state (max 100 for recorded courses)
+  const [pointsBalance, setPointsBalance] = useState(0);
+  const [pointsToUse, setPointsToUse] = useState(0);
+  const [discountMode, setDiscountMode] = useState('none'); // 'none' | 'points' | 'coupon'
+
   useEffect(() => {
     fetchCourseDetails();
     if (user) {
       checkEnrollment();
+      fetchPointsBalance();
     }
   }, [id, user]);
+
+  const fetchPointsBalance = async () => {
+    if (!user) return;
+    const { data } = await supabase.from('user_points').select('total_points').eq('user_id', user.id).maybeSingle();
+    setPointsBalance(data?.total_points || 0);
+  };
 
   const fetchCourseDetails = async (retryCount = 0) => {
     const MAX_RETRIES = 3;
@@ -239,8 +251,25 @@ export default function CourseDetail() {
 
             if (verifyError) throw verifyError;
             if (verifyData?.error) throw new Error(verifyData.error);
+
+            // ── Deduct points ONLY after successful payment ──
+            let actualPointsUsed = 0;
+            const wantedPoints = (discountMode === 'points' && pointsToUse > 0) ? pointsToUse : 0;
+            if (wantedPoints > 0) {
+              const { data: redeemResult, error: redeemErr } = await supabase.rpc('redeem_points', {
+                p_user_id: user.id,
+                p_live_bootcamp_id: id, // reusing the function — course_id goes here
+                p_points: wantedPoints,
+                p_bootcamp_price: course.displayPrice
+              });
+              if (!redeemErr && redeemResult?.success) {
+                actualPointsUsed = redeemResult.points_used;
+                await supabase.rpc('complete_point_redemption', { p_redemption_id: redeemResult.redemption_id });
+              }
+            }
             
             setIsEnrolled(true);
+            if (actualPointsUsed > 0) setPointsBalance(prev => prev - actualPointsUsed);
             
             // Send Notifications
             await Promise.all([
@@ -365,11 +394,38 @@ export default function CourseDetail() {
 
   const calculateFinalPrice = () => {
     const basePrice = course.displayPrice;
-    if (!couponApplied) return basePrice;
-    if (couponApplied.discount_type === 'percentage') {
-      return Math.round(basePrice * (1 - couponApplied.discount_value / 100));
+    if (discountMode === 'points' && pointsToUse > 0) {
+      return Math.max(1, basePrice - pointsToUse); // Minimum ₹1
+    }
+    if (discountMode === 'coupon' && couponApplied) {
+      if (couponApplied.discount_type === 'percentage') {
+        return Math.round(basePrice * (1 - couponApplied.discount_value / 100));
+      } else {
+        return Math.max(0, basePrice - couponApplied.discount_value);
+      }
+    }
+    return basePrice;
+  };
+
+  // Max redeemable: min(balance, 100, price - 1)
+  const maxRedeemable = course ? Math.min(pointsBalance, 100, Math.max(0, course.displayPrice - 1)) : 0;
+
+  const handlePointsChange = (val) => {
+    const num = Math.max(0, Math.min(parseInt(val) || 0, maxRedeemable));
+    setPointsToUse(num);
+  };
+
+  const handleDiscountModeChange = (mode) => {
+    setDiscountMode(mode);
+    if (mode === 'points') {
+      setCouponApplied(null);
+      setCoupon('');
+    } else if (mode === 'coupon') {
+      setPointsToUse(0);
     } else {
-      return Math.max(0, basePrice - couponApplied.discount_value);
+      setPointsToUse(0);
+      setCouponApplied(null);
+      setCoupon('');
     }
   };
 
@@ -806,27 +862,85 @@ export default function CourseDetail() {
             <div className="cd-price-content">
               <div className="cd-price-row">
                 <span className="cd-price">₹{finalPrice.toLocaleString()}</span>
-                {(course.offer_price || couponApplied) && (
+                {(course.offer_price || couponApplied || (discountMode === 'points' && pointsToUse > 0)) && finalPrice < course.originalPrice && (
                   <span className="cd-original-price">₹{course.originalPrice.toLocaleString()}</span>
                 )}
-                {couponApplied && (
+                {discountMode === 'points' && pointsToUse > 0 && (
+                  <span className="badge badge-success">₹{course.displayPrice - finalPrice} OFF</span>
+                )}
+                {discountMode === 'coupon' && couponApplied && (
                   <span className="badge badge-success">
                     {couponApplied.discount_type === 'percentage' ? `${couponApplied.discount_value}% OFF` : `₹${couponApplied.discount_value} OFF`}
                   </span>
                 )}
-                {course.offer_price && !couponApplied && (
+                {course.offer_price && discountMode === 'none' && !couponApplied && (
                   <span className="badge badge-warning">OFFER PRICE</span>
                 )}
               </div>
               
               {!isEnrolled && (
                 <>
-                  <div className="cd-coupon">
-                    <input type="text" placeholder="Enter coupon code" value={coupon} onChange={(e) => setCoupon(e.target.value)} />
-                    <button className="btn btn-outline btn-sm" onClick={applyCoupon} disabled={couponApplied}><FiTag /> {couponApplied ? 'Applied' : 'Apply'}</button>
-                  </div>
-                  {couponApplied && <p className="coupon-msg">Coupon {couponApplied.code} applied successfully!</p>}
-                  <Button variant="primary" size="lg" fullWidth onClick={handlePayment}>Enroll Now</Button>
+                  {/* Discount Mode Toggle */}
+                  {course.displayPrice > 0 && (
+                    <div className="lbd-discount-toggle" style={{ marginBottom: '8px' }}>
+                      <button
+                        className={`lbd-toggle-btn ${discountMode === 'points' ? 'active' : ''}`}
+                        onClick={() => handleDiscountModeChange(discountMode === 'points' ? 'none' : 'points')}
+                        disabled={pointsBalance <= 0}
+                      >
+                        <FiGift /> Use Points {pointsBalance <= 0 && <span style={{fontSize: '0.7rem', opacity: 0.7}}>(0 pts)</span>}
+                      </button>
+                      <button
+                        className={`lbd-toggle-btn ${discountMode === 'coupon' ? 'active' : ''}`}
+                        onClick={() => handleDiscountModeChange(discountMode === 'coupon' ? 'none' : 'coupon')}
+                      >
+                        <FiTag /> Use Coupon
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Points Section */}
+                  {discountMode === 'points' && pointsBalance > 0 && course.displayPrice > 0 && (
+                    <div className="lbd-points-section" style={{ marginBottom: '10px' }}>
+                      <div className="lbd-points-balance">
+                        <FiZap style={{ color: '#f59e0b' }} />
+                        <span>You have <strong>₹{Math.min(pointsBalance, 100)}</strong> redeemable (max 100)</span>
+                      </div>
+                      <div className="lbd-points-input-row">
+                        <button className="lbd-points-btn" onClick={() => handlePointsChange(pointsToUse - 10)} disabled={pointsToUse <= 0}><FiMinus /></button>
+                        <input
+                          type="number"
+                          className="lbd-points-input"
+                          value={pointsToUse}
+                          onChange={(e) => handlePointsChange(e.target.value)}
+                          min={0}
+                          max={maxRedeemable}
+                        />
+                        <button className="lbd-points-btn" onClick={() => handlePointsChange(pointsToUse + 10)} disabled={pointsToUse >= maxRedeemable}><FiPlus /></button>
+                        <button className="lbd-points-max-btn" onClick={() => handlePointsChange(maxRedeemable)}>Use Max</button>
+                      </div>
+                      <div className="lbd-points-bar">
+                        <div className="lbd-points-bar-fill" style={{ width: `${maxRedeemable > 0 ? (pointsToUse / maxRedeemable) * 100 : 0}%` }} />
+                      </div>
+                      {pointsToUse > 0 && (
+                        <div className="lbd-price-breakdown">
+                          <div className="lbd-breakdown-row"><span>Original Price</span><span>₹{course.displayPrice}</span></div>
+                          <div className="lbd-breakdown-row discount"><span>Points Discount</span><span>-₹{pointsToUse}</span></div>
+                          <div className="lbd-breakdown-row total"><span>You Pay</span><span>₹{calculateFinalPrice()}</span></div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Coupon Section */}
+                  {discountMode === 'coupon' && course.displayPrice > 0 && (
+                    <div className="cd-coupon">
+                      <input type="text" placeholder="Enter coupon code" value={coupon} onChange={(e) => setCoupon(e.target.value)} disabled={!!couponApplied} />
+                      <button className="btn btn-outline btn-sm" onClick={applyCoupon} disabled={couponApplied}><FiTag /> {couponApplied ? 'Applied' : 'Apply'}</button>
+                    </div>
+                  )}
+                  {discountMode === 'coupon' && couponApplied && <p className="coupon-msg">Coupon {couponApplied.code} applied successfully!</p>}
+                  <Button variant="primary" size="lg" fullWidth onClick={handlePayment}>Enroll Now — ₹{finalPrice.toLocaleString()}</Button>
 
                 </>
               )}
