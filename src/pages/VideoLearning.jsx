@@ -116,25 +116,7 @@ export default function VideoLearning() {
   }, [id]);
 
   // All hooks MUST be called before any early returns (React Rules of Hooks)
-  const toggleComplete = async (lid) => {
-    if (!user) return;
-    const isCompleted = completed.includes(lid);
-    
-    // Optimistic UI update
-    setCompleted(prev => isCompleted ? prev.filter(x => x !== lid) : [...prev, lid]);
 
-    try {
-      if (isCompleted) {
-        await supabase.from('lesson_completions').delete().eq('user_id', user.id).eq('lesson_id', lid);
-      } else {
-        await supabase.from('lesson_completions').insert([{ user_id: user.id, lesson_id: lid }]);
-      }
-    } catch (err) {
-      console.error("Error toggling completion:", err);
-      // Revert on error
-      setCompleted(prev => isCompleted ? [...prev, lid] : prev.filter(x => x !== lid));
-    }
-  };
 
   const markComplete = useCallback(async (lid) => {
     if (!lid || !user) return;
