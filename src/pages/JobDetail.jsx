@@ -84,7 +84,7 @@ export default function JobDetail() {
     return lines;
   };
 
-  const generateJobImage = () => {
+  const generateJobImage = async () => {
     const W = 1080, H = 1350;
     const canvas = document.createElement('canvas');
     canvas.width = W;
@@ -137,11 +137,53 @@ export default function JobDetail() {
     }
     y += 20;
 
-    // Company Name
-    ctx.fillStyle = '#008ad1';
-    ctx.font = 'bold 34px Arial, sans-serif';
-    ctx.fillText(job.company_name || '', px, y);
-    y += 60;
+    // Company Name + Logo
+    if (job.company_logo) {
+      try {
+        const logoImg = new Image();
+        logoImg.crossOrigin = 'Anonymous';
+        logoImg.src = job.company_logo;
+        await new Promise((resolve) => {
+          logoImg.onload = resolve;
+          logoImg.onerror = resolve;
+        });
+        if (logoImg.complete && logoImg.naturalWidth > 0) {
+          // Calculate aspect ratio to fit inside 60x60
+          const maxDim = 60;
+          let dw = logoImg.naturalWidth, dh = logoImg.naturalHeight;
+          if (dw > dh) {
+            dh = (dh / dw) * maxDim;
+            dw = maxDim;
+          } else {
+            dw = (dw / dh) * maxDim;
+            dh = maxDim;
+          }
+          // Center vertically relative to text
+          const dy = y - 45 + (maxDim - dh) / 2;
+          ctx.drawImage(logoImg, px, dy, dw, dh);
+          
+          ctx.fillStyle = '#008ad1';
+          ctx.font = 'bold 34px Arial, sans-serif';
+          ctx.fillText(job.company_name || '', px + 75, y);
+          y += 60;
+        } else {
+          ctx.fillStyle = '#008ad1';
+          ctx.font = 'bold 34px Arial, sans-serif';
+          ctx.fillText(job.company_name || '', px, y);
+          y += 60;
+        }
+      } catch (err) {
+        ctx.fillStyle = '#008ad1';
+        ctx.font = 'bold 34px Arial, sans-serif';
+        ctx.fillText(job.company_name || '', px, y);
+        y += 60;
+      }
+    } else {
+      ctx.fillStyle = '#008ad1';
+      ctx.font = 'bold 34px Arial, sans-serif';
+      ctx.fillText(job.company_name || '', px, y);
+      y += 60;
+    }
 
     // Divider line
     ctx.strokeStyle = '#e5e7eb';
@@ -241,7 +283,7 @@ export default function JobDetail() {
 
   const handleWhatsAppShare = async () => {
     try {
-      const canvas = generateJobImage();
+      const canvas = await generateJobImage();
       
       // Convert canvas to blob
       const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
@@ -332,12 +374,21 @@ export default function JobDetail() {
                 <span className="job-badge badge-category">{job.category}</span>
               </div>
               
-              <h1 className="jd-title">{job.role}</h1>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px' }}>
+                {job.company_logo && (
+                  <img 
+                    src={job.company_logo} 
+                    alt={job.company_name} 
+                    style={{ width: '64px', height: '64px', objectFit: 'contain', borderRadius: '8px', background: '#fff', padding: '6px', border: '1px solid var(--border-color)', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }} 
+                  />
+                )}
+                <h1 className="jd-title" style={{ marginBottom: 0 }}>{job.role}</h1>
+              </div>
               
-                <div className="jd-meta-grid">
+              <div className="jd-meta-grid">
                 <div className="jd-meta-item">
-                  <FiBriefcase />
-                  <span>{job.company_name}</span>
+                  {!job.company_logo && <FiBriefcase />}
+                  <span style={{ fontWeight: 600, color: 'var(--primary)' }}>{job.company_name}</span>
                 </div>
                 <div className="jd-meta-item">
                   <FiMapPin />

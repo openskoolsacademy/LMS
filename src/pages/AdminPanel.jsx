@@ -42,7 +42,7 @@ export default function AdminPanel() {
   const [couponForm, setCouponForm] = useState({ code: '', discount_type: 'percentage', discount_value: '', course_id: '', event_id: '', live_bootcamp_id: '', expiry_date: '', usage_limit: '' });
   const [couponSubmitting, setCouponSubmitting] = useState(false);
   const [editingJob, setEditingJob] = useState(null);
-  const [jobForm, setJobForm] = useState({ company_name: '', role: '', category: 'Freshers', salary: '', location: '', job_type: 'Full-time', experience_level: '', qualification: '', vacancies: '', description: '', venue: '', contact_details: '', date_time: '', apply_link: '', expiry_date: '', is_urgent: false, job_mode: 'apply_link' });
+  const [jobForm, setJobForm] = useState({ company_name: '', company_logo: '', role: '', category: 'Freshers', salary: '', location: '', job_type: 'Full-time', experience_level: '', qualification: '', vacancies: '', description: '', venue: '', contact_details: '', date_time: '', apply_link: '', expiry_date: '', is_urgent: false, job_mode: 'apply_link' });
   const [jobSubmitting, setJobSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
   const [activeMenu, setActiveMenu] = useState(null); // { id, type, rect }
@@ -2988,6 +2988,10 @@ export default function AdminPanel() {
             <div className="form-group">
               <label>Company Name *</label>
               <input type="text" className="form-control" required value={jobForm.company_name} onChange={e => setJobForm({...jobForm, company_name: e.target.value})} />
+            </div>
+            <div className="form-group">
+              <label>Company Logo URL</label>
+              <input type="url" className="form-control" placeholder="https://example.com/logo.png" value={jobForm.company_logo || ''} onChange={e => setJobForm({...jobForm, company_logo: e.target.value})} />
             </div>
             <div className="form-group">
               <label>Job Role *</label>

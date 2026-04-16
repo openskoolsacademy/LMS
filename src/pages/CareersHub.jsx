@@ -228,7 +228,11 @@ export default function CareersHub() {
                 <Link key={job.id} to={`/careers/${job.id}`} className="job-card" style={isExpired(job.expiry_date) ? { opacity: 0.6 } : {}}>
                   <div className="job-card__header">
                     <div className="job-card__company-icon">
-                      {job.company_name?.charAt(0)?.toUpperCase() || 'J'}
+                      {job.company_logo ? (
+                        <img src={job.company_logo} alt={job.company_name} style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: 'inherit' }} />
+                      ) : (
+                        job.company_name?.charAt(0)?.toUpperCase() || 'J'
+                      )}
                     </div>
                     <div className="job-card__badges">
                       {/* Job Mode Tag */}
