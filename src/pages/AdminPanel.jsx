@@ -2265,8 +2265,8 @@ export default function AdminPanel() {
                                 <strong>Certificate Status</strong>
                               </div>
                               <ul className="ap-pactivity-list">
-                                <li><span>✅ Completed</span><span className="ap-pactivity-badge" style={{ background: '#dcfce7', color: '#16a34a' }}>{completedCerts.length}</span></li>
-                                <li><span>⏳ Pending</span><span className="ap-pactivity-badge" style={{ background: '#fef3c7', color: '#d97706' }}>{pendingCerts.length}</span></li>
+                                <li><span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}><FiCheckCircle size={14} style={{ color: '#16a34a' }} /> Completed</span><span className="ap-pactivity-badge" style={{ background: '#dcfce7', color: '#16a34a' }}>{completedCerts.length}</span></li>
+                                <li><span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}><FiClock size={14} style={{ color: '#d97706' }} /> Pending</span><span className="ap-pactivity-badge" style={{ background: '#fef3c7', color: '#d97706' }}>{pendingCerts.length}</span></li>
                               </ul>
                             </div>
                           </div>
@@ -2436,7 +2436,7 @@ export default function AdminPanel() {
                                       <td><span className="badge badge-primary" style={{ fontSize: '.65rem' }}>COURSE</span></td>
                                       <td><span style={{ fontFamily: 'monospace', color: '#8b5cf6', fontWeight: 600, fontSize: '.8rem' }}>{cert.certificate_id || cert.id?.slice(0, 8)}</span></td>
                                       <td><span style={{ fontSize: '.75rem' }}>{cert.created_at ? new Date(cert.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}</span></td>
-                                      <td><span className="badge badge-success" style={{ fontSize: '.688rem' }}>✅ Completed</span></td>
+                                      <td><span className="badge badge-success" style={{ fontSize: '.688rem', display: 'inline-flex', alignItems: 'center', gap: '4px' }}><FiCheckCircle size={12} /> Completed</span></td>
                                     </tr>
                                   ))}
                                   {profileExtras.events?.filter(e => e.certificate_issued).map((ev, i) => (
@@ -2445,7 +2445,7 @@ export default function AdminPanel() {
                                       <td><span className="badge badge-info" style={{ fontSize: '.65rem' }}>EVENT</span></td>
                                       <td><span style={{ fontFamily: 'monospace', color: '#8b5cf6', fontWeight: 600, fontSize: '.8rem' }}>{ev.certificate_id || '—'}</span></td>
                                       <td><span style={{ fontSize: '.75rem' }}>{ev.certificate_issued_at ? new Date(ev.certificate_issued_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}</span></td>
-                                      <td><span className="badge badge-success" style={{ fontSize: '.688rem' }}>✅ Completed</span></td>
+                                      <td><span className="badge badge-success" style={{ fontSize: '.688rem', display: 'inline-flex', alignItems: 'center', gap: '4px' }}><FiCheckCircle size={12} /> Completed</span></td>
                                     </tr>
                                   ))}
                                   {profileExtras.bootcamps?.filter(b => b.certificate_issued).map((bc, i) => (
@@ -2454,7 +2454,7 @@ export default function AdminPanel() {
                                       <td><span className="badge badge-warning" style={{ fontSize: '.65rem' }}>BOOTCAMP</span></td>
                                       <td><span style={{ fontFamily: 'monospace', color: '#8b5cf6', fontWeight: 600, fontSize: '.8rem' }}>{bc.certificate_id || '—'}</span></td>
                                       <td><span style={{ fontSize: '.75rem' }}>{bc.certificate_issued_at ? new Date(bc.certificate_issued_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}</span></td>
-                                      <td><span className="badge badge-success" style={{ fontSize: '.688rem' }}>✅ Completed</span></td>
+                                      <td><span className="badge badge-success" style={{ fontSize: '.688rem', display: 'inline-flex', alignItems: 'center', gap: '4px' }}><FiCheckCircle size={12} /> Completed</span></td>
                                     </tr>
                                   ))}
                                 </tbody>
@@ -2476,7 +2476,7 @@ export default function AdminPanel() {
                                       <td style={{ fontWeight: 600, fontSize: '.875rem' }}>{enr.course?.title}</td>
                                       <td><span className="badge badge-primary" style={{ fontSize: '.65rem' }}>COURSE</span></td>
                                       <td><span style={{ fontSize: '.75rem', color: 'var(--gray-500)' }}>Course 100% complete — certificate not yet issued</span></td>
-                                      <td><span className="badge badge-warning" style={{ fontSize: '.688rem' }}>⏳ Pending</span></td>
+                                      <td><span className="badge badge-warning" style={{ fontSize: '.688rem', display: 'inline-flex', alignItems: 'center', gap: '4px' }}><FiClock size={12} /> Pending</span></td>
                                     </tr>
                                   ))}
                                   {profileExtras.events?.filter(e => e.event?.enable_certificate && (e.status === 'JOINED' || e.attended) && !e.certificate_issued).map((ev, i) => (
@@ -2484,7 +2484,7 @@ export default function AdminPanel() {
                                       <td style={{ fontWeight: 600, fontSize: '.875rem' }}>{ev.event?.title}</td>
                                       <td><span className="badge badge-info" style={{ fontSize: '.65rem' }}>EVENT</span></td>
                                       <td><span style={{ fontSize: '.75rem', color: 'var(--gray-500)' }}>Attended event — certificate not yet issued</span></td>
-                                      <td><span className="badge badge-warning" style={{ fontSize: '.688rem' }}>⏳ Pending</span></td>
+                                      <td><span className="badge badge-warning" style={{ fontSize: '.688rem', display: 'inline-flex', alignItems: 'center', gap: '4px' }}><FiClock size={12} /> Pending</span></td>
                                     </tr>
                                   ))}
                                   {profileExtras.bootcamps?.filter(b => b.bootcamp?.enable_certificate && (b.status === 'JOINED' || b.completed) && !b.certificate_issued).map((bc, i) => (
@@ -2492,7 +2492,7 @@ export default function AdminPanel() {
                                       <td style={{ fontWeight: 600, fontSize: '.875rem' }}>{bc.bootcamp?.title}</td>
                                       <td><span className="badge badge-warning" style={{ fontSize: '.65rem' }}>BOOTCAMP</span></td>
                                       <td><span style={{ fontSize: '.75rem', color: 'var(--gray-500)' }}>Completed bootcamp — certificate not yet issued</span></td>
-                                      <td><span className="badge badge-warning" style={{ fontSize: '.688rem' }}>⏳ Pending</span></td>
+                                      <td><span className="badge badge-warning" style={{ fontSize: '.688rem', display: 'inline-flex', alignItems: 'center', gap: '4px' }}><FiClock size={12} /> Pending</span></td>
                                     </tr>
                                   ))}
                                 </tbody>
@@ -2556,8 +2556,8 @@ export default function AdminPanel() {
                                         </div>
                                       </td>
                                       <td>
-                                        <span className={`badge badge-${ass.passed ? 'success' : 'danger'}`} style={{ fontSize: '.688rem' }}>
-                                          {ass.passed ? '✅ PASSED' : '❌ FAILED'}
+                                        <span className={`badge badge-${ass.passed ? 'success' : 'danger'}`} style={{ fontSize: '.688rem', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                          {ass.passed ? <><FiCheckCircle size={12} /> PASSED</> : <><FiXCircle size={12} /> FAILED</>}
                                         </span>
                                       </td>
                                     </tr>

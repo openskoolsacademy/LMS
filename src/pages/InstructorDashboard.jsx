@@ -892,7 +892,7 @@ export default function InstructorDashboard() {
                   <input type="url" placeholder="Enter video lesson URL" value={lessonFormData.video_url} onChange={e => setLessonFormData({...lessonFormData, video_url: e.target.value})} onBlur={e => autoDetectDuration(e.target.value)} required />
                 </div>
                 <div className="form-group">
-                  <label>Duration (mins) {detectingDuration && <span style={{fontSize: '0.75rem', color: 'var(--primary)'}}>⏳ Detecting...</span>}</label>
+                  <label>Duration (mins) {detectingDuration && <span style={{fontSize: '0.75rem', color: 'var(--primary)', display: 'inline-flex', alignItems: 'center', gap: '4px'}}><FiClock size={12} /> Detecting...</span>}</label>
                   <input type="number" placeholder="Auto-detected" value={lessonFormData.duration} onChange={e => setLessonFormData({...lessonFormData, duration: e.target.value})} required min="1" />
                 </div>
               </div>
