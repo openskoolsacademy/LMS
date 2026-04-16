@@ -150,14 +150,19 @@ export default function JobDetail() {
         });
         
         if (logoImg.complete && logoImg.naturalWidth > 0) {
-          const maxDim = 180; // Increased size by request (was 120)
           let dw = logoImg.naturalWidth, dh = logoImg.naturalHeight;
-          if (dw > dh) {
-            dh = (dh / dw) * maxDim;
-            dw = maxDim;
-          } else {
-            dw = (dw / dh) * maxDim;
-            dh = maxDim;
+          const targetHeight = 100; // Increased size to 100px height as requested
+          
+          const ratio = targetHeight / dh;
+          dw = dw * ratio;
+          dh = targetHeight;
+          
+          // Cap the maximum width to prevent overflow
+          const maxWidth = 450;
+          if (dw > maxWidth) {
+            const wRatio = maxWidth / dw;
+            dw = maxWidth;
+            dh = dh * wRatio;
           }
           
           y += 80; // Push text down normally
@@ -394,7 +399,7 @@ export default function JobDetail() {
                   <img 
                     src={job.company_logo} 
                     alt={job.company_name} 
-                    style={{ width: '64px', height: '64px', objectFit: 'contain', borderRadius: '8px', background: '#fff', padding: '6px', border: '1px solid var(--border-color)', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }} 
+                    style={{ width: '100px', height: '100px', objectFit: 'contain', borderRadius: '8px', background: '#fff', padding: '6px', border: '1px solid var(--border-color)', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }} 
                   />
                 )}
                 <h1 className="jd-title" style={{ marginBottom: 0 }}>{job.role}</h1>

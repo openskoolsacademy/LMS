@@ -41,7 +41,7 @@ export default function Leaderboard() {
       let rows = [];
 
       if (type === 'alltime') {
-        // Join user_points with users + streaks
+        // Join user_points with users + streaks + attempt time data
         const { data: pts } = await supabase
           .from('user_points')
           .select('user_id, total_points, updated_at')
@@ -50,57 +50,83 @@ export default function Leaderboard() {
 
         if (pts?.length) {
           const userIds = pts.map(p => p.user_id);
-          const { data: users } = await supabase.from('users').select('id, name, avatar_url').in('id', userIds);
-          const { data: streaks } = await supabase.from('user_streaks').select('user_id, current_streak').in('user_id', userIds);
+          const [{ data: users }, { data: streaks }, { data: attempts }] = await Promise.all([
+            supabase.from('users').select('id, name, avatar_url').in('id', userIds),
+            supabase.from('user_streaks').select('user_id, current_streak').in('user_id', userIds),
+            supabase.from('daily_quiz_attempts').select('user_id, time_taken, submitted_at').in('user_id', userIds),
+          ]);
           const uMap = Object.fromEntries((users || []).map(u => [u.id, u]));
           const sMap = Object.fromEntries((streaks || []).map(s => [s.user_id, s.current_streak]));
+
+          // Aggregate: average time_taken and earliest submitted_at per user
+          const timeMap = {};
+          (attempts || []).forEach(a => {
+            if (!timeMap[a.user_id]) timeMap[a.user_id] = { totalTime: 0, count: 0, earliest: a.submitted_at };
+            timeMap[a.user_id].totalTime += (a.time_taken || 0);
+            timeMap[a.user_id].count += 1;
+            if (a.submitted_at && (!timeMap[a.user_id].earliest || a.submitted_at < timeMap[a.user_id].earliest)) {
+              timeMap[a.user_id].earliest = a.submitted_at;
+            }
+          });
+
           rows = pts.map(p => ({
             user_id: p.user_id,
             name: uMap[p.user_id]?.name || 'Unknown',
             avatar_url: uMap[p.user_id]?.avatar_url,
             points: p.total_points,
             streak: sMap[p.user_id] || 0,
+            avg_time: timeMap[p.user_id] ? Math.round(timeMap[p.user_id].totalTime / timeMap[p.user_id].count) : Infinity,
+            earliest_submit: timeMap[p.user_id]?.earliest || null,
           }));
         }
       } else if (type === 'weekly') {
         const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
         const { data: attempts } = await supabase
           .from('daily_quiz_attempts')
-          .select('user_id, points_earned, streak_bonus')
+          .select('user_id, points_earned, streak_bonus, time_taken, submitted_at')
           .gte('quiz_date', weekAgo);
 
         if (attempts?.length) {
           const agg = {};
           attempts.forEach(a => {
-            if (!agg[a.user_id]) agg[a.user_id] = 0;
-            agg[a.user_id] += (a.points_earned || 0) + (a.streak_bonus || 0);
+            if (!agg[a.user_id]) agg[a.user_id] = { points: 0, totalTime: 0, count: 0, earliest: a.submitted_at };
+            agg[a.user_id].points += (a.points_earned || 0) + (a.streak_bonus || 0);
+            agg[a.user_id].totalTime += (a.time_taken || 0);
+            agg[a.user_id].count += 1;
+            if (a.submitted_at && (!agg[a.user_id].earliest || a.submitted_at < agg[a.user_id].earliest)) {
+              agg[a.user_id].earliest = a.submitted_at;
+            }
           });
           const userIds = Object.keys(agg);
-          const { data: users } = await supabase.from('users').select('id, name, avatar_url').in('id', userIds);
-          const { data: streaks } = await supabase.from('user_streaks').select('user_id, current_streak').in('user_id', userIds);
+          const [{ data: users }, { data: streaks }] = await Promise.all([
+            supabase.from('users').select('id, name, avatar_url').in('id', userIds),
+            supabase.from('user_streaks').select('user_id, current_streak').in('user_id', userIds),
+          ]);
           const uMap = Object.fromEntries((users || []).map(u => [u.id, u]));
           const sMap = Object.fromEntries((streaks || []).map(s => [s.user_id, s.current_streak]));
           rows = Object.entries(agg)
-            .map(([uid, pts]) => ({
+            .map(([uid, data]) => ({
               user_id: uid,
               name: uMap[uid]?.name || 'Unknown',
               avatar_url: uMap[uid]?.avatar_url,
-              points: pts,
+              points: data.points,
               streak: sMap[uid] || 0,
-            }))
-            .sort((a, b) => b.points - a.points);
+              avg_time: data.count > 0 ? Math.round(data.totalTime / data.count) : Infinity,
+              earliest_submit: data.earliest || null,
+            }));
         }
       } else { // daily
         const { data: attempts } = await supabase
           .from('daily_quiz_attempts')
-          .select('user_id, points_earned, streak_bonus')
-          .eq('quiz_date', todayStr)
-          .order('points_earned', { ascending: false });
+          .select('user_id, points_earned, streak_bonus, time_taken, submitted_at')
+          .eq('quiz_date', todayStr);
 
         if (attempts?.length) {
           const userIds = attempts.map(a => a.user_id);
-          const { data: users } = await supabase.from('users').select('id, name, avatar_url').in('id', userIds);
-          const { data: streaks } = await supabase.from('user_streaks').select('user_id, current_streak').in('user_id', userIds);
+          const [{ data: users }, { data: streaks }] = await Promise.all([
+            supabase.from('users').select('id, name, avatar_url').in('id', userIds),
+            supabase.from('user_streaks').select('user_id, current_streak').in('user_id', userIds),
+          ]);
           const uMap = Object.fromEntries((users || []).map(u => [u.id, u]));
           const sMap = Object.fromEntries((streaks || []).map(s => [s.user_id, s.current_streak]));
           rows = attempts.map(a => ({
@@ -109,9 +135,26 @@ export default function Leaderboard() {
             avatar_url: uMap[a.user_id]?.avatar_url,
             points: (a.points_earned || 0) + (a.streak_bonus || 0),
             streak: sMap[a.user_id] || 0,
+            avg_time: a.time_taken || Infinity,
+            earliest_submit: a.submitted_at || null,
           }));
         }
       }
+
+      // Stable 3-level sorting:
+      // 1. Points (highest first)
+      // 2. Time taken (lowest first — faster solver wins)
+      // 3. Submitted first (earliest wins — who scored first)
+      rows.sort((a, b) => {
+        if (b.points !== a.points) return b.points - a.points;
+        const timeA = a.avg_time ?? Infinity;
+        const timeB = b.avg_time ?? Infinity;
+        if (timeA !== timeB) return timeA - timeB;
+        const subA = a.earliest_submit || '';
+        const subB = b.earliest_submit || '';
+        if (subA !== subB) return subA < subB ? -1 : 1;
+        return a.name.localeCompare(b.name);
+      });
 
       // Find user's rank
       if (user) {
