@@ -102,31 +102,62 @@ export default function StudentDashboard() {
       // Use local date (not UTC)
       const _n = new Date();
       const todayStr = `${_n.getFullYear()}-${String(_n.getMonth() + 1).padStart(2, '0')}-${String(_n.getDate()).padStart(2, '0')}`;
-      const [pts, streak, attempt, leaders, rewards, allPoints] = await Promise.all([
+      const [pts, streak, attempt, allPoints, rewards, allAttempts] = await Promise.all([
         supabase.from('user_points').select('total_points').eq('user_id', user.id).maybeSingle(),
         supabase.from('user_streaks').select('current_streak').eq('user_id', user.id).maybeSingle(),
         supabase.from('daily_quiz_attempts').select('*').eq('user_id', user.id).eq('quiz_date', todayStr).maybeSingle(),
-        supabase.from('user_points').select('user_id, total_points').order('total_points', { ascending: false }).limit(5),
-        supabase.from('user_rewards').select('*').eq('user_id', user.id),
         supabase.from('user_points').select('user_id, total_points').order('total_points', { ascending: false }),
+        supabase.from('user_rewards').select('*').eq('user_id', user.id),
+        supabase.from('daily_quiz_attempts').select('user_id, time_taken, submitted_at'),
       ]);
       setUserPoints(pts.data?.total_points || 0);
       setUserStreak(streak.data?.current_streak || 0);
       setTodayAttempt(attempt.data || null);
       setUserRewards(rewards.data || []);
 
-      // Calculate quiz rank
+      // Build sorted leaderboard with same tie-breaking as full Leaderboard page
       if (allPoints.data?.length) {
-        const idx = allPoints.data.findIndex(p => p.user_id === user.id);
-        setQuizRank(idx >= 0 ? idx + 1 : null);
-      }
-
-      // Enrich leaders with names
-      if (leaders.data?.length) {
-        const ids = leaders.data.map(l => l.user_id);
-        const { data: users } = await supabase.from('users').select('id, name').in('id', ids);
+        const userIds = allPoints.data.map(p => p.user_id);
+        const { data: users } = await supabase.from('users').select('id, name').in('id', userIds);
         const uMap = Object.fromEntries((users || []).map(u => [u.id, u.name]));
-        setTopLeaders(leaders.data.map(l => ({ ...l, name: uMap[l.user_id] || 'Unknown' })));
+
+        // Aggregate time data per user (same logic as Leaderboard.jsx)
+        const timeMap = {};
+        (allAttempts.data || []).forEach(a => {
+          if (!timeMap[a.user_id]) timeMap[a.user_id] = { totalTime: 0, count: 0, earliest: a.submitted_at };
+          timeMap[a.user_id].totalTime += (a.time_taken || 0);
+          timeMap[a.user_id].count += 1;
+          if (a.submitted_at && (!timeMap[a.user_id].earliest || a.submitted_at < timeMap[a.user_id].earliest)) {
+            timeMap[a.user_id].earliest = a.submitted_at;
+          }
+        });
+
+        const rows = allPoints.data.map(p => ({
+          user_id: p.user_id,
+          total_points: p.total_points,
+          name: uMap[p.user_id] || 'Unknown',
+          avg_time: timeMap[p.user_id] ? Math.round(timeMap[p.user_id].totalTime / timeMap[p.user_id].count) : Infinity,
+          earliest_submit: timeMap[p.user_id]?.earliest || null,
+        }));
+
+        // Sort with same 3-level tie-breaking as full Leaderboard
+        rows.sort((a, b) => {
+          if (b.total_points !== a.total_points) return b.total_points - a.total_points;
+          const timeA = a.avg_time ?? Infinity;
+          const timeB = b.avg_time ?? Infinity;
+          if (timeA !== timeB) return timeA - timeB;
+          const subA = a.earliest_submit || '';
+          const subB = b.earliest_submit || '';
+          if (subA !== subB) return subA < subB ? -1 : 1;
+          return a.name.localeCompare(b.name);
+        });
+
+        // Quiz rank
+        const idx = rows.findIndex(p => p.user_id === user.id);
+        setQuizRank(idx >= 0 ? idx + 1 : null);
+
+        // Top 5 leaders (from same sorted list)
+        setTopLeaders(rows.slice(0, 5));
       }
     } catch { /* gamification tables may not exist yet */ }
   };
