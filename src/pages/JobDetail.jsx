@@ -159,18 +159,25 @@ export default function JobDetail() {
             dw = (dw / dh) * maxDim;
             dh = maxDim;
           }
-          ctx.drawImage(logoImg, px, y, dw, dh);
+          
+          y += 80; // Push text down normally
+          
+          // Calculate bottom right coordinates above footer
+          const footerHeight = 160;
+          const logoX = W - px - dw;
+          const logoY = H - footerHeight - dh - 30; // 30px padding above footer
+          
+          ctx.drawImage(logoImg, logoX, logoY, dw, dh);
           
           // Draw subtle border around logo
           ctx.strokeStyle = '#e5e7eb';
           ctx.lineWidth = 1;
-          ctx.strokeRect(px, y, dw, dh);
-          
-          y += dh + 40;
+          ctx.strokeRect(logoX, logoY, dw, dh);
         } else {
           y += 80;
         }
       } catch (err) {
+        console.error("Logo generation error:", err);
         y += 80;
       }
     } else {
