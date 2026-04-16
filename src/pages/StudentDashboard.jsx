@@ -45,6 +45,7 @@ export default function StudentDashboard() {
   const [todayAttempt, setTodayAttempt] = useState(null);
   const [topLeaders, setTopLeaders] = useState([]);
   const [userRewards, setUserRewards] = useState([]);
+  const [quizRank, setQuizRank] = useState(null);
   // Events state
   const [userEvents, setUserEvents] = useState([]);
   const [userEventAttendance, setUserEventAttendance] = useState({});
@@ -101,17 +102,25 @@ export default function StudentDashboard() {
       // Use local date (not UTC)
       const _n = new Date();
       const todayStr = `${_n.getFullYear()}-${String(_n.getMonth() + 1).padStart(2, '0')}-${String(_n.getDate()).padStart(2, '0')}`;
-      const [pts, streak, attempt, leaders, rewards] = await Promise.all([
+      const [pts, streak, attempt, leaders, rewards, allPoints] = await Promise.all([
         supabase.from('user_points').select('total_points').eq('user_id', user.id).maybeSingle(),
         supabase.from('user_streaks').select('current_streak').eq('user_id', user.id).maybeSingle(),
         supabase.from('daily_quiz_attempts').select('*').eq('user_id', user.id).eq('quiz_date', todayStr).maybeSingle(),
         supabase.from('user_points').select('user_id, total_points').order('total_points', { ascending: false }).limit(5),
-        supabase.from('user_rewards').select('*').eq('user_id', user.id)
+        supabase.from('user_rewards').select('*').eq('user_id', user.id),
+        supabase.from('user_points').select('user_id, total_points').order('total_points', { ascending: false }),
       ]);
       setUserPoints(pts.data?.total_points || 0);
       setUserStreak(streak.data?.current_streak || 0);
       setTodayAttempt(attempt.data || null);
       setUserRewards(rewards.data || []);
+
+      // Calculate quiz rank
+      if (allPoints.data?.length) {
+        const idx = allPoints.data.findIndex(p => p.user_id === user.id);
+        setQuizRank(idx >= 0 ? idx + 1 : null);
+      }
+
       // Enrich leaders with names
       if (leaders.data?.length) {
         const ids = leaders.data.map(l => l.user_id);
@@ -299,7 +308,7 @@ export default function StudentDashboard() {
             </p>
             <div className="sd-stats">
               <div className="sd-stat-card">
-                <strong>{enrollments.length}</strong>
+                <strong>{enrollments.length + Object.values(userEventAttendance).filter(a => a.registered || a.attended).length + Object.values(userBootcampEnrollments).filter(e => e.registered).length}</strong>
                 <span>Enrolled</span>
               </div>
               <div className="sd-stat-card">
@@ -311,8 +320,8 @@ export default function StudentDashboard() {
                 <span>Certificates</span>
               </div>
               <div className="sd-stat-card">
-                <strong>{Object.values(userEventAttendance).filter(a => a.registered || a.attended).length}</strong>
-                <span>Events</span>
+                <strong>{quizRank ? `#${quizRank}` : '—'}</strong>
+                <span>Quiz Rank</span>
               </div>
             </div>
           </div>
