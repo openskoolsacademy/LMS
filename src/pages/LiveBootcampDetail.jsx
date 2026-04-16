@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { FiCalendar, FiClock, FiUser, FiVideo, FiAward, FiDownload, FiExternalLink, FiCheckCircle, FiXCircle, FiUsers, FiMapPin, FiMessageCircle, FiChevronRight, FiTag, FiBookOpen, FiTarget, FiAlertCircle } from 'react-icons/fi';
+import { FiCalendar, FiClock, FiUser, FiVideo, FiAward, FiDownload, FiExternalLink, FiCheckCircle, FiXCircle, FiUsers, FiMapPin, FiMessageCircle, FiChevronRight, FiTag, FiBookOpen, FiTarget, FiAlertCircle, FiGift, FiZap, FiMinus, FiPlus } from 'react-icons/fi';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { useAlert } from '../context/AlertContext';
@@ -23,6 +23,12 @@ export default function LiveBootcampDetail() {
   const [couponApplied, setCouponApplied] = useState(null);
   const [masterBootcampBlocked, setMasterBootcampBlocked] = useState(false);
 
+  // Points-to-Discount state
+  const [pointsBalance, setPointsBalance] = useState(0);
+  const [pointsToUse, setPointsToUse] = useState(0);
+  const [discountMode, setDiscountMode] = useState('none'); // 'none' | 'points' | 'coupon'
+  const [pendingRedemptionId, setPendingRedemptionId] = useState(null);
+
   useEffect(() => {
     fetchBootcamp();
   }, [id, user]);
@@ -40,14 +46,13 @@ export default function LiveBootcampDetail() {
       setBootcamp(data);
 
       if (user) {
-        const { data: enrollData } = await supabase
-          .from('live_bootcamp_enrollments')
-          .select('*')
-          .eq('user_id', user.id)
-          .eq('live_bootcamp_id', id)
-          .maybeSingle();
+        const [enrollRes, pointsRes] = await Promise.all([
+          supabase.from('live_bootcamp_enrollments').select('*').eq('user_id', user.id).eq('live_bootcamp_id', id).maybeSingle(),
+          supabase.from('user_points').select('total_points').eq('user_id', user.id).maybeSingle(),
+        ]);
 
-        setEnrollment(enrollData || null);
+        setEnrollment(enrollRes.data || null);
+        setPointsBalance(pointsRes.data?.total_points || 0);
 
         // Check master_bootcamp_id attendance
         if (data?.master_bootcamp_id) {
@@ -118,11 +123,38 @@ export default function LiveBootcampDetail() {
   const calculateFinalPrice = () => {
     if (!bootcamp || bootcamp.price <= 0) return 0;
     const basePrice = bootcamp.price;
-    if (!couponApplied) return basePrice;
-    if (couponApplied.discount_type === 'percentage') {
-      return Math.max(0, Math.round(basePrice * (1 - couponApplied.discount_value / 100)));
+    if (discountMode === 'points' && pointsToUse > 0) {
+      return Math.max(1, basePrice - pointsToUse); // Minimum ₹1
+    }
+    if (discountMode === 'coupon' && couponApplied) {
+      if (couponApplied.discount_type === 'percentage') {
+        return Math.max(0, Math.round(basePrice * (1 - couponApplied.discount_value / 100)));
+      } else {
+        return Math.max(0, basePrice - couponApplied.discount_value);
+      }
+    }
+    return basePrice;
+  };
+
+  // Max redeemable points: min(balance, 3000, price - 1)
+  const maxRedeemable = bootcamp ? Math.min(pointsBalance, 3000, Math.max(0, bootcamp.price - 1)) : 0;
+
+  const handlePointsChange = (val) => {
+    const num = Math.max(0, Math.min(parseInt(val) || 0, maxRedeemable));
+    setPointsToUse(num);
+  };
+
+  const handleDiscountModeChange = (mode) => {
+    setDiscountMode(mode);
+    if (mode === 'points') {
+      setCouponApplied(null);
+      setCoupon('');
+    } else if (mode === 'coupon') {
+      setPointsToUse(0);
     } else {
-      return Math.max(0, basePrice - couponApplied.discount_value);
+      setPointsToUse(0);
+      setCouponApplied(null);
+      setCoupon('');
     }
   };
 
@@ -162,6 +194,30 @@ export default function LiveBootcampDetail() {
         return;
       }
 
+      // ── Points Redemption: Lock points before payment ──
+      let redemptionId = null;
+      let actualPointsUsed = 0;
+
+      if (discountMode === 'points' && pointsToUse > 0) {
+        try {
+          const { data: redeemResult, error: redeemErr } = await supabase.rpc('redeem_points', {
+            p_user_id: user.id,
+            p_live_bootcamp_id: bootcamp.id,
+            p_points: pointsToUse,
+            p_bootcamp_price: bootcamp.price
+          });
+          if (redeemErr) throw new Error(redeemErr.message);
+          if (!redeemResult?.success) throw new Error(redeemResult?.error || 'Points redemption failed.');
+          redemptionId = redeemResult.redemption_id;
+          actualPointsUsed = redeemResult.points_used;
+          setPendingRedemptionId(redemptionId);
+        } catch (err) {
+          await showAlert(err.message, 'Points Error', 'error');
+          setRegistering(false);
+          return;
+        }
+      }
+
       const finalPrice = calculateFinalPrice();
 
       if (finalPrice > 0) {
@@ -170,19 +226,46 @@ export default function LiveBootcampDetail() {
         });
 
         if (orderError) {
-          // Extract actual error message from edge function response
+          // Restore points if order creation fails
+          if (redemptionId) {
+            await supabase.rpc('cancel_point_redemption', { p_redemption_id: redemptionId });
+            setPendingRedemptionId(null);
+            setPointsBalance(prev => prev + actualPointsUsed);
+          }
           let errMsg = 'Order creation failed.';
           if (orderError.context && typeof orderError.context.json === 'function') {
             try { const body = await orderError.context.json(); errMsg = body.error || body.message || errMsg; } catch {}
           } else if (orderError.message) errMsg = orderError.message;
           throw new Error(errMsg);
         }
-        if (orderData?.error) throw new Error(orderData.error);
-        if (!orderData?.id || !orderData?.amount) throw new Error('Invalid order response.');
+        if (orderData?.error) {
+          if (redemptionId) {
+            await supabase.rpc('cancel_point_redemption', { p_redemption_id: redemptionId });
+            setPendingRedemptionId(null);
+            setPointsBalance(prev => prev + actualPointsUsed);
+          }
+          throw new Error(orderData.error);
+        }
+        if (!orderData?.id || !orderData?.amount) {
+          if (redemptionId) {
+            await supabase.rpc('cancel_point_redemption', { p_redemption_id: redemptionId });
+            setPendingRedemptionId(null);
+            setPointsBalance(prev => prev + actualPointsUsed);
+          }
+          throw new Error('Invalid order response.');
+        }
 
         if (typeof window.Razorpay === 'undefined') {
+          if (redemptionId) {
+            await supabase.rpc('cancel_point_redemption', { p_redemption_id: redemptionId });
+            setPendingRedemptionId(null);
+            setPointsBalance(prev => prev + actualPointsUsed);
+          }
           throw new Error('Razorpay SDK not loaded.');
         }
+
+        const capturedRedemptionId = redemptionId;
+        const capturedPointsUsed = actualPointsUsed;
 
         const options = {
           key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_live_SXsCOJNHFUtIJA',
@@ -206,6 +289,12 @@ export default function LiveBootcampDetail() {
               if (verifyError) throw verifyError;
               if (verifyData?.error) throw new Error(verifyData.error);
 
+              // Complete points redemption
+              if (capturedRedemptionId) {
+                await supabase.rpc('complete_point_redemption', { p_redemption_id: capturedRedemptionId });
+                setPendingRedemptionId(null);
+              }
+
               if (couponApplied) {
                 await supabase.from('coupons').update({ used_count: (couponApplied.used_count || 0) + 1 }).eq('id', couponApplied.id);
               }
@@ -215,12 +304,20 @@ export default function LiveBootcampDetail() {
                 live_bootcamp_id: bootcamp.id,
                 registered: true,
                 payment_id: response.razorpay_payment_id,
-                amount_paid: finalPrice
+                amount_paid: finalPrice,
+                points_used: capturedPointsUsed
               }]).select().single();
 
               setEnrollment(enrollData || { registered: true });
+              setPointsBalance(prev => prev - capturedPointsUsed);
               await showAlert('Payment successful! You are enrolled.', 'Success', 'success', { celebrate: true });
             } catch (err) {
+              // Payment verification failed — restore points
+              if (capturedRedemptionId) {
+                await supabase.rpc('cancel_point_redemption', { p_redemption_id: capturedRedemptionId });
+                setPendingRedemptionId(null);
+                setPointsBalance(prev => prev + capturedPointsUsed);
+              }
               await showAlert(err.message || 'Payment verification failed.', 'Error', 'error');
             } finally {
               setRegistering(false);
@@ -232,6 +329,12 @@ export default function LiveBootcampDetail() {
 
         const rzp = new window.Razorpay(options);
         rzp.on('payment.failed', async (response) => {
+          // Payment failed — restore points
+          if (capturedRedemptionId) {
+            await supabase.rpc('cancel_point_redemption', { p_redemption_id: capturedRedemptionId });
+            setPendingRedemptionId(null);
+            setPointsBalance(prev => prev + capturedPointsUsed);
+          }
           await showAlert(`Payment Failed: ${response.error.description}`, 'Error', 'error');
           setRegistering(false);
         });
@@ -239,7 +342,11 @@ export default function LiveBootcampDetail() {
         return;
       }
 
-      // Free or fully discounted
+      // Free or fully discounted via coupon
+      if (redemptionId) {
+        await supabase.rpc('complete_point_redemption', { p_redemption_id: redemptionId });
+        setPendingRedemptionId(null);
+      }
       if (couponApplied) {
         await supabase.from('coupons').update({ used_count: (couponApplied.used_count || 0) + 1 }).eq('id', couponApplied.id);
       }
@@ -248,7 +355,8 @@ export default function LiveBootcampDetail() {
         user_id: user.id,
         live_bootcamp_id: bootcamp.id,
         registered: true,
-        amount_paid: 0
+        amount_paid: 0,
+        points_used: actualPointsUsed
       }]).select().single();
 
       if (enrollError) {
@@ -257,6 +365,7 @@ export default function LiveBootcampDetail() {
         } else throw enrollError;
       } else {
         setEnrollment(enrollData);
+        setPointsBalance(prev => prev - actualPointsUsed);
         await showAlert('You have been enrolled!', 'Success', 'success', { celebrate: true });
       }
     } catch (err) {
@@ -509,14 +618,16 @@ export default function LiveBootcampDetail() {
                 {(() => {
                   const fp = calculateFinalPrice();
                   if (bootcamp.price <= 0) return <span className="lbd-sidebar-price"><span className="free-label">Free</span></span>;
+                  const hasDiscount = fp < bootcamp.price;
                   return (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
                       <span className="lbd-sidebar-price">₹{fp}</span>
-                      {couponApplied && fp < bootcamp.price && (
+                      {hasDiscount && (
                         <>
                           <span style={{ textDecoration: 'line-through', color: '#9ca3af', fontSize: '1.1rem' }}>₹{bootcamp.price}</span>
                           <span style={{ background: '#dcfce7', color: '#15803d', padding: '2px 10px', borderRadius: '100px', fontSize: '0.75rem', fontWeight: 700 }}>
-                            {couponApplied.discount_type === 'percentage' ? `${couponApplied.discount_value}% OFF` : `₹${couponApplied.discount_value} OFF`}
+                            {discountMode === 'points' ? `₹${bootcamp.price - fp} OFF` :
+                             couponApplied?.discount_type === 'percentage' ? `${couponApplied.discount_value}% OFF` : `₹${couponApplied?.discount_value} OFF`}
                           </span>
                         </>
                       )}
@@ -526,8 +637,61 @@ export default function LiveBootcampDetail() {
               </div>
               <div className="lbd-sidebar-card-body">
                 <div className="lbd-sidebar-actions">
-                  {/* Coupon */}
+
+                  {/* ── Discount Mode Toggle (Points vs Coupon) ── */}
                   {!isEnrolled && status !== 'completed' && !masterBootcampBlocked && bootcamp.price > 0 && (
+                    <div className="lbd-discount-toggle">
+                      <button
+                        className={`lbd-toggle-btn ${discountMode === 'points' ? 'active' : ''}`}
+                        onClick={() => handleDiscountModeChange(discountMode === 'points' ? 'none' : 'points')}
+                        disabled={pointsBalance <= 0}
+                      >
+                        <FiGift /> Use Points {pointsBalance <= 0 && <span style={{fontSize: '0.7rem', opacity: 0.7}}>(0 pts)</span>}
+                      </button>
+                      <button
+                        className={`lbd-toggle-btn ${discountMode === 'coupon' ? 'active' : ''}`}
+                        onClick={() => handleDiscountModeChange(discountMode === 'coupon' ? 'none' : 'coupon')}
+                      >
+                        <FiTag /> Use Coupon
+                      </button>
+                    </div>
+                  )}
+
+                  {/* ── Points Discount Section ── */}
+                  {discountMode === 'points' && pointsBalance > 0 && !isEnrolled && (
+                    <div className="lbd-points-section">
+                      <div className="lbd-points-balance">
+                        <FiZap style={{ color: '#f59e0b' }} />
+                        <span>You have <strong>₹{Math.min(pointsBalance, 3000)}</strong> worth of points</span>
+                      </div>
+                      <div className="lbd-points-input-row">
+                        <button className="lbd-points-btn" onClick={() => handlePointsChange(pointsToUse - 10)} disabled={pointsToUse <= 0}><FiMinus /></button>
+                        <input
+                          type="number"
+                          className="lbd-points-input"
+                          value={pointsToUse}
+                          onChange={(e) => handlePointsChange(e.target.value)}
+                          min={0}
+                          max={maxRedeemable}
+                        />
+                        <button className="lbd-points-btn" onClick={() => handlePointsChange(pointsToUse + 10)} disabled={pointsToUse >= maxRedeemable}><FiPlus /></button>
+                        <button className="lbd-points-max-btn" onClick={() => handlePointsChange(maxRedeemable)}>Use Max</button>
+                      </div>
+                      <div className="lbd-points-bar">
+                        <div className="lbd-points-bar-fill" style={{ width: `${maxRedeemable > 0 ? (pointsToUse / maxRedeemable) * 100 : 0}%` }} />
+                      </div>
+                      {pointsToUse > 0 && (
+                        <div className="lbd-price-breakdown">
+                          <div className="lbd-breakdown-row"><span>Original Price</span><span>₹{bootcamp.price}</span></div>
+                          <div className="lbd-breakdown-row discount"><span>Points Discount</span><span>-₹{pointsToUse}</span></div>
+                          <div className="lbd-breakdown-row total"><span>You Pay</span><span>₹{calculateFinalPrice()}</span></div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* ── Coupon Section (only when coupon mode) ── */}
+                  {discountMode === 'coupon' && !isEnrolled && status !== 'completed' && !masterBootcampBlocked && bootcamp.price > 0 && (
                     <div className="lbd-coupon">
                       <input
                         type="text"
@@ -546,7 +710,7 @@ export default function LiveBootcampDetail() {
                       </button>
                     </div>
                   )}
-                  {couponApplied && (
+                  {discountMode === 'coupon' && couponApplied && (
                     <p style={{ fontSize: '0.78rem', color: '#059669', fontWeight: 600, margin: '0 0 4px 0', textAlign: 'center' }}>
                       Coupon {couponApplied.code} applied successfully!
                     </p>

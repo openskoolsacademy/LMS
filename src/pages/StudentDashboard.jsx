@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { FiBookOpen, FiAward, FiUser, FiDownload, FiBarChart2, FiPlay, FiPlusCircle, FiFileText, FiZap, FiTrendingUp, FiDatabase, FiCheckCircle, FiTarget, FiLock, FiStar, FiVideo, FiCalendar, FiClock, FiExternalLink } from 'react-icons/fi';
+import { FiBookOpen, FiAward, FiUser, FiDownload, FiBarChart2, FiPlay, FiPlusCircle, FiFileText, FiZap, FiTrendingUp, FiDatabase, FiCheckCircle, FiTarget, FiLock, FiStar, FiVideo, FiCalendar, FiClock, FiExternalLink, FiGift } from 'react-icons/fi';
 import { FaFire, FaTrophy, FaCrown, FaSeedling } from 'react-icons/fa';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
@@ -633,6 +633,31 @@ export default function StudentDashboard() {
                   <span>{userPoints} / {nextTier.pts} pts</span>
                 </div>
                 <div className="sdq-tier-bar"><div className="sdq-tier-fill" style={{ width: `${tierProgress}%` }} /></div>
+              </div>
+
+              {/* Points-to-Discount Value Card */}
+              <div className="sdq-points-value-card">
+                <div className="sdq-pv-left">
+                  <div style={{ fontSize: '1.8rem', color: '#f59e0b' }}><FiGift /></div>
+                  <div>
+                    <h4 style={{ margin: '0 0 2px 0', fontSize: '1rem', fontWeight: 700, color: '#1f2937' }}>₹{Math.min(userPoints, 3000)} Bootcamp Discount</h4>
+                    <p style={{ margin: 0, fontSize: '0.8rem', color: '#6b7280' }}>
+                      {userPoints > 0 
+                        ? 'Redeem your points when purchasing any bootcamp!'
+                        : 'Complete daily quizzes to earn points for discounts.'}
+                    </p>
+                  </div>
+                </div>
+                <div style={{ width: '100%' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: '#9ca3af', marginBottom: '4px' }}>
+                    <span>Redeemable Points</span>
+                    <span>{Math.min(userPoints, 3000)} / 3000</span>
+                  </div>
+                  <div className="sdq-tier-bar"><div className="sdq-tier-fill" style={{ width: `${Math.min(100, (userPoints / 3000) * 100)}%`, background: 'linear-gradient(90deg, #f59e0b, #ef4444)' }} /></div>
+                </div>
+                <Link to="/live-bootcamps" className="btn btn-primary btn-sm" style={{ fontSize: '0.8rem', padding: '8px 18px', borderRadius: '8px', whiteSpace: 'nowrap' }}>
+                  <FiBookOpen style={{ marginRight: 4 }} /> Browse Bootcamps
+                </Link>
               </div>
 
               <div className="sdq-grid">

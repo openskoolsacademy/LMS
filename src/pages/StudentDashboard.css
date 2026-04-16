@@ -466,6 +466,25 @@
 .sdq-tier-bar { height: 10px; background: var(--gray-100); border-radius: 100px; overflow: hidden; }
 .sdq-tier-fill { height: 100%; background: linear-gradient(90deg, var(--primary), #0db1e0, #005f9e); border-radius: inherit; transition: width 1s ease; }
 
+/* Points-to-Discount Value Card */
+.sdq-points-value-card {
+  background: white;
+  border-radius: 16px;
+  padding: 20px 24px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: flex-start;
+  border: 2px solid #fef3c7;
+}
+.sdq-pv-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+}
+
 /* Grid */
 .sdq-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 @media (max-width: 768px) { .sdq-grid { grid-template-columns: 1fr; } }
