@@ -635,29 +635,57 @@ export default function StudentDashboard() {
                 <div className="sdq-tier-bar"><div className="sdq-tier-fill" style={{ width: `${tierProgress}%` }} /></div>
               </div>
 
-              {/* Points-to-Discount Value Card */}
-              <div className="sdq-points-value-card">
-                <div className="sdq-pv-left">
-                  <div style={{ fontSize: '1.8rem', color: '#f59e0b' }}><FiGift /></div>
-                  <div>
-                    <h4 style={{ margin: '0 0 2px 0', fontSize: '1rem', fontWeight: 700, color: '#1f2937' }}>₹{Math.min(userPoints, 3000)} Bootcamp Discount</h4>
-                    <p style={{ margin: 0, fontSize: '0.8rem', color: '#6b7280' }}>
-                      {userPoints > 0 
-                        ? 'Redeem your points when purchasing any bootcamp!'
-                        : 'Complete daily quizzes to earn points for discounts.'}
-                    </p>
+              {/* Points-to-Discount Value Cards */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '20px' }}>
+                {/* Bootcamp Discount Card */}
+                <div className="sdq-points-value-card" style={{ width: '100%', margin: 0 }}>
+                  <div className="sdq-pv-left">
+                    <div style={{ fontSize: '1.8rem', color: '#f59e0b' }}><FiGift /></div>
+                    <div>
+                      <h4 style={{ margin: '0 0 2px 0', fontSize: '1rem', fontWeight: 700, color: '#1f2937' }}>₹{Math.min(userPoints, 3000)} Bootcamp Discount</h4>
+                      <p style={{ margin: 0, fontSize: '0.8rem', color: '#6b7280' }}>
+                        {userPoints > 0 
+                          ? 'Redeem your points when purchasing any bootcamp!'
+                          : 'Complete daily quizzes to earn points for discounts.'}
+                      </p>
+                    </div>
                   </div>
-                </div>
-                <div style={{ width: '100%' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: '#9ca3af', marginBottom: '4px' }}>
-                    <span>Redeemable Points</span>
-                    <span>{Math.min(userPoints, 3000)} / 3000</span>
+                  <div style={{ width: '100%' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: '#9ca3af', marginBottom: '4px' }}>
+                      <span>Redeemable Points (Max 3000)</span>
+                      <span>{Math.min(userPoints, 3000)} / 3000</span>
+                    </div>
+                    <div className="sdq-tier-bar"><div className="sdq-tier-fill" style={{ width: `${Math.min(100, (userPoints / 3000) * 100)}%`, background: 'linear-gradient(90deg, #f59e0b, #ef4444)' }} /></div>
                   </div>
-                  <div className="sdq-tier-bar"><div className="sdq-tier-fill" style={{ width: `${Math.min(100, (userPoints / 3000) * 100)}%`, background: 'linear-gradient(90deg, #f59e0b, #ef4444)' }} /></div>
+                  <Link to="/live-bootcamps" className="btn btn-primary btn-sm" style={{ fontSize: '0.8rem', padding: '8px 18px', borderRadius: '8px', whiteSpace: 'nowrap' }}>
+                    <FiBookOpen style={{ marginRight: 4 }} /> Browse Bootcamps
+                  </Link>
                 </div>
-                <Link to="/live-bootcamps" className="btn btn-primary btn-sm" style={{ fontSize: '0.8rem', padding: '8px 18px', borderRadius: '8px', whiteSpace: 'nowrap' }}>
-                  <FiBookOpen style={{ marginRight: 4 }} /> Browse Bootcamps
-                </Link>
+
+                {/* Course Discount Card */}
+                <div className="sdq-points-value-card" style={{ width: '100%', margin: 0, borderColor: '#e0f2fe' }}>
+                  <div className="sdq-pv-left">
+                    <div style={{ fontSize: '1.8rem', color: '#008ad1' }}><FiGift /></div>
+                    <div>
+                      <h4 style={{ margin: '0 0 2px 0', fontSize: '1rem', fontWeight: 700, color: '#1f2937' }}>₹{Math.min(userPoints, 100)} Course Discount</h4>
+                      <p style={{ margin: 0, fontSize: '0.8rem', color: '#6b7280' }}>
+                        {userPoints > 0 
+                          ? 'Redeem your points when purchasing any recorded course!'
+                          : 'Complete daily quizzes to earn points for discounts.'}
+                      </p>
+                    </div>
+                  </div>
+                  <div style={{ width: '100%' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: '#9ca3af', marginBottom: '4px' }}>
+                      <span>Redeemable Points (Max 100)</span>
+                      <span>{Math.min(userPoints, 100)} / 100</span>
+                    </div>
+                    <div className="sdq-tier-bar"><div className="sdq-tier-fill" style={{ width: `${Math.min(100, (userPoints / 100) * 100)}%`, background: 'linear-gradient(90deg, #008ad1, #0db1e0)' }} /></div>
+                  </div>
+                  <Link to="/courses" className="btn btn-primary btn-sm" style={{ fontSize: '0.8rem', padding: '8px 18px', borderRadius: '8px', whiteSpace: 'nowrap' }}>
+                    <FiBookOpen style={{ marginRight: 4 }} /> Browse Courses
+                  </Link>
+                </div>
               </div>
 
               <div className="sdq-grid">
