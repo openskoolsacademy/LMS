@@ -125,7 +125,50 @@ export default function JobDetail() {
     ctx.fill();
     ctx.fillStyle = '#ffffff';
     ctx.fillText(tagText, tagX + 20, y + 29);
-    y += 80;
+
+    // Optional Logo
+    if (job.company_logo) {
+      try {
+        const logoImg = new Image();
+        logoImg.crossOrigin = 'Anonymous';
+        logoImg.src = `https://corsproxy.io/?${encodeURIComponent(job.company_logo)}`;
+        await new Promise((resolve) => {
+          logoImg.onload = resolve;
+          logoImg.onerror = () => {
+            logoImg.crossOrigin = 'Anonymous';
+            logoImg.src = job.company_logo;
+            logoImg.onload = resolve;
+            logoImg.onerror = resolve;
+          };
+        });
+        
+        if (logoImg.complete && logoImg.naturalWidth > 0) {
+          const maxDim = 120;
+          let dw = logoImg.naturalWidth, dh = logoImg.naturalHeight;
+          if (dw > dh) {
+            dh = (dh / dw) * maxDim;
+            dw = maxDim;
+          } else {
+            dw = (dw / dh) * maxDim;
+            dh = maxDim;
+          }
+          ctx.drawImage(logoImg, px, y, dw, dh);
+          
+          // Draw subtle border around logo
+          ctx.strokeStyle = '#e5e7eb';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(px, y, dw, dh);
+          
+          y += dh + 40;
+        } else {
+          y += 80;
+        }
+      } catch (err) {
+        y += 80;
+      }
+    } else {
+      y += 80;
+    }
 
     // Job Role Title
     ctx.fillStyle = '#111827';
@@ -137,53 +180,11 @@ export default function JobDetail() {
     }
     y += 20;
 
-    // Company Name + Logo
-    if (job.company_logo) {
-      try {
-        const logoImg = new Image();
-        logoImg.crossOrigin = 'Anonymous';
-        logoImg.src = job.company_logo;
-        await new Promise((resolve) => {
-          logoImg.onload = resolve;
-          logoImg.onerror = resolve;
-        });
-        if (logoImg.complete && logoImg.naturalWidth > 0) {
-          // Calculate aspect ratio to fit inside 60x60
-          const maxDim = 60;
-          let dw = logoImg.naturalWidth, dh = logoImg.naturalHeight;
-          if (dw > dh) {
-            dh = (dh / dw) * maxDim;
-            dw = maxDim;
-          } else {
-            dw = (dw / dh) * maxDim;
-            dh = maxDim;
-          }
-          // Center vertically relative to text
-          const dy = y - 45 + (maxDim - dh) / 2;
-          ctx.drawImage(logoImg, px, dy, dw, dh);
-          
-          ctx.fillStyle = '#008ad1';
-          ctx.font = 'bold 34px Arial, sans-serif';
-          ctx.fillText(job.company_name || '', px + 75, y);
-          y += 60;
-        } else {
-          ctx.fillStyle = '#008ad1';
-          ctx.font = 'bold 34px Arial, sans-serif';
-          ctx.fillText(job.company_name || '', px, y);
-          y += 60;
-        }
-      } catch (err) {
-        ctx.fillStyle = '#008ad1';
-        ctx.font = 'bold 34px Arial, sans-serif';
-        ctx.fillText(job.company_name || '', px, y);
-        y += 60;
-      }
-    } else {
-      ctx.fillStyle = '#008ad1';
-      ctx.font = 'bold 34px Arial, sans-serif';
-      ctx.fillText(job.company_name || '', px, y);
-      y += 60;
-    }
+    // Company Name
+    ctx.fillStyle = '#008ad1';
+    ctx.font = 'bold 34px Arial, sans-serif';
+    ctx.fillText(job.company_name || '', px, y);
+    y += 60;
 
     // Divider line
     ctx.strokeStyle = '#e5e7eb';
