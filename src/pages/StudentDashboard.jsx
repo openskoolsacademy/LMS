@@ -271,7 +271,10 @@ export default function StudentDashboard() {
 
   if (loading) return <div className="vl-page"><Loader text="Loading..." /></div>;
 
-  const completedCount = enrollments.filter(e => e.status === 'completed').length;
+  const completedCourses = enrollments.filter(e => e.status === 'completed').length;
+  const completedEvents = Object.values(userEventAttendance).filter(a => a.status === 'JOINED' || a.attended).length;
+  const completedBootcamps = Object.values(userBootcampEnrollments).filter(e => e.status === 'JOINED' || e.completed).length;
+  const completedCount = completedCourses + completedEvents + completedBootcamps;
   const overallProgress = enrollments.length 
     ? Math.round(enrollments.reduce((acc, e) => acc + (e.progress || 0), 0) / enrollments.length) 
     : 0;
