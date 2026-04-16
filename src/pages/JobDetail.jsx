@@ -150,7 +150,7 @@ export default function JobDetail() {
         });
         
         if (logoImg.complete && logoImg.naturalWidth > 0) {
-          const maxDim = 120;
+          const maxDim = 180; // Increased size by request (was 120)
           let dw = logoImg.naturalWidth, dh = logoImg.naturalHeight;
           if (dw > dh) {
             dh = (dh / dw) * maxDim;
