@@ -408,7 +408,7 @@ export default function EventDetail() {
             <div className="ed-header-content animate-fade">
               <div className="ed-header-badges">
                 <span className="ed-badge"><FiVideo /> Online Event</span>
-                {status === 'live' && <span className="ed-badge live">🔴 Live Now</span>}
+                {status === 'live' && <span className="ed-badge live"><span className="live-dot" style={{ width: '8px', height: '8px', background: '#ef4444', borderRadius: '50%', display: 'inline-block', marginRight: '6px', boxShadow: '0 0 8px #ef4444' }} /> Live Now</span>}
                 {status === 'upcoming' && <span className="ed-badge">Upcoming</span>}
                 {status === 'completed' && <span className="ed-badge">Completed</span>}
                 {event.enable_certificate && <span className="ed-badge cert"><FiAward /> Certificate</span>}

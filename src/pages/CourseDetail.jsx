@@ -658,7 +658,7 @@ export default function CourseDetail() {
               
               {curriculum.length === 0 ? (
                 <div className="empty-state animate-fade" style={{ background: 'var(--gray-50)', padding: '48px 24px', borderRadius: '12px', border: '2px dashed var(--gray-200)', textAlign: 'center' }}>
-                  <span style={{ fontSize: '2.5rem', opacity: 0.4, marginBottom: '16px', display: 'block' }}>📚</span>
+                  <span style={{ fontSize: '2.5rem', opacity: 0.3, marginBottom: '16px', display: 'block' }}><FiBookOpen /></span>
                   <h4 style={{ color: 'var(--dark)', marginBottom: '8px', fontSize: '1.125rem' }}>Curriculum Empty</h4>
                   <p style={{ color: 'var(--gray-500)', fontSize: '0.938rem' }}>No lessons have been uploaded for this course yet.</p>
                 </div>
@@ -711,7 +711,7 @@ export default function CourseDetail() {
                 </div>
               ) : (
                 <div className="empty-state animate-fade" style={{ background: 'var(--gray-50)', padding: '48px 24px', borderRadius: '12px', border: '1px dashed var(--gray-300)', textAlign: 'center', marginBottom: '32px' }}>
-                  <span style={{ fontSize: '2.5rem', color: 'var(--warning)', opacity: 0.8, marginBottom: '16px', display: 'block' }}>★</span>
+                  <span style={{ fontSize: '2.5rem', color: 'var(--warning)', opacity: 0.6, marginBottom: '16px', display: 'block' }}><FiStar /></span>
                   <h4 style={{ color: 'var(--dark)', marginBottom: '8px', fontSize: '1.25rem' }}>No Reviews Yet</h4>
                   <p style={{ color: 'var(--gray-500)', fontSize: '0.938rem', maxWidth: '400px', margin: '0 auto' }}>This course hasn't received any ratings. Be the first to share your thoughts!</p>
                 </div>
@@ -758,7 +758,7 @@ export default function CourseDetail() {
                 )}
 
                 {reviews.length === 0 ? (
-                  <div className="empty-state"><span className="empty-icon">💬</span><h3>No reviews yet</h3><p>Be the first to review this course</p></div>
+                  <div className="empty-state"><span className="empty-icon" style={{fontSize: '2rem', opacity: 0.5}}><FiFileText /></span><h3>No reviews yet</h3><p>Be the first to review this course</p></div>
                 ) : (
                   <div className="reviews-items">
                     {reviews.map(r => (

@@ -229,7 +229,7 @@ export default function MarketingBanners() {
                           <div>
                             <strong style={{ fontSize: '0.95rem', color: 'var(--dark)' }}>{b.title}</strong>
                             <div style={{ fontSize: '0.75rem', color: 'var(--gray-500)', marginTop: '2px' }}>
-                              {b.display_locations?.join(' • ')} • {b.status === 'active' ? '🟢 Active' : '⚪ Inactive'}
+                              {b.display_locations?.join(' • ')} • {b.status === 'active' ? <span style={{color: '#10b981', fontWeight: 600}}>Active</span> : <span style={{color: 'var(--gray-400)'}}>Inactive</span>}
                             </div>
                           </div>
                           <div style={{ display: 'flex', gap: '20px', fontSize: '0.8rem' }}>

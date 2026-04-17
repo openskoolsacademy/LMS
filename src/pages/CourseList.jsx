@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { FiBookOpen } from 'react-icons/fi';
 import { supabase } from '../lib/supabase';
 import { categories, mapCategory } from '../data/categories';
 import { resolveImageUrl } from '../utils/imageUtils';
@@ -242,7 +243,9 @@ export default function CourseList() {
               filtered.map(course => <CourseCard key={course.id} course={course} />)
             ) : (
               <div className="empty-state animate-fade">
-                <span className="empty-icon">🚀</span>
+                <div className="empty-icon-wrap" style={{ fontSize: '4rem', color: 'var(--gray-200)', marginBottom: '1.5rem', opacity: 0.7 }}>
+                  <FiBookOpen />
+                </div>
                 <h3>Pre-Recorded Courses are Coming Soon!</h3>
                 <p>Stay tuned, we are preparing high-quality courses for you.</p>
                 <button className="btn btn-primary btn-sm" onClick={clearFilters}>Clear Filters</button>

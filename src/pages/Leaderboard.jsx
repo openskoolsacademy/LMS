@@ -264,7 +264,7 @@ export default function Leaderboard() {
     if (myRow?.streak > 0) {
       ctx.fillStyle = '#f97316';
       ctx.font = 'bold 28px Arial, sans-serif';
-      ctx.fillText(`🔥 ${myRow.streak}-day streak`, px, y);
+      ctx.fillText(`${myRow.streak}-Day Streak`, px, y);
       y += 50;
     }
 
@@ -357,7 +357,7 @@ export default function Leaderboard() {
       // Streak
       ctx.fillStyle = row.streak > 0 ? '#f97316' : '#9ca3af';
       ctx.font = 'bold 24px Arial, sans-serif';
-      ctx.fillText(row.streak > 0 ? `${row.streak}d 🔥` : '—', W - px - 120, rowY + rowH / 2 + 10);
+      ctx.fillText(row.streak > 0 ? `${row.streak}d Streak` : '—', W - px - 120, rowY + rowH / 2 + 10);
 
       y += rowH;
     });
@@ -401,7 +401,7 @@ export default function Leaderboard() {
       // Streak
       ctx.fillStyle = myRow.streak > 0 ? '#f97316' : '#9ca3af';
       ctx.font = 'bold 24px Arial, sans-serif';
-      ctx.fillText(myRow.streak > 0 ? `${myRow.streak}d 🔥` : '—', W - px - 120, y + rowH / 2 + 10);
+      ctx.fillText(myRow.streak > 0 ? `${myRow.streak}d Streak` : '—', W - px - 120, y + rowH / 2 + 10);
 
       y += rowH;
     }

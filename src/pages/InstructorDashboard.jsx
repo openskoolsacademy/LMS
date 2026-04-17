@@ -516,7 +516,7 @@ export default function InstructorDashboard() {
           <div className="id-stat-card"><FiBookOpen className="id-stat-icon" /><div><span>My Courses</span><strong>{courses.length}</strong></div></div>
           <div className="id-stat-card"><FiUsers className="id-stat-icon" /><div><span>Total Students</span><strong>{totalStudents.toLocaleString()}</strong></div></div>
           <div className="id-stat-card"><FiDollarSign className="id-stat-icon" /><div><span>Total Earnings</span><strong>₹{totalEarnings.toLocaleString()}</strong></div></div>
-          <div className="id-stat-card"><div className="id-stat-icon">⭐</div><div><span>Avg Rating</span><strong>{avgRatingSummary}</strong></div></div>
+          <div className="id-stat-card"><div className="id-stat-icon"><FiStar /></div><div><span>Avg Rating</span><strong>{avgRatingSummary}</strong></div></div>
         </div>
 
         {/* Tabs */}
