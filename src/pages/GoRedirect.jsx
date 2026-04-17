@@ -7,23 +7,34 @@ export default function GoRedirect() {
   const { slug } = useParams();
   const [status, setStatus] = useState('loading'); // loading | redirecting | notfound
   const [destination, setDestination] = useState('');
+  const [debugInfo, setDebugInfo] = useState('');
 
   useEffect(() => {
     if (!slug) {
+      setDebugInfo('No slug in URL');
       setStatus('notfound');
       return;
     }
 
     const redirect = async () => {
       try {
+        setDebugInfo(`Looking up slug: "${slug}"...`);
+
         const { data, error } = await supabase
           .from('short_links')
-          .select('destination_url')
+          .select('destination_url, slug, is_active')
           .eq('slug', slug)
           .eq('is_active', true)
-          .single();
+          .maybeSingle();
 
-        if (error || !data) {
+        if (error) {
+          setDebugInfo(`DB Error: ${error.message} (code: ${error.code})`);
+          setStatus('notfound');
+          return;
+        }
+
+        if (!data) {
+          setDebugInfo(`No active link found for slug: "${slug}"`);
           setStatus('notfound');
           return;
         }
@@ -68,7 +79,7 @@ export default function GoRedirect() {
         window.location.href = destUrl;
 
       } catch (err) {
-        console.error('GoRedirect error:', err);
+        setDebugInfo(`Exception: ${err.message}`);
         setStatus('notfound');
       }
     };
@@ -102,6 +113,12 @@ export default function GoRedirect() {
             <h2>Link Not Found</h2>
             <p>This link doesn't exist or has been deactivated.</p>
             <a href="/" className="go-home-btn">Go to Homepage</a>
+            {/* Temporary debug info — remove after fixing */}
+            {debugInfo && (
+              <p style={{ marginTop: 20, fontSize: '0.75rem', color: '#9ca3af', wordBreak: 'break-all', maxWidth: 300 }}>
+                Debug: {debugInfo}
+              </p>
+            )}
           </div>
         )}
       </div>
