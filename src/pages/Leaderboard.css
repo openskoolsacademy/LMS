@@ -101,26 +101,29 @@
   .lb-hero h1 { font-size: 1.875rem; }
   .lb-list-header { font-size: 0.6rem; padding: 8px 10px; }
   .lb-list-header, .lb-row { 
-    grid-template-columns: 26px minmax(0, 1fr) 50px 44px; 
-    padding: 10px 8px; 
-    gap: 4px;
+    grid-template-columns: auto 1fr auto auto; 
+    padding: 10px 10px; 
+    gap: 8px;
   }
   .lb-row { align-items: center; }
+  .lb-rank { min-width: 22px; }
   .lb-avatar { width: 24px; height: 24px; font-size: 0.55rem; }
-  .lb-user-cell { gap: 5px; min-width: 0; }
-  .lb-user-info { flex: 1; min-width: 0; }
+  .lb-user-cell { gap: 6px; min-width: 0; }
+  .lb-user-info { flex: 1; min-width: 0; overflow: hidden; }
   .lb-name { 
-    font-size: 0.72rem; 
+    font-size: 0.75rem; 
     white-space: nowrap; 
     overflow: hidden; 
     text-overflow: ellipsis; 
     display: block; 
   }
   .lb-you-tag { font-size: 0.55rem; }
-  .lb-pts-val { font-size: 0.78rem; }
+  .lb-points { white-space: nowrap; }
+  .lb-pts-val { font-size: 0.8rem; }
   .lb-pts-label { font-size: 0.55rem; }
   .lb-medal { font-size: 1.1rem; }
   .lb-rank-num { font-size: 0.72rem; }
+  .lb-streak { white-space: nowrap; }
   .lb-streak-badge { padding: 2px 5px; font-size: 0.6rem; }
   .lb-streak-none { font-size: 0.65rem; }
   .lb-podium-card { width: 90px; }
