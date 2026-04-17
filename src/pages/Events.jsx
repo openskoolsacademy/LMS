@@ -361,8 +361,8 @@ export default function Events() {
         {filteredEvents.length === 0 ? (
           <div className="events-empty">
             <FiCalendar />
-            <h3>No events found</h3>
-            <p>{filter === 'all' ? 'Check back soon for upcoming events!' : `No ${filter} events at the moment.`}</p>
+            <h3>Live Events & Webinars are Coming Soon!</h3>
+            <p>{filter === 'all' ? 'Stay tuned for our upcoming events.' : `No ${filter} events at the moment.`}</p>
           </div>
         ) : (
           <div className="events-grid">

@@ -250,8 +250,8 @@ export default function Landing() {
                 </div>
               ))
             ) : (
-              <div style={{ padding: '40px', textAlign: 'center', width: '100%', color: 'var(--gray-500)' }}>
-                No featured courses available at this time.
+              <div style={{ padding: '40px', textAlign: 'center', width: '100%', color: 'var(--gray-500)', fontSize: '1.2rem', fontWeight: '500' }}>
+                Pre-Recorded Courses are Coming Soon!
               </div>
             )}
           </div>
@@ -318,8 +318,8 @@ export default function Landing() {
                 );
               })
             ) : (
-              <div style={{ padding: '40px', textAlign: 'center', width: '100%', color: 'var(--gray-500)' }}>
-                No active bootcamps right now. Stay tuned!
+              <div style={{ padding: '40px', textAlign: 'center', width: '100%', color: 'var(--gray-500)', fontSize: '1.2rem', fontWeight: '500' }}>
+                Live Bootcamps are Coming Soon!
               </div>
             )}
           </div>

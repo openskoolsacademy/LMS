@@ -98,18 +98,20 @@ export default function Leaderboard() {
             }
           });
           const userIds = Object.keys(agg);
-          const [{ data: users }, { data: streaks }] = await Promise.all([
+          const [{ data: users }, { data: streaks }, { data: userPts }] = await Promise.all([
             supabase.from('users').select('id, name, avatar_url').in('id', userIds),
             supabase.from('user_streaks').select('user_id, current_streak').in('user_id', userIds),
+            supabase.from('user_points').select('user_id, total_points').in('user_id', userIds),
           ]);
           const uMap = Object.fromEntries((users || []).map(u => [u.id, u]));
           const sMap = Object.fromEntries((streaks || []).map(s => [s.user_id, s.current_streak]));
+          const ptsMap = Object.fromEntries((userPts || []).map(p => [p.user_id, p.total_points]));
           rows = Object.entries(agg)
             .map(([uid, data]) => ({
               user_id: uid,
               name: uMap[uid]?.name || 'Unknown',
               avatar_url: uMap[uid]?.avatar_url,
-              points: data.points,
+              points: Math.min(data.points, ptsMap[uid] !== undefined ? ptsMap[uid] : Infinity),
               streak: sMap[uid] || 0,
               avg_time: data.count > 0 ? Math.round(data.totalTime / data.count) : Infinity,
               earliest_submit: data.earliest || null,
@@ -123,17 +125,19 @@ export default function Leaderboard() {
 
         if (attempts?.length) {
           const userIds = attempts.map(a => a.user_id);
-          const [{ data: users }, { data: streaks }] = await Promise.all([
+          const [{ data: users }, { data: streaks }, { data: userPts }] = await Promise.all([
             supabase.from('users').select('id, name, avatar_url').in('id', userIds),
             supabase.from('user_streaks').select('user_id, current_streak').in('user_id', userIds),
+            supabase.from('user_points').select('user_id, total_points').in('user_id', userIds),
           ]);
           const uMap = Object.fromEntries((users || []).map(u => [u.id, u]));
           const sMap = Object.fromEntries((streaks || []).map(s => [s.user_id, s.current_streak]));
+          const ptsMap = Object.fromEntries((userPts || []).map(p => [p.user_id, p.total_points]));
           rows = attempts.map(a => ({
             user_id: a.user_id,
             name: uMap[a.user_id]?.name || 'Unknown',
             avatar_url: uMap[a.user_id]?.avatar_url,
-            points: (a.points_earned || 0) + (a.streak_bonus || 0),
+            points: Math.min((a.points_earned || 0) + (a.streak_bonus || 0), ptsMap[a.user_id] !== undefined ? ptsMap[a.user_id] : Infinity),
             streak: sMap[a.user_id] || 0,
             avg_time: a.time_taken || Infinity,
             earliest_submit: a.submitted_at || null,

@@ -242,9 +242,9 @@ export default function CourseList() {
               filtered.map(course => <CourseCard key={course.id} course={course} />)
             ) : (
               <div className="empty-state animate-fade">
-                <span className="empty-icon">🔍</span>
-                <h3>No courses found</h3>
-                <p>Try adjusting your filters or search terms</p>
+                <span className="empty-icon">🚀</span>
+                <h3>Pre-Recorded Courses are Coming Soon!</h3>
+                <p>Stay tuned, we are preparing high-quality courses for you.</p>
                 <button className="btn btn-primary btn-sm" onClick={clearFilters}>Clear Filters</button>
               </div>
             )}
