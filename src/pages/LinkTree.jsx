@@ -83,9 +83,9 @@ export default function LinkTree() {
     }
   };
 
-  const handleClick = (link) => {
-    // Fire-and-forget: increment click count without blocking navigation
-    try { supabase.rpc('increment_link_click', { link_id: link.id }); } catch(e) {}
+  const handleClick = async (link) => {
+    // Track click — await so request fires before navigation
+    try { await supabase.rpc('increment_link_click', { link_id: link.id }); } catch(e) {}
   };
 
   const renderIcon = (iconName) => {

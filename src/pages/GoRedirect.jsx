@@ -39,8 +39,8 @@ export default function GoRedirect() {
           return;
         }
 
-        // Track click (fire-and-forget)
-        try { supabase.rpc('increment_short_link_click', { link_slug: slug }); } catch(e) {}
+        // Track click — await so request fires before redirect
+        try { await supabase.rpc('increment_short_link_click', { link_slug: slug }); } catch(e) {}
 
         const destUrl = data.destination_url;
         setDestination(destUrl);
