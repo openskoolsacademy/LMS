@@ -85,9 +85,7 @@ export default function LinkTree() {
 
   const handleClick = (link) => {
     // Fire-and-forget: increment click count without blocking navigation
-    supabase.rpc('increment_link_click', { link_id: link.id })
-      .then(({ error }) => { if (error) console.error('Click tracking error:', error.message); })
-      .catch((err) => console.error('Click tracking error:', err));
+    try { supabase.rpc('increment_link_click', { link_id: link.id }); } catch(e) {}
   };
 
   const renderIcon = (iconName) => {

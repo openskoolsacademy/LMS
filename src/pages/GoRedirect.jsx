@@ -40,7 +40,7 @@ export default function GoRedirect() {
         }
 
         // Track click (fire-and-forget)
-        supabase.rpc('increment_short_link_click', { link_slug: slug }).catch(() => {});
+        try { supabase.rpc('increment_short_link_click', { link_slug: slug }); } catch(e) {}
 
         const destUrl = data.destination_url;
         setDestination(destUrl);
