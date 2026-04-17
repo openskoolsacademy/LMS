@@ -56,6 +56,26 @@ export default function LinkTree() {
     }
   };
 
+  // Detect in-app browsers (Instagram, Facebook, etc.)
+  const isInAppBrowser = () => {
+    const ua = navigator.userAgent || navigator.vendor || '';
+    return /Instagram|FBAN|FBAV|FB_IAB|Line|Snapchat|Twitter|LinkedIn/i.test(ua);
+  };
+
+  const [showInAppBanner, setShowInAppBanner] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (isInAppBrowser()) setShowInAppBanner(true);
+  }, []);
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(window.location.href).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }).catch(() => {});
+  };
+
   const handleClick = (link) => {
     // Fire-and-forget: increment click count without blocking navigation
     supabase.rpc('increment_link_click', { link_id: link.id })
@@ -70,6 +90,22 @@ export default function LinkTree() {
 
   return (
     <div className="lt-page">
+      {/* In-App Browser Banner */}
+      {showInAppBanner && (
+        <div className="lt-inapp-banner animate-fade">
+          <div className="lt-inapp-content">
+            <FiExternalLink style={{ flexShrink: 0, fontSize: '1.1rem' }} />
+            <div>
+              <strong>Open in Browser</strong>
+              <span>Tap <strong>⋮</strong> or <strong>…</strong> menu above → "Open in Browser" for the best experience</span>
+            </div>
+          </div>
+          <button className="lt-copy-btn" onClick={handleCopyLink}>
+            {copied ? 'Copied!' : 'Copy Link'}
+          </button>
+        </div>
+      )}
+
       {/* Hero */}
       <div className="lt-hero animate-fade">
         <div className="lt-logo">OS</div>
