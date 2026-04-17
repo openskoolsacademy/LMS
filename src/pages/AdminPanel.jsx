@@ -7,6 +7,7 @@ import RevenueAnalytics from '../components/admin/RevenueAnalytics';
 import MarketingBanners from '../components/admin/MarketingBanners';
 import CertificateGenerator from '../components/admin/CertificateGenerator';
 import DailyQuizManager from '../components/admin/DailyQuizManager';
+import LinkTreeManager from '../components/admin/LinkTreeManager';
 import { useAuth } from '../context/AuthContext';
 import { useAlert } from '../context/AlertContext';
 import { mapCategory } from '../data/categories';
@@ -806,6 +807,10 @@ export default function AdminPanel() {
                 <div className="ap-tab-icon"><FiZap /></div>
                 <div className="ap-tab-content">Daily Quiz <FiChevronRight className="ap-tab-arrow" /></div>
               </button>
+              <button className={`ap-tab ${tab === 'link-tree' ? 'active' : ''}`} onClick={() => setTab('link-tree')}>
+                <div className="ap-tab-icon"><FiLink /></div>
+                <div className="ap-tab-content">Link Tree <FiChevronRight className="ap-tab-arrow" /></div>
+              </button>
             </div>
           </div>
 
@@ -1499,6 +1504,11 @@ export default function AdminPanel() {
                 {/* Daily Quiz Tab */}
                 {tab === 'daily-quiz' && (
                   <DailyQuizManager />
+                )}
+
+                {/* Link Tree Tab */}
+                {tab === 'link-tree' && (
+                  <LinkTreeManager />
                 )}
 
                 {/* Events Tab */}

@@ -1,0 +1,102 @@
+import { useState, useEffect } from 'react';
+import { FiExternalLink, FiChevronRight, FiLink, FiGlobe, FiInstagram, FiYoutube, FiTwitter, FiLinkedin, FiMail, FiPhone, FiBookOpen, FiVideo, FiAward, FiZap, FiMessageCircle, FiBriefcase, FiMap, FiFileText, FiHeart, FiStar, FiUsers } from 'react-icons/fi';
+import { FaWhatsapp, FaTelegram, FaDiscord, FaFacebook } from 'react-icons/fa';
+import { supabase } from '../lib/supabase';
+import './LinkTree.css';
+
+// Icon map — resolves stored icon name strings to actual React components
+const ICON_MAP = {
+  FiExternalLink, FiLink, FiGlobe, FiInstagram, FiYoutube, FiTwitter,
+  FiLinkedin, FiMail, FiPhone, FiBookOpen, FiVideo, FiAward, FiZap,
+  FiMessageCircle, FiBriefcase, FiMap, FiFileText, FiHeart, FiStar, FiUsers,
+  FaWhatsapp, FaTelegram, FaDiscord, FaFacebook, FiChevronRight,
+};
+
+export default function LinkTree() {
+  const [links, setLinks] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    document.title = 'Links — Open Skools Academy';
+    const meta = document.querySelector('meta[name="description"]');
+    if (meta) meta.setAttribute('content', 'All important links from Open Skools Academy — courses, events, community, and more.');
+
+    fetchLinks();
+  }, []);
+
+  const fetchLinks = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('link_tree')
+        .select('*')
+        .eq('is_active', true)
+        .order('order_index', { ascending: true });
+
+      if (error) throw error;
+      setLinks(data || []);
+    } catch (err) {
+      console.error('LinkTree: Error fetching links:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleClick = (link) => {
+    // Fire-and-forget: increment click count without blocking the user
+    supabase.rpc('increment_link_click', { link_id: link.id }).catch(() => {});
+    window.open(link.url, '_blank', 'noopener,noreferrer');
+  };
+
+  const renderIcon = (iconName) => {
+    const IconComponent = ICON_MAP[iconName] || FiExternalLink;
+    return <IconComponent />;
+  };
+
+  return (
+    <div className="lt-page">
+      {/* Hero */}
+      <div className="lt-hero animate-fade">
+        <div className="lt-logo">OS</div>
+        <h1>Open Skools Academy</h1>
+        <p>Your gateway to all our platforms, courses, and community channels.</p>
+      </div>
+
+      {/* Links */}
+      {loading ? (
+        <div className="lt-skeleton-list">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="lt-skeleton-item" />
+          ))}
+        </div>
+      ) : links.length === 0 ? (
+        <div className="lt-empty">
+          <div className="lt-empty-icon"><FiLink /></div>
+          <h3>No links available</h3>
+          <p>Links will appear here soon. Check back later!</p>
+        </div>
+      ) : (
+        <div className="lt-links">
+          {links.map((link) => (
+            <button
+              key={link.id}
+              className="lt-link"
+              onClick={() => handleClick(link)}
+              title={link.title}
+            >
+              <div className="lt-link-icon">
+                {renderIcon(link.icon_name)}
+              </div>
+              <span className="lt-link-title">{link.title}</span>
+              <FiChevronRight className="lt-link-arrow" />
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Footer */}
+      <div className="lt-footer">
+        <p>Powered by <a href="/">Open Skools Academy</a></p>
+      </div>
+    </div>
+  );
+}
