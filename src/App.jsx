@@ -34,6 +34,7 @@ import EventDetail from './pages/EventDetail';
 import LiveBootcamps from './pages/LiveBootcamps';
 import LiveBootcampDetail from './pages/LiveBootcampDetail';
 import LinkTree from './pages/LinkTree';
+import GoRedirect from './pages/GoRedirect';
 import NotFound from './pages/NotFound';
 import ProtectedRoute from './components/layout/ProtectedRoute';
 import ScrollToTop from './components/layout/ScrollToTop';
@@ -75,6 +76,7 @@ export default function App() {
           <Route path="/live-bootcamps" element={<LiveBootcamps />} />
           <Route path="/live-bootcamps/:id" element={<LiveBootcampDetail />} />
           <Route path="/links" element={<LinkTree />} />
+          <Route path="/go/:slug" element={<GoRedirect />} />
           <Route path="/instructor" element={<ProtectedRoute allowedRoles={['instructor', 'admin']}><InstructorDashboard /></ProtectedRoute>} />
           <Route path="/admin" element={<ProtectedRoute allowedRoles={['admin']}><AdminPanel /></ProtectedRoute>} />
           <Route path="/blog" element={<BlogList />} />

@@ -8,6 +8,7 @@ import MarketingBanners from '../components/admin/MarketingBanners';
 import CertificateGenerator from '../components/admin/CertificateGenerator';
 import DailyQuizManager from '../components/admin/DailyQuizManager';
 import LinkTreeManager from '../components/admin/LinkTreeManager';
+import ShortLinksManager from '../components/admin/ShortLinksManager';
 import { useAuth } from '../context/AuthContext';
 import { useAlert } from '../context/AlertContext';
 import { mapCategory } from '../data/categories';
@@ -811,6 +812,10 @@ export default function AdminPanel() {
                 <div className="ap-tab-icon"><FiLink /></div>
                 <div className="ap-tab-content">Link Tree <FiChevronRight className="ap-tab-arrow" /></div>
               </button>
+              <button className={`ap-tab ${tab === 'link-converter' ? 'active' : ''}`} onClick={() => setTab('link-converter')}>
+                <div className="ap-tab-icon"><FiExternalLink /></div>
+                <div className="ap-tab-content">Link Converter <FiChevronRight className="ap-tab-arrow" /></div>
+              </button>
             </div>
           </div>
 
@@ -1509,6 +1514,11 @@ export default function AdminPanel() {
                 {/* Link Tree Tab */}
                 {tab === 'link-tree' && (
                   <LinkTreeManager />
+                )}
+
+                {/* Link Converter Tab */}
+                {tab === 'link-converter' && (
+                  <ShortLinksManager />
                 )}
 
                 {/* Events Tab */}
