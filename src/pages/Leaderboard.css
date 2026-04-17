@@ -99,23 +99,30 @@
 /* Responsive */
 @media (max-width: 640px) {
   .lb-hero h1 { font-size: 1.875rem; }
-  .lb-list-header { font-size: 0.65rem; padding: 10px 12px; }
+  .lb-list-header { font-size: 0.6rem; padding: 8px 10px; }
   .lb-list-header, .lb-row { 
-    grid-template-columns: 28px 1fr 60px 52px; 
-    padding: 10px 10px; 
-    gap: 6px;
+    grid-template-columns: 26px minmax(0, 1fr) 50px 44px; 
+    padding: 10px 8px; 
+    gap: 4px;
   }
-  .lb-avatar { width: 28px; height: 28px; font-size: 0.65rem; }
-  .lb-user-cell { gap: 6px; min-width: 0; overflow: hidden; }
-  .lb-user-info { min-width: 0; overflow: hidden; }
-  .lb-name { font-size: 0.8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; display: block; }
-  .lb-you-tag { font-size: 0.6rem; }
-  .lb-pts-val { font-size: 0.85rem; }
-  .lb-pts-label { font-size: 0.6rem; }
-  .lb-medal { font-size: 1.2rem; }
-  .lb-rank-num { font-size: 0.8rem; }
-  .lb-streak-badge { padding: 2px 6px; font-size: 0.65rem; }
-  .lb-streak-none { font-size: 0.7rem; }
+  .lb-row { align-items: center; }
+  .lb-avatar { width: 24px; height: 24px; font-size: 0.55rem; }
+  .lb-user-cell { gap: 5px; min-width: 0; }
+  .lb-user-info { flex: 1; min-width: 0; }
+  .lb-name { 
+    font-size: 0.72rem; 
+    white-space: nowrap; 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+    display: block; 
+  }
+  .lb-you-tag { font-size: 0.55rem; }
+  .lb-pts-val { font-size: 0.78rem; }
+  .lb-pts-label { font-size: 0.55rem; }
+  .lb-medal { font-size: 1.1rem; }
+  .lb-rank-num { font-size: 0.72rem; }
+  .lb-streak-badge { padding: 2px 5px; font-size: 0.6rem; }
+  .lb-streak-none { font-size: 0.65rem; }
   .lb-podium-card { width: 90px; }
   .lb-pod-avatar { width: 48px; height: 48px; }
   .lb-pod-avatar.large { width: 60px; height: 60px; }
