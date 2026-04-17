@@ -36,6 +36,33 @@ export default function LinkTree() {
     const meta = document.querySelector('meta[name="description"]');
     if (meta) meta.setAttribute('content', 'All important links from Open Skools Academy — courses, events, community, and more.');
 
+    // ── Break out of in-app browsers (Instagram, Facebook, etc.) ──
+    const ua = navigator.userAgent || navigator.vendor || '';
+    const isInApp = /Instagram|FBAN|FBAV|FB_IAB|Line\/|Snapchat|Twitter|LinkedIn/i.test(ua);
+
+    if (isInApp) {
+      const currentUrl = window.location.href;
+      const host = window.location.host;
+      const path = window.location.pathname + window.location.search + window.location.hash;
+      const isAndroid = /Android/i.test(ua);
+      const isIOS = /iPhone|iPad|iPod/i.test(ua);
+
+      if (isAndroid) {
+        // Android: Use intent:// to open in Chrome with fallback
+        window.location.href = `intent://${host}${path}#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=${encodeURIComponent(currentUrl)};end`;
+        return;
+      } else if (isIOS) {
+        // iOS: Try opening in Safari via a blank page + location trick
+        // Create a hidden link and simulate click to escape in-app browser
+        const a = document.createElement('a');
+        a.setAttribute('href', currentUrl);
+        a.setAttribute('target', '_system');
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
+    }
+
     fetchLinks();
   }, []);
 
