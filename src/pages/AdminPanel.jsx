@@ -558,6 +558,8 @@ export default function AdminPanel() {
       inferredMode = 'both';
     } else if (hasWalkinDetails) {
       inferredMode = 'walkin';
+    } else if (hasApplyLink && (job.apply_link.includes('@') || job.apply_link.startsWith('mailto:'))) {
+      inferredMode = 'email';
     }
     setJobForm({ ...job, job_mode: inferredMode });
     setShowJobModal(true);
@@ -574,7 +576,7 @@ export default function AdminPanel() {
       // Clean fields based on job_mode
       if (payload.job_mode === 'walkin') {
         if (!payload.apply_link) delete payload.apply_link;
-      } else if (payload.job_mode === 'apply_link') {
+      } else if (payload.job_mode === 'apply_link' || payload.job_mode === 'email') {
         if (!payload.venue) delete payload.venue;
         if (!payload.date_time) delete payload.date_time;
       }
@@ -582,7 +584,7 @@ export default function AdminPanel() {
       const hasApplyLink = payload.apply_link && payload.apply_link.trim();
       const hasWalkinDetails = (payload.venue && payload.venue.trim()) || (payload.date_time && payload.date_time.trim());
       if (!hasApplyLink && !hasWalkinDetails) {
-        await showAlert('Please provide either an Apply Link or Walk-in details (Venue/Date & Time).', 'Validation Error', 'warning');
+        await showAlert('Please provide either an Apply Link, an Email, or Walk-in details (Venue/Date & Time).', 'Validation Error', 'warning');
         setJobSubmitting(false);
         return;
       }
@@ -3050,6 +3052,9 @@ export default function AdminPanel() {
                 <button type="button" className={`toggle-btn ${jobForm.job_mode === 'apply_link' ? 'active apply' : ''}`} onClick={() => setJobForm({...jobForm, job_mode: 'apply_link'})}>
                   Apply via Link
                 </button>
+                <button type="button" className={`toggle-btn ${jobForm.job_mode === 'email' ? 'active email' : ''}`} onClick={() => setJobForm({...jobForm, job_mode: 'email'})}>
+                  Send E-mail
+                </button>
                 <button type="button" className={`toggle-btn ${jobForm.job_mode === 'both' ? 'active both' : ''}`} onClick={() => setJobForm({...jobForm, job_mode: 'both'})}>
                   Both
                 </button>
@@ -3070,11 +3075,17 @@ export default function AdminPanel() {
               </>
             )}
 
-            {/* Apply Link (visible for apply_link / both) */}
+            {/* Apply Link / Email (visible for apply_link / email / both) */}
             {(jobForm.job_mode === 'apply_link' || jobForm.job_mode === 'both') && (
               <div className="form-group full-width-field">
                 <label>External Apply Link {jobForm.job_mode === 'apply_link' ? '*' : ''}</label>
                 <input type="url" className="form-control" placeholder="https://careers.example.com/apply" value={jobForm.apply_link} onChange={e => setJobForm({...jobForm, apply_link: e.target.value})} />
+              </div>
+            )}
+            {jobForm.job_mode === 'email' && (
+              <div className="form-group full-width-field">
+                <label>Contact Email (for applications) *</label>
+                <input type="email" className="form-control" placeholder="hr@example.com" value={(jobForm.apply_link && jobForm.apply_link.startsWith('mailto:')) ? jobForm.apply_link.replace('mailto:', '') : (jobForm.apply_link || '')} onChange={e => setJobForm({...jobForm, apply_link: `mailto:${e.target.value}`})} />
               </div>
             )}
 

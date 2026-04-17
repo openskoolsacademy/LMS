@@ -382,8 +382,11 @@ export default function JobDetail() {
                 {(job.job_mode === 'walkin' || (!job.job_mode && job.venue)) && (
                   <span className="job-badge job-badge--walkin">Walk-in Interview</span>
                 )}
-                {(job.job_mode === 'apply_link' || (!job.job_mode && job.apply_link && !job.venue)) && (
+                {(job.job_mode === 'apply_link' || (!job.job_mode && job.apply_link && !job.venue && !job.apply_link.startsWith('mailto:'))) && (
                   <span className="job-badge job-badge--apply">Apply Online</span>
+                )}
+                {(job.job_mode === 'email' || (!job.job_mode && job.apply_link && job.apply_link.startsWith('mailto:'))) && (
+                  <span className="job-badge job-badge--apply">Send E-Mail</span>
                 )}
                 {job.job_mode === 'both' && (
                   <span className="job-badge job-badge--both">Walk-in & Online</span>
@@ -550,12 +553,12 @@ export default function JobDetail() {
                   {/* Apply button (only show if apply_link exists) */}
                   {job.apply_link && !isExpired ? (
                     <a
-                      href={job.apply_link}
-                      target="_blank"
+                      href={job.apply_link.startsWith('mailto:') ? job.apply_link : (job.apply_link.includes('@') && !job.apply_link.startsWith('http') ? `mailto:${job.apply_link}` : job.apply_link)}
+                      target={job.apply_link.startsWith('mailto:') || (job.apply_link.includes('@') && !job.apply_link.startsWith('http')) ? '_self' : '_blank'}
                       rel="noopener noreferrer"
                       className="btn btn-primary btn-lg full-btn"
                     >
-                      <FiExternalLink /> Apply Online
+                      {job.job_mode === 'email' || job.apply_link.startsWith('mailto:') || (job.apply_link.includes('@') && !job.apply_link.startsWith('http')) ? <><FiExternalLink /> Send E-Mail</> : <><FiExternalLink /> Apply Online</>}
                     </a>
                   ) : isExpired ? (
                     <button className="btn btn-gray btn-lg full-btn" disabled>

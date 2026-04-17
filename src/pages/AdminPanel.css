@@ -1955,6 +1955,12 @@
   color: var(--primary-dark);
 }
 
+.job-mode-toggle .toggle-btn.active.email {
+  border-color: #f59e0b;
+  background: #fffbeb;
+  color: #b45309;
+}
+
 .job-mode-toggle .toggle-btn.active.both {
   border-color: #8b5cf6;
   background: #f5f3ff;

@@ -81,8 +81,11 @@ export default function SavedJobs() {
                       {(job.job_mode === 'walkin' || (!job.job_mode && job.venue)) && (
                         <span className="job-badge job-badge--walkin">Walk-in</span>
                       )}
-                      {(job.job_mode === 'apply_link' || (!job.job_mode && job.apply_link && !job.venue)) && (
+                      {(job.job_mode === 'apply_link' || (!job.job_mode && job.apply_link && !job.venue && !job.apply_link.startsWith('mailto:'))) && (
                         <span className="job-badge job-badge--apply">Apply Now</span>
+                      )}
+                      {(job.job_mode === 'email' || (!job.job_mode && job.apply_link && job.apply_link.startsWith('mailto:'))) && (
+                        <span className="job-badge job-badge--apply">Send E-mail</span>
                       )}
                       {job.job_mode === 'both' && (
                         <span className="job-badge job-badge--both">Walk-in & Apply</span>
