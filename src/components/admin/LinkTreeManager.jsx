@@ -1,36 +1,175 @@
 import { useState, useEffect, useRef } from 'react';
-import { FiPlus, FiEdit2, FiTrash2, FiLink, FiToggleLeft, FiToggleRight, FiExternalLink, FiChevronUp, FiChevronDown, FiMousePointer, FiGlobe, FiInstagram, FiYoutube, FiTwitter, FiLinkedin, FiMail, FiPhone, FiBookOpen, FiVideo, FiAward, FiZap, FiMessageCircle, FiBriefcase, FiMap, FiFileText, FiHeart, FiStar, FiUsers } from 'react-icons/fi';
-import { FaWhatsapp, FaTelegram, FaDiscord, FaFacebook } from 'react-icons/fa';
+import { FiPlus, FiEdit2, FiTrash2, FiLink, FiToggleLeft, FiToggleRight, FiExternalLink, FiChevronUp, FiChevronDown, FiMousePointer, FiGlobe, FiInstagram, FiYoutube, FiTwitter, FiLinkedin, FiMail, FiPhone, FiBookOpen, FiVideo, FiAward, FiZap, FiMessageCircle, FiBriefcase, FiMap, FiFileText, FiHeart, FiStar, FiUsers, FiHome, FiShoppingCart, FiShoppingBag, FiCalendar, FiCamera, FiMusic, FiHeadphones, FiMic, FiTv, FiCpu, FiCode, FiTerminal, FiDatabase, FiCloud, FiLock, FiUnlock, FiDownload, FiUpload, FiShare2, FiGift, FiDollarSign, FiCreditCard, FiTruck, FiMapPin, FiNavigation, FiCompass, FiSun, FiMoon, FiDroplet, FiWifi, FiRss, FiRadio, FiCast, FiPrinter, FiClipboard, FiBookmark, FiFlag, FiTrendingUp, FiBarChart2, FiPieChart, FiActivity, FiTarget, FiAnchor, FiFeather, FiPenTool, FiScissors, FiTool, FiSettings, FiGrid, FiLayout, FiSidebar, FiImage, FiFilm, FiSliders, FiLayers, FiPackage, FiBox, FiArchive, FiFolder, FiHardDrive, FiMonitor, FiSmartphone, FiTablet, FiWatch, FiSpeaker, FiBell, FiInfo, FiHelpCircle, FiAlertCircle, FiCheckCircle, FiThumbsUp, FiSmile, FiCoffee, FiSend, FiLifeBuoy, FiCommand, FiHash, FiAtSign, FiPercent, FiUser, FiUserPlus, FiShield } from 'react-icons/fi';
+import { FaWhatsapp, FaTelegram, FaDiscord, FaFacebook, FaTwitter, FaLinkedinIn, FaPinterest, FaReddit, FaSnapchat, FaTiktok, FaSpotify, FaAmazon, FaApple, FaGoogle, FaMicrosoft, FaGithub, FaGitlab, FaStackOverflow, FaDribbble, FaBehance, FaFigma, FaMedium, FaWordpress, FaShopify, FaPaypal, FaStripe, FaBitcoin, FaEthereum, FaNpm, FaDocker, FaAws, FaSlack, FaSkype, FaViber, FaLine, FaThreads, FaXTwitter } from 'react-icons/fa6';
 import { supabase } from '../../lib/supabase';
 import { useAlert } from '../../context/AlertContext';
 import Modal from '../ui/Modal';
 
-// Available icons for selection
+// Available icons for selection — grouped by category
 const ICON_OPTIONS = [
-  { name: 'FiExternalLink', label: 'Link', Icon: FiExternalLink },
-  { name: 'FiGlobe', label: 'Website', Icon: FiGlobe },
-  { name: 'FiBookOpen', label: 'Courses', Icon: FiBookOpen },
-  { name: 'FiVideo', label: 'Video', Icon: FiVideo },
-  { name: 'FiAward', label: 'Certificate', Icon: FiAward },
-  { name: 'FiZap', label: 'Quiz', Icon: FiZap },
-  { name: 'FiBriefcase', label: 'Jobs', Icon: FiBriefcase },
-  { name: 'FiUsers', label: 'Community', Icon: FiUsers },
-  { name: 'FiMail', label: 'Email', Icon: FiMail },
-  { name: 'FiPhone', label: 'Phone', Icon: FiPhone },
+  // ── Social Media ──
   { name: 'FiInstagram', label: 'Instagram', Icon: FiInstagram },
   { name: 'FiYoutube', label: 'YouTube', Icon: FiYoutube },
-  { name: 'FiTwitter', label: 'Twitter/X', Icon: FiTwitter },
+  { name: 'FiTwitter', label: 'Twitter', Icon: FiTwitter },
+  { name: 'FaXTwitter', label: 'X (Twitter)', Icon: FaXTwitter },
   { name: 'FiLinkedin', label: 'LinkedIn', Icon: FiLinkedin },
+  { name: 'FaLinkedinIn', label: 'LinkedIn Alt', Icon: FaLinkedinIn },
   { name: 'FaWhatsapp', label: 'WhatsApp', Icon: FaWhatsapp },
   { name: 'FaTelegram', label: 'Telegram', Icon: FaTelegram },
   { name: 'FaDiscord', label: 'Discord', Icon: FaDiscord },
   { name: 'FaFacebook', label: 'Facebook', Icon: FaFacebook },
+  { name: 'FaPinterest', label: 'Pinterest', Icon: FaPinterest },
+  { name: 'FaReddit', label: 'Reddit', Icon: FaReddit },
+  { name: 'FaSnapchat', label: 'Snapchat', Icon: FaSnapchat },
+  { name: 'FaTiktok', label: 'TikTok', Icon: FaTiktok },
+  { name: 'FaThreads', label: 'Threads', Icon: FaThreads },
+  { name: 'FaSlack', label: 'Slack', Icon: FaSlack },
+  { name: 'FaSkype', label: 'Skype', Icon: FaSkype },
+  { name: 'FaViber', label: 'Viber', Icon: FaViber },
+  { name: 'FaLine', label: 'Line', Icon: FaLine },
+
+  // ── Communication ──
+  { name: 'FiMail', label: 'Email', Icon: FiMail },
+  { name: 'FiPhone', label: 'Phone', Icon: FiPhone },
   { name: 'FiMessageCircle', label: 'Chat', Icon: FiMessageCircle },
-  { name: 'FiMap', label: 'Map', Icon: FiMap },
+  { name: 'FiSend', label: 'Send', Icon: FiSend },
+  { name: 'FiAtSign', label: 'At Sign', Icon: FiAtSign },
+
+  // ── General Links ──
+  { name: 'FiExternalLink', label: 'External Link', Icon: FiExternalLink },
+  { name: 'FiGlobe', label: 'Website', Icon: FiGlobe },
+  { name: 'FiLink', label: 'Chain Link', Icon: FiLink },
+  { name: 'FiHome', label: 'Home', Icon: FiHome },
+  { name: 'FiShare2', label: 'Share', Icon: FiShare2 },
+  { name: 'FiRss', label: 'RSS Feed', Icon: FiRss },
+
+  // ── Education & Learning ──
+  { name: 'FiBookOpen', label: 'Courses', Icon: FiBookOpen },
+  { name: 'FiVideo', label: 'Video', Icon: FiVideo },
+  { name: 'FiAward', label: 'Certificate', Icon: FiAward },
+  { name: 'FiZap', label: 'Quiz', Icon: FiZap },
+  { name: 'FiBookmark', label: 'Bookmark', Icon: FiBookmark },
+  { name: 'FiClipboard', label: 'Notes', Icon: FiClipboard },
   { name: 'FiFileText', label: 'Document', Icon: FiFileText },
+
+  // ── Business & Commerce ──
+  { name: 'FiBriefcase', label: 'Jobs', Icon: FiBriefcase },
+  { name: 'FiShoppingCart', label: 'Cart', Icon: FiShoppingCart },
+  { name: 'FiShoppingBag', label: 'Shop', Icon: FiShoppingBag },
+  { name: 'FiDollarSign', label: 'Payment', Icon: FiDollarSign },
+  { name: 'FiCreditCard', label: 'Card', Icon: FiCreditCard },
+  { name: 'FiGift', label: 'Gift', Icon: FiGift },
+  { name: 'FiTruck', label: 'Delivery', Icon: FiTruck },
+  { name: 'FaPaypal', label: 'PayPal', Icon: FaPaypal },
+  { name: 'FaShopify', label: 'Shopify', Icon: FaShopify },
+
+  // ── Media & Entertainment ──
+  { name: 'FiCamera', label: 'Camera', Icon: FiCamera },
+  { name: 'FiImage', label: 'Image', Icon: FiImage },
+  { name: 'FiFilm', label: 'Film', Icon: FiFilm },
+  { name: 'FiMusic', label: 'Music', Icon: FiMusic },
+  { name: 'FiHeadphones', label: 'Podcast', Icon: FiHeadphones },
+  { name: 'FiMic', label: 'Mic', Icon: FiMic },
+  { name: 'FiTv', label: 'TV', Icon: FiTv },
+  { name: 'FiRadio', label: 'Radio', Icon: FiRadio },
+  { name: 'FiCast', label: 'Cast', Icon: FiCast },
+  { name: 'FaSpotify', label: 'Spotify', Icon: FaSpotify },
+
+  // ── Tech & Dev ──
+  { name: 'FiCode', label: 'Code', Icon: FiCode },
+  { name: 'FiTerminal', label: 'Terminal', Icon: FiTerminal },
+  { name: 'FiCpu', label: 'CPU', Icon: FiCpu },
+  { name: 'FiDatabase', label: 'Database', Icon: FiDatabase },
+  { name: 'FiCloud', label: 'Cloud', Icon: FiCloud },
+  { name: 'FaGithub', label: 'GitHub', Icon: FaGithub },
+  { name: 'FaGitlab', label: 'GitLab', Icon: FaGitlab },
+  { name: 'FaStackOverflow', label: 'Stack Overflow', Icon: FaStackOverflow },
+  { name: 'FaNpm', label: 'NPM', Icon: FaNpm },
+  { name: 'FaDocker', label: 'Docker', Icon: FaDocker },
+  { name: 'FaAws', label: 'AWS', Icon: FaAws },
+
+  // ── Design ──
+  { name: 'FaDribbble', label: 'Dribbble', Icon: FaDribbble },
+  { name: 'FaBehance', label: 'Behance', Icon: FaBehance },
+  { name: 'FaFigma', label: 'Figma', Icon: FaFigma },
+  { name: 'FiPenTool', label: 'Design', Icon: FiPenTool },
+  { name: 'FiFeather', label: 'Feather', Icon: FiFeather },
+  { name: 'FiLayers', label: 'Layers', Icon: FiLayers },
+  { name: 'FiLayout', label: 'Layout', Icon: FiLayout },
+  { name: 'FiGrid', label: 'Grid', Icon: FiGrid },
+  { name: 'FiSliders', label: 'Sliders', Icon: FiSliders },
+
+  // ── Blog & Content ──
+  { name: 'FaMedium', label: 'Medium', Icon: FaMedium },
+  { name: 'FaWordpress', label: 'WordPress', Icon: FaWordpress },
+  { name: 'FiHash', label: 'Hashtag', Icon: FiHash },
+
+  // ── Brands ──
+  { name: 'FaGoogle', label: 'Google', Icon: FaGoogle },
+  { name: 'FaApple', label: 'Apple', Icon: FaApple },
+  { name: 'FaMicrosoft', label: 'Microsoft', Icon: FaMicrosoft },
+  { name: 'FaAmazon', label: 'Amazon', Icon: FaAmazon },
+
+  // ── Location & Navigation ──
+  { name: 'FiMap', label: 'Map', Icon: FiMap },
+  { name: 'FiMapPin', label: 'Location', Icon: FiMapPin },
+  { name: 'FiNavigation', label: 'Navigate', Icon: FiNavigation },
+  { name: 'FiCompass', label: 'Compass', Icon: FiCompass },
+
+  // ── Analytics & Growth ──
+  { name: 'FiTrendingUp', label: 'Trending', Icon: FiTrendingUp },
+  { name: 'FiBarChart2', label: 'Bar Chart', Icon: FiBarChart2 },
+  { name: 'FiPieChart', label: 'Pie Chart', Icon: FiPieChart },
+  { name: 'FiActivity', label: 'Activity', Icon: FiActivity },
+  { name: 'FiTarget', label: 'Target', Icon: FiTarget },
+
+  // ── People & Community ──
+  { name: 'FiUsers', label: 'Community', Icon: FiUsers },
+  { name: 'FiUser', label: 'Profile', Icon: FiUser },
+  { name: 'FiUserPlus', label: 'Add User', Icon: FiUserPlus },
+  { name: 'FiShield', label: 'Shield', Icon: FiShield },
+
+  // ── Utility & Misc ──
+  { name: 'FiCalendar', label: 'Calendar', Icon: FiCalendar },
+  { name: 'FiDownload', label: 'Download', Icon: FiDownload },
+  { name: 'FiUpload', label: 'Upload', Icon: FiUpload },
+  { name: 'FiLock', label: 'Lock', Icon: FiLock },
+  { name: 'FiSettings', label: 'Settings', Icon: FiSettings },
+  { name: 'FiTool', label: 'Tool', Icon: FiTool },
+  { name: 'FiPackage', label: 'Package', Icon: FiPackage },
+  { name: 'FiFolder', label: 'Folder', Icon: FiFolder },
+  { name: 'FiPrinter', label: 'Print', Icon: FiPrinter },
+  { name: 'FiBell', label: 'Bell', Icon: FiBell },
+  { name: 'FiFlag', label: 'Flag', Icon: FiFlag },
+  { name: 'FiInfo', label: 'Info', Icon: FiInfo },
+  { name: 'FiHelpCircle', label: 'Help', Icon: FiHelpCircle },
+  { name: 'FiLifeBuoy', label: 'Support', Icon: FiLifeBuoy },
+
+  // ── Reactions ──
   { name: 'FiHeart', label: 'Heart', Icon: FiHeart },
   { name: 'FiStar', label: 'Star', Icon: FiStar },
-  { name: 'FiLink', label: 'Chain', Icon: FiLink },
+  { name: 'FiThumbsUp', label: 'Like', Icon: FiThumbsUp },
+  { name: 'FiSmile', label: 'Smile', Icon: FiSmile },
+  { name: 'FiCoffee', label: 'Coffee', Icon: FiCoffee },
+
+  // ── Devices ──
+  { name: 'FiMonitor', label: 'Desktop', Icon: FiMonitor },
+  { name: 'FiSmartphone', label: 'Mobile', Icon: FiSmartphone },
+  { name: 'FiTablet', label: 'Tablet', Icon: FiTablet },
+  { name: 'FiWatch', label: 'Watch', Icon: FiWatch },
+  { name: 'FiSpeaker', label: 'Speaker', Icon: FiSpeaker },
+
+  // ── Nature ──
+  { name: 'FiSun', label: 'Sun', Icon: FiSun },
+  { name: 'FiMoon', label: 'Moon', Icon: FiMoon },
+  { name: 'FiDroplet', label: 'Droplet', Icon: FiDroplet },
+  { name: 'FiAnchor', label: 'Anchor', Icon: FiAnchor },
+  { name: 'FiWifi', label: 'WiFi', Icon: FiWifi },
+
+  // ── Crypto ──
+  { name: 'FaBitcoin', label: 'Bitcoin', Icon: FaBitcoin },
+  { name: 'FaEthereum', label: 'Ethereum', Icon: FaEthereum },
+  { name: 'FiPercent', label: 'Percent', Icon: FiPercent },
 ];
 
 const ICON_MAP = Object.fromEntries(ICON_OPTIONS.map(o => [o.name, o.Icon]));

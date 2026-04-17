@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { FiExternalLink, FiChevronRight, FiLink, FiGlobe, FiInstagram, FiYoutube, FiTwitter, FiLinkedin, FiMail, FiPhone, FiBookOpen, FiVideo, FiAward, FiZap, FiMessageCircle, FiBriefcase, FiMap, FiFileText, FiHeart, FiStar, FiUsers } from 'react-icons/fi';
-import { FaWhatsapp, FaTelegram, FaDiscord, FaFacebook } from 'react-icons/fa';
+import { FiExternalLink, FiChevronRight, FiLink, FiGlobe, FiInstagram, FiYoutube, FiTwitter, FiLinkedin, FiMail, FiPhone, FiBookOpen, FiVideo, FiAward, FiZap, FiMessageCircle, FiBriefcase, FiMap, FiFileText, FiHeart, FiStar, FiUsers, FiHome, FiShoppingCart, FiShoppingBag, FiCalendar, FiCamera, FiMusic, FiHeadphones, FiMic, FiTv, FiCpu, FiCode, FiTerminal, FiDatabase, FiCloud, FiLock, FiDownload, FiUpload, FiShare2, FiGift, FiDollarSign, FiCreditCard, FiTruck, FiMapPin, FiNavigation, FiCompass, FiSun, FiMoon, FiDroplet, FiWifi, FiRss, FiRadio, FiCast, FiPrinter, FiClipboard, FiBookmark, FiFlag, FiTrendingUp, FiBarChart2, FiPieChart, FiActivity, FiTarget, FiAnchor, FiFeather, FiPenTool, FiTool, FiSettings, FiGrid, FiLayout, FiImage, FiFilm, FiSliders, FiLayers, FiPackage, FiFolder, FiMonitor, FiSmartphone, FiTablet, FiWatch, FiSpeaker, FiBell, FiInfo, FiHelpCircle, FiThumbsUp, FiSmile, FiCoffee, FiSend, FiLifeBuoy, FiHash, FiAtSign, FiPercent, FiUser, FiUserPlus, FiShield } from 'react-icons/fi';
+import { FaWhatsapp, FaTelegram, FaDiscord, FaFacebook, FaLinkedinIn, FaPinterest, FaReddit, FaSnapchat, FaTiktok, FaSpotify, FaAmazon, FaApple, FaGoogle, FaMicrosoft, FaGithub, FaGitlab, FaStackOverflow, FaDribbble, FaBehance, FaFigma, FaMedium, FaWordpress, FaShopify, FaPaypal, FaBitcoin, FaEthereum, FaNpm, FaDocker, FaAws, FaSlack, FaSkype, FaViber, FaLine, FaThreads, FaXTwitter } from 'react-icons/fa6';
 import { supabase } from '../lib/supabase';
 import './LinkTree.css';
 
@@ -9,7 +9,22 @@ const ICON_MAP = {
   FiExternalLink, FiLink, FiGlobe, FiInstagram, FiYoutube, FiTwitter,
   FiLinkedin, FiMail, FiPhone, FiBookOpen, FiVideo, FiAward, FiZap,
   FiMessageCircle, FiBriefcase, FiMap, FiFileText, FiHeart, FiStar, FiUsers,
-  FaWhatsapp, FaTelegram, FaDiscord, FaFacebook, FiChevronRight,
+  FiHome, FiShoppingCart, FiShoppingBag, FiCalendar, FiCamera, FiMusic,
+  FiHeadphones, FiMic, FiTv, FiCpu, FiCode, FiTerminal, FiDatabase, FiCloud,
+  FiLock, FiDownload, FiUpload, FiShare2, FiGift, FiDollarSign, FiCreditCard,
+  FiTruck, FiMapPin, FiNavigation, FiCompass, FiSun, FiMoon, FiDroplet, FiWifi,
+  FiRss, FiRadio, FiCast, FiPrinter, FiClipboard, FiBookmark, FiFlag,
+  FiTrendingUp, FiBarChart2, FiPieChart, FiActivity, FiTarget, FiAnchor,
+  FiFeather, FiPenTool, FiTool, FiSettings, FiGrid, FiLayout, FiImage,
+  FiFilm, FiSliders, FiLayers, FiPackage, FiFolder, FiMonitor, FiSmartphone,
+  FiTablet, FiWatch, FiSpeaker, FiBell, FiInfo, FiHelpCircle, FiThumbsUp,
+  FiSmile, FiCoffee, FiSend, FiLifeBuoy, FiHash, FiAtSign, FiPercent,
+  FiUser, FiUserPlus, FiShield, FiChevronRight,
+  FaWhatsapp, FaTelegram, FaDiscord, FaFacebook, FaLinkedinIn, FaPinterest,
+  FaReddit, FaSnapchat, FaTiktok, FaSpotify, FaAmazon, FaApple, FaGoogle,
+  FaMicrosoft, FaGithub, FaGitlab, FaStackOverflow, FaDribbble, FaBehance,
+  FaFigma, FaMedium, FaWordpress, FaShopify, FaPaypal, FaBitcoin, FaEthereum,
+  FaNpm, FaDocker, FaAws, FaSlack, FaSkype, FaViber, FaLine, FaThreads, FaXTwitter,
 };
 
 export default function LinkTree() {
