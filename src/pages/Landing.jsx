@@ -274,45 +274,47 @@ export default function Landing() {
               <button onClick={() => scrollBootcamps(1)} aria-label="Scroll right"><FiChevronRight /></button>
             </div>
           </div>
-          <div className="featured__carousel" ref={bootcampsScrollRef} style={{ gap: '24px' }}>
+          <div className="featured__carousel" ref={bootcampsScrollRef}>
             {bootcampsLoading ? (
               <Loader text="Loading live bootcamps..." />
             ) : bootcamps.length > 0 ? (
               bootcamps.map(bc => {
                 const status = getBootcampStatus(bc);
                 return (
-                  <Link to={`/live-bootcamps/${bc.id}`} key={bc.id} className="lb-card hover-lift" style={{ textDecoration: 'none', color: 'inherit', minWidth: '340px', flex: '0 0 auto', whiteSpace: 'normal', margin: 0, height: '100%' }}>
-                    <div className="lb-card-img-wrap">
-                      <img
-                        src={resolveImageUrl(bc.thumbnail_url) || 'https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&q=80&w=800'}
-                        alt={bc.title}
-                      />
-                      <div className="lb-card-badges">
-                        <span className={`lb-status-badge ${status}`}>
-                          {status === 'active' ? 'Active Now' : status === 'upcoming' ? 'Upcoming' : 'Completed'}
-                        </span>
-                        <span className={`lb-price-badge ${bc.price <= 0 ? 'free' : ''}`}>
-                          {bc.price > 0 ? `₹${bc.price}` : 'Free'}
-                        </span>
+                  <div key={bc.id} className="featured__item">
+                    <Link to={`/live-bootcamps/${bc.id}`} className="lb-card hover-lift" style={{ textDecoration: 'none', color: 'inherit', height: '100%' }}>
+                      <div className="lb-card-img-wrap">
+                        <img
+                          src={resolveImageUrl(bc.thumbnail_url) || 'https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&q=80&w=800'}
+                          alt={bc.title}
+                        />
+                        <div className="lb-card-badges">
+                          <span className={`lb-status-badge ${status}`}>
+                            {status === 'active' ? 'Active Now' : status === 'upcoming' ? 'Upcoming' : 'Completed'}
+                          </span>
+                          <span className={`lb-price-badge ${bc.price <= 0 ? 'free' : ''}`}>
+                            {bc.price > 0 ? `₹${bc.price}` : 'Free'}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                    <div className="lb-card-body">
-                      <div className="lb-card-meta">
-                        <span><FiCalendar /> {formatDate(bc.start_date)} - {formatDate(bc.end_date)}</span>
-                        <span><FiClock /> {bc.total_sessions} Sessions</span>
+                      <div className="lb-card-body">
+                        <div className="lb-card-meta">
+                          <span><FiCalendar /> {formatDate(bc.start_date)} - {formatDate(bc.end_date)}</span>
+                          <span><FiClock /> {bc.total_sessions} Sessions</span>
+                        </div>
+                        <h3>{bc.title}</h3>
+                        <p className="lb-desc">{(bc.description || 'Master in-demand skills with live instructor-led sessions.').replace(/\*\*(.*?)\*\*/g, '$1')}</p>
                       </div>
-                      <h3>{bc.title}</h3>
-                      <p className="lb-desc">{(bc.description || 'Master in-demand skills with live instructor-led sessions.').replace(/\*\*(.*?)\*\*/g, '$1')}</p>
-                    </div>
-                    <div className="lb-card-footer">
-                      {bc.enable_certificate && (
-                        <span className="lb-cert-badge"><FiAward /> Certificate</span>
-                      )}
-                      <div style={{ marginLeft: 'auto' }}>
-                         <span className="btn btn-outline btn-sm">View Bootcamp</span>
+                      <div className="lb-card-footer">
+                        {bc.enable_certificate && (
+                          <span className="lb-cert-badge"><FiAward /> Certificate</span>
+                        )}
+                        <div style={{ marginLeft: 'auto' }}>
+                           <span className="btn btn-outline btn-sm">View Bootcamp</span>
+                        </div>
                       </div>
-                    </div>
-                  </Link>
+                    </Link>
+                  </div>
                 );
               })
             ) : (
