@@ -391,7 +391,7 @@ export default function JobDetail() {
                 {job.job_mode === 'both' && (
                   <span className="job-badge job-badge--both">Walk-in & Online</span>
                 )}
-                {isNew && !isExpired && <span className="job-badge job-badge--new">New Arrival</span>}
+                {isNew && !isExpired && <span className="job-badge job-badge--new">New Job</span>}
                 {job.is_urgent && !isExpired && <span className="job-badge job-badge--urgent">Urgent Hiring</span>}
                 {isExpired && <span className="job-badge job-badge--expired">Position Filled</span>}
                 <span className="job-badge badge-category">{job.category}</span>

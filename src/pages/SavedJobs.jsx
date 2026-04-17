@@ -91,7 +91,7 @@ export default function SavedJobs() {
                         <span className="job-badge job-badge--both">Walk-in & Apply</span>
                       )}
                       {isNew(job.created_at) && !isExpired(job.expiry_date) && (
-                        <span className="job-badge job-badge--new">New</span>
+                        <span className="job-badge job-badge--new">New Job</span>
                       )}
                       {job.is_urgent && !isExpired(job.expiry_date) && (
                         <span className="job-badge job-badge--urgent">Urgent</span>
