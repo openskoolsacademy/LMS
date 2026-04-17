@@ -57,9 +57,8 @@ export default function LinkTree() {
   };
 
   const handleClick = (link) => {
-    // Fire-and-forget: increment click count without blocking the user
+    // Fire-and-forget: increment click count without blocking navigation
     supabase.rpc('increment_link_click', { link_id: link.id }).catch(() => {});
-    window.open(link.url, '_blank', 'noopener,noreferrer');
   };
 
   const renderIcon = (iconName) => {
@@ -92,18 +91,20 @@ export default function LinkTree() {
       ) : (
         <div className="lt-links">
           {links.map((link) => (
-            <button
+            <a
               key={link.id}
               className="lt-link"
+              href={link.url}
+              target="_blank"
+              rel="noopener noreferrer"
               onClick={() => handleClick(link)}
-              title={link.title}
             >
               <div className="lt-link-icon">
                 {renderIcon(link.icon_name)}
               </div>
               <span className="lt-link-title">{link.title}</span>
               <FiChevronRight className="lt-link-arrow" />
-            </button>
+            </a>
           ))}
         </div>
       )}
