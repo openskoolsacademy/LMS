@@ -898,6 +898,41 @@ export default function DailyQuiz() {
                   <FiArrowLeft /> Dashboard
                 </Link>
               </div>
+
+              <div 
+                className="dq-scroll-hint" 
+                onClick={() => {
+                  const reviewElement = document.querySelector('.dq-review-section');
+                  if (reviewElement) {
+                    reviewElement.scrollIntoView({ behavior: 'smooth' });
+                  } else {
+                    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+                  }
+                }}
+                style={{
+                  textAlign: 'center',
+                  marginTop: '24px',
+                  padding: '12px',
+                  backgroundColor: '#f8fafc',
+                  borderRadius: '8px',
+                  color: '#475569',
+                  fontSize: '15px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  border: '1px dashed #cbd5e1',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.backgroundColor = '#f1f5f9';
+                  e.currentTarget.style.borderColor = '#94a3b8';
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.backgroundColor = '#f8fafc';
+                  e.currentTarget.style.borderColor = '#cbd5e1';
+                }}
+              >
+                👇 Scroll Down For Answer Sheet 👇
+              </div>
             </div>
 
             {/* Points = Savings Banner */}
