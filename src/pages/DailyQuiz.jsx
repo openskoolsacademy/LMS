@@ -586,7 +586,7 @@ export default function DailyQuiz() {
                 <div className="dq-stat">
                   <span className="dq-stat-emoji"><FiDatabase /></span>
                   <strong>50</strong>
-                  <span>Total Points To Get That Quiz</span>
+                  <span>Max points</span>
                 </div>
                 <div className="dq-stat">
                   <span className="dq-stat-emoji" style={{color: '#f97316'}}><FaFire /></span>
