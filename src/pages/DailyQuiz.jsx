@@ -931,7 +931,7 @@ export default function DailyQuiz() {
                   e.currentTarget.style.borderColor = '#cbd5e1';
                 }}
               >
-                👇 Scroll Down For Answer Sheet 👇
+                Scroll Down For Answer Sheet
               </div>
             </div>
 
