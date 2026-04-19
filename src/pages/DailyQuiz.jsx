@@ -585,7 +585,7 @@ export default function DailyQuiz() {
               <div className="dq-stats-row">
                 <div className="dq-stat">
                   <span className="dq-stat-emoji"><FiDatabase /></span>
-                  <strong>{userPoints}</strong>
+                  <strong>50</strong>
                   <span>Total Points To Get That Quiz</span>
                 </div>
                 <div className="dq-stat">
