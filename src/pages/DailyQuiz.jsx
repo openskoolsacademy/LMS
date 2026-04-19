@@ -3,7 +3,8 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import {
   FiZap, FiClock, FiCheckCircle, FiXCircle, FiArrowLeft, FiArrowRight,
   FiAward, FiTrendingUp, FiAlertCircle, FiStar, FiDatabase, FiHelpCircle,
-  FiCalendar, FiCheck, FiLock, FiFilter, FiInfo, FiGift, FiBookOpen
+  FiCalendar, FiCheck, FiLock, FiFilter, FiInfo, FiGift, FiBookOpen,
+  FiChevronDown
 } from 'react-icons/fi';
 import { FaFire, FaWhatsapp } from 'react-icons/fa';
 import { supabase } from '../lib/supabase';
@@ -931,7 +932,7 @@ export default function DailyQuiz() {
                   e.currentTarget.style.borderColor = '#cbd5e1';
                 }}
               >
-                Scroll Down For Answer Sheet
+                <FiChevronDown style={{ strokeWidth: 3 }} /> Scroll Down For Answer Sheet <FiChevronDown style={{ strokeWidth: 3 }} />
               </div>
             </div>
 
