@@ -16,6 +16,15 @@ import { generateUserCode } from '../utils/userCode';
 import { resolveImageUrl } from '../utils/imageUtils';
 import './AdminPanel.css';
 
+const getBootcampStatus = (bc) => {
+  const now = new Date();
+  const startDate = new Date(bc.start_date);
+  const endDate = new Date(bc.end_date);
+  if (bc.status === 'completed' || now > endDate) return 'completed';
+  if (bc.status === 'active' || (now >= startDate && now <= endDate)) return 'active';
+  return 'upcoming';
+};
+
 export default function AdminPanel() {
   const { user, profile } = useAuth();
   const { showAlert, showConfirm } = useAlert();
@@ -1779,31 +1788,34 @@ export default function AdminPanel() {
                             .filter(bc => {
                               const q = bootcampSearchFilter.toLowerCase();
                               const matchesSearch = !q || bc.title.toLowerCase().includes(q) || (bc.instructor_name || '').toLowerCase().includes(q);
-                              const matchesStatus = bootcampStatusFilter === 'all' || bc.status === bootcampStatusFilter;
+                              const dynamicStatus = getBootcampStatus(bc);
+                              const matchesStatus = bootcampStatusFilter === 'all' || dynamicStatus === bootcampStatusFilter;
                               return matchesSearch && matchesStatus;
                             })
-                            .map(bc => (
-                            <tr key={bc.id}>
-                              <td>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                  {bc.thumbnail_url && <img src={resolveImageUrl(bc.thumbnail_url)} alt="" style={{ width: 48, height: 36, objectFit: 'cover', borderRadius: 6 }} />}
-                                  <div>
-                                    <strong style={{ display: 'block', fontSize: '0.9rem' }}>{bc.title}</strong>
-                                    <span style={{ fontSize: '0.8rem', color: 'var(--gray-400)' }}>{bc.instructor_name}</span>
+                            .map(bc => {
+                              const dynamicStatus = getBootcampStatus(bc);
+                              return (
+                              <tr key={bc.id}>
+                                <td>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                    {bc.thumbnail_url && <img src={resolveImageUrl(bc.thumbnail_url)} alt="" style={{ width: 48, height: 36, objectFit: 'cover', borderRadius: 6 }} />}
+                                    <div>
+                                      <strong style={{ display: 'block', fontSize: '0.9rem' }}>{bc.title}</strong>
+                                      <span style={{ fontSize: '0.8rem', color: 'var(--gray-400)' }}>{bc.instructor_name}</span>
+                                    </div>
                                   </div>
-                                </div>
-                              </td>
-                              <td style={{ fontSize: '0.85rem' }}>
-                                {new Date(bc.start_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
-                              </td>
-                              <td style={{ fontSize: '0.85rem' }}>
-                                {new Date(bc.end_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
-                              </td>
-                              <td>
-                                <span className={`badge badge-${bc.status === 'active' ? 'success' : bc.status === 'upcoming' ? 'primary' : 'info'}`} style={bc.status === 'upcoming' ? { background: '#008ad1', color: '#fff' } : {}}>
-                                  {bc.status}
-                                </span>
-                              </td>
+                                </td>
+                                <td style={{ fontSize: '0.85rem' }}>
+                                  {new Date(bc.start_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                </td>
+                                <td style={{ fontSize: '0.85rem' }}>
+                                  {new Date(bc.end_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                </td>
+                                <td>
+                                  <span className={`badge badge-${dynamicStatus === 'active' ? 'success' : dynamicStatus === 'upcoming' ? 'primary' : 'info'}`} style={dynamicStatus === 'upcoming' ? { background: '#008ad1', color: '#fff' } : {}}>
+                                    {dynamicStatus}
+                                  </span>
+                                </td>
                               <td style={{ fontWeight: 600 }}>{bc.price > 0 ? `₹${bc.price}` : 'Free'}</td>
                               <td>
                                 {bc.enable_certificate ? (
@@ -1870,7 +1882,8 @@ export default function AdminPanel() {
                                 </div>
                               </td>
                             </tr>
-                          ))}
+                              );
+                            })}
                           {adminBootcamps.length === 0 && (
                             <tr><td colSpan="7" style={{ textAlign: 'center', padding: '40px', color: 'var(--gray-400)' }}>No bootcamps yet. Click "Create Bootcamp" to get started.</td></tr>
                           )}
