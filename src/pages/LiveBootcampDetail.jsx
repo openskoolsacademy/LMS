@@ -339,6 +339,12 @@ export default function LiveBootcampDetail() {
 
   const handleJoinLive = async () => {
     if (!enrollment?.registered) return;
+
+    if (enrollment?.status === 'JOINED' || enrollment?.status === 'ENTERED') {
+      if (bootcamp.live_link) window.open(bootcamp.live_link, '_blank');
+      else await showAlert('Live link not available yet. Please check back later.', 'Info', 'info');
+      return;
+    }
     try {
       const { data: result, error: rpcError } = await supabase.rpc('join_bootcamp', {
         p_live_bootcamp_id: bootcamp.id
@@ -693,9 +699,9 @@ export default function LiveBootcampDetail() {
                   )}
 
                   {/* Join Live */}
-                  {isEnrolled && !isCompleted && !masterBootcampBlocked && (status === 'upcoming' || status === 'active') && (
+                  {isEnrolled && !isCompleted && (!masterBootcampBlocked || enrollment?.status === 'JOINED' || enrollment?.status === 'ENTERED') && (status === 'upcoming' || status === 'active') && (
                     <button className="btn lbd-btn-primary" onClick={handleJoinLive}>
-                      <FiExternalLink /> { (enrollment?.status === 'ENTERED' || enrollment?.status === 'JOINED') ? 'Re-enter Live Session' : 'Join Live Session' }
+                      <FiExternalLink /> { (enrollment?.status === 'ENTERED' || enrollment?.status === 'JOINED') ? 'Re-Join' : 'Join Live Session' }
                     </button>
                   )}
 
