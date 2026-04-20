@@ -384,7 +384,7 @@ export default function LiveBootcampDetail() {
 
   const status = getBootcampStatus();
   const isEnrolled = enrollment?.registered;
-  const isCompleted = enrollment?.status === 'JOINED' || enrollment?.completed;
+  const isCompleted = enrollment?.completed;
 
   return (
     <div className="lbd-detail">

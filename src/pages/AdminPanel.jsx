@@ -1912,32 +1912,48 @@ export default function AdminPanel() {
                                     <td style={{ fontWeight: 600 }}>{enr.user?.name || 'Unknown'}</td>
                                     <td style={{ fontSize: '0.85rem', color: 'var(--gray-500)' }}>{enr.user?.email || '-'}</td>
                                     <td>{enr.registered ? <span className="badge badge-primary">Yes</span> : <span className="badge badge-info">No</span>}</td>
-                                    <td>{enr.status === 'JOINED' || enr.completed ? <span className="badge badge-success">JOINED</span> : enr.status === 'ENTERED' ? <span className="badge badge-info">ENTERED</span> : <span className="badge badge-light">—</span>}</td>
+                                    <td>{enr.completed ? <span className="badge badge-success">COMPLETED</span> : enr.status === 'JOINED' ? <span className="badge badge-success">JOINED</span> : enr.status === 'ENTERED' ? <span className="badge badge-info">ENTERED</span> : <span className="badge badge-light">—</span>}</td>
                                     <td style={{ fontSize: '0.8rem', color: 'var(--gray-500)' }}>{(enr.entered_at || enr.joined_at) ? new Date(enr.entered_at || enr.joined_at).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '—'}</td>
                                     <td style={{ fontSize: '0.85rem' }}>{enr.amount_paid > 0 ? `₹${enr.amount_paid}` : 'Free'}</td>
                                     <td>{enr.certificate_issued ? <span style={{ color: '#008ad1', fontWeight: 600, fontSize: '0.8rem' }}>{enr.certificate_id}</span> : <span style={{ color: 'var(--gray-400)', fontSize: '0.8rem' }}>—</span>}</td>
                                     <td>
                                       <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                                         <button
-                                          className={`btn btn-sm ${enr.status === 'JOINED' || enr.completed ? 'btn-outline' : 'btn-primary'}`}
+                                          className={`btn btn-sm ${enr.status === 'JOINED' ? 'btn-outline' : 'btn-primary'}`}
                                           style={{ fontSize: '0.75rem' }}
                                           onClick={async () => {
                                             try {
-                                              const isCurrentlyJoined = enr.status === 'JOINED' || enr.completed;
+                                              const isCurrentlyJoined = enr.status === 'JOINED';
                                               const newStatus = isCurrentlyJoined ? (enr.entered_at ? 'ENTERED' : 'REGISTERED') : 'JOINED';
                                               const now = new Date().toISOString();
                                               await supabase.from('live_bootcamp_enrollments').update({ 
                                                 status: newStatus,
-                                                completed: !isCurrentlyJoined,
                                                 joined_at: !isCurrentlyJoined ? now : null 
                                               }).eq('id', enr.id);
-                                              setBootcampEnrollees(bootcampEnrollees.map(e => e.id === enr.id ? { ...e, status: newStatus, completed: !isCurrentlyJoined, joined_at: !isCurrentlyJoined ? now : null } : e));
+                                              setBootcampEnrollees(bootcampEnrollees.map(e => e.id === enr.id ? { ...e, status: newStatus, joined_at: !isCurrentlyJoined ? now : null } : e));
                                             } catch (err) {
                                               await showAlert('Error updating status: ' + err.message, 'Error', 'error');
                                             }
                                           }}
                                         >
-                                          {enr.status === 'JOINED' || enr.completed ? <><FiXCircle style={{ marginRight: 4 }} /> Unmark</> : <><FiCheckCircle style={{ marginRight: 4 }} /> Mark Joined</>}
+                                          {enr.status === 'JOINED' ? <><FiXCircle style={{ marginRight: 4 }} /> Unmark Joined</> : <><FiCheckCircle style={{ marginRight: 4 }} /> Mark Joined</>}
+                                        </button>
+                                        <button
+                                          className={`btn btn-sm ${enr.completed ? 'btn-outline' : 'btn-success'}`}
+                                          style={{ fontSize: '0.75rem' }}
+                                          onClick={async () => {
+                                            try {
+                                              const isCurrentlyCompleted = enr.completed;
+                                              await supabase.from('live_bootcamp_enrollments').update({ 
+                                                completed: !isCurrentlyCompleted
+                                              }).eq('id', enr.id);
+                                              setBootcampEnrollees(bootcampEnrollees.map(e => e.id === enr.id ? { ...e, completed: !isCurrentlyCompleted } : e));
+                                            } catch (err) {
+                                              await showAlert('Error updating completion: ' + err.message, 'Error', 'error');
+                                            }
+                                          }}
+                                        >
+                                          {enr.completed ? <><FiXCircle style={{ marginRight: 4 }} /> Unmark Completed</> : <><FiCheckCircle style={{ marginRight: 4 }} /> Mark Completed</>}
                                         </button>
                                         {(enr.status === 'JOINED' || enr.completed) && adminBootcamps.find(b => b.id === selectedBootcampId)?.enable_certificate && (
                                           <button
