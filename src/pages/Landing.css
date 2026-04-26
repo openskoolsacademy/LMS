@@ -48,7 +48,7 @@
     grid-template-columns: 1.15fr 0.85fr;
     text-align: left;
     gap: 80px;
-    margin-top: -80px; /* Pulled higher to reduce top gap */
+    margin-top: 0; /* Removed negative margin to prevent header overlap */
   }
 }
 
@@ -180,8 +180,7 @@
   position: relative;
   width: 100%;
   max-width: none;
-  height: 60vh; /* Set to 60% high */
-  aspect-ratio: 1/1;
+  height: 60vh;
   display: flex;
   justify-content: center;
   align-items: flex-end;
@@ -243,6 +242,8 @@
   object-fit: contain;
   filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.2));
   z-index: 5;
+  transform: scale(1.15);
+  transform-origin: bottom center;
 }
 
 
@@ -609,4 +610,49 @@
 .btn-cta-outline:hover {
   background: white !important;
   color: var(--primary) !important;
+}
+
+/* --- Who We Are Section --- */
+.who-we-are {
+  background: var(--white);
+  padding: 60px 0;
+}
+
+.who-we-are-content {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+@media (min-width: 992px) {
+  .who-we-are-content {
+    flex-direction: row;
+    align-items: center;
+    gap: 80px;
+  }
+}
+
+.who-we-are-text {
+  flex: 1;
+}
+
+.who-we-are-visual {
+  flex: 1;
+  position: relative;
+}
+
+@media (max-width: 768px) {
+  .who-we-are-text h2 {
+    font-size: 2rem !important;
+  }
+  
+  .experience-badge {
+    padding: 12px 16px !important;
+    gap: 12px !important;
+    transform: translateY(10px) translateX(-10px) !important;
+  }
+  
+  .experience-badge .exp-number {
+    font-size: 1.25rem !important;
+  }
 }

@@ -170,7 +170,7 @@ export default function Landing() {
           <div className="hero-text-pro animate-fade-in-up">
             <span className="hero-label">Level up your skills</span>
             <h1 style={{ color: '#008ad1' }}>Unlock Your Future with Elite Education</h1>
-            <p>Master high demand skills in AI, Development, Design, and Business. Learn from industry leading mentors through award winning interactive courses.</p>
+            <p>Master in-demand skills with AI powered learning. Learn at your own pace or join live sessions to build real projects, deploy them, and create a job ready portfolio.</p>
             
             <div className="hero-actions-pro">
               <Link to="/courses" className="btn btn-primary btn-lg">
@@ -224,6 +224,44 @@ export default function Landing() {
           </div>
           
           <LogoCarousel />
+        </div>
+      </section>
+
+      {/* Who We Are Section */}
+      <section className="who-we-are section" style={{ background: 'linear-gradient(to bottom, #ffffff, #f8fafc)', padding: '80px 0' }}>
+        <div className="container">
+          <div className="who-we-are-content-centered" style={{ maxWidth: '850px', margin: '0 auto', textAlign: 'center' }}>
+            <span className="section-badge" style={{ marginBottom: '16px' }}>Who We Are</span>
+            <h2 style={{ fontSize: '2.5rem', marginBottom: '24px', lineHeight: '1.2', color: 'var(--dark-900)' }}>Empowering the Next Generation of Tech Leaders</h2>
+            <p style={{ color: 'var(--gray-600)', fontSize: '1.1rem', lineHeight: '1.7', marginBottom: '16px' }}>
+              Open Skools Academy is a modern learning institute committed to delivering high quality, industry relevant education for students and working professionals. We bridge the gap between academic knowledge and real world industry requirements.
+            </p>
+            <p style={{ color: 'var(--gray-600)', fontSize: '1.1rem', lineHeight: '1.7', marginBottom: '40px' }}>
+              Registered under the National Career Service (NCS) and proudly ISO 9001:2015 Certified, we ensure transparency, standard processes, and a strong learner support system.
+            </p>
+            
+            <div className="who-we-are-features-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '24px', marginBottom: '40px', textAlign: 'left' }}>
+              <div style={{ background: 'white', padding: '24px', borderRadius: 'var(--radius-xl)', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.04)', border: '1px solid rgba(0, 138, 209, 0.05)', transition: 'transform 0.3s ease' }} className="hover-lift">
+                <FiCheckCircle style={{ color: '#008ad1', fontSize: '2rem', marginBottom: '16px' }} />
+                <h4 style={{ fontSize: '1.15rem', marginBottom: '8px', color: 'var(--dark-800)' }}>Practical Projects</h4>
+                <p style={{ fontSize: '0.95rem', color: 'var(--gray-500)', margin: 0, lineHeight: '1.5' }}>Real-world, hands-on learning experiences to build your portfolio.</p>
+              </div>
+              <div style={{ background: 'white', padding: '24px', borderRadius: 'var(--radius-xl)', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.04)', border: '1px solid rgba(0, 138, 209, 0.05)', transition: 'transform 0.3s ease' }} className="hover-lift">
+                <FiUsers style={{ color: '#008ad1', fontSize: '2rem', marginBottom: '16px' }} />
+                <h4 style={{ fontSize: '1.15rem', marginBottom: '8px', color: 'var(--dark-800)' }}>Expert Mentors</h4>
+                <p style={{ fontSize: '0.95rem', color: 'var(--gray-500)', margin: 0, lineHeight: '1.5' }}>Learn directly from experienced industry professionals.</p>
+              </div>
+              <div style={{ background: 'white', padding: '24px', borderRadius: 'var(--radius-xl)', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.04)', border: '1px solid rgba(0, 138, 209, 0.05)', transition: 'transform 0.3s ease' }} className="hover-lift">
+                <FiAward style={{ color: '#008ad1', fontSize: '2rem', marginBottom: '16px' }} />
+                <h4 style={{ fontSize: '1.15rem', marginBottom: '8px', color: 'var(--dark-800)' }}>ISO Certified</h4>
+                <p style={{ fontSize: '0.95rem', color: 'var(--gray-500)', margin: 0, lineHeight: '1.5' }}>ISO 9001:2015 certified for high quality education processes.</p>
+              </div>
+            </div>
+            
+            <Link to="/about" className="btn btn-primary btn-lg mt-4">
+              Learn More About Us <FiArrowRight className="ml-2" />
+            </Link>
+          </div>
         </div>
       </section>
 
