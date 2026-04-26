@@ -303,8 +303,10 @@
   }
 
   .ui-badge-simple {
-    top: 10%; /* Move higher on mobile to avoid overlap */
-    right: 2%;
+    top: auto;
+    bottom: 20%; /* Moved lower to avoid overlap with face */
+    right: auto;
+    left: 2%; /* Moved to left side to balance design */
     padding: 8px 16px;
     font-size: 0.75rem;
   }
