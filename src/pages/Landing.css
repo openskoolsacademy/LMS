@@ -76,7 +76,7 @@
 
 @media (max-width: 480px) {
   .hero-text-pro h1 {
-    font-size: 2rem;
+    font-size: 1.75rem;
   }
 }
 
@@ -94,7 +94,7 @@
 }
 
 .hero-text-pro h1 {
-  font-size: 3rem;
+  font-size: 2.5rem;
   font-weight: 900;
   line-height: 1.1;
   margin-bottom: 24px;
@@ -109,11 +109,11 @@
 }
 
 @media (min-width: 640px) {
-  .hero-text-pro h1 { font-size: 4rem; }
+  .hero-text-pro h1 { font-size: 3rem; }
 }
 
 @media (min-width: 1024px) {
-  .hero-text-pro h1 { font-size: 5rem; }
+  .hero-text-pro h1 { font-size: 4rem; }
 }
 
 .hero-text-pro p {
