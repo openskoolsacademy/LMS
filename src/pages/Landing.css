@@ -12,8 +12,8 @@
 
 @media (min-width: 1024px) {
   .hero-pro {
-    padding: 10px 0 60px; /* Reduced top padding to sit closer to header */
-    min-height: 85vh;
+    padding: 40px 0 80px;
+    min-height: clamp(600px, 80vh, 800px);
   }
 }
 
@@ -44,8 +44,8 @@
 
 @media (min-width: 768px) {
   .hero-text-pro {
-    align-self: start;
-    margin-top: -80px; /* Reduce top spacing for text only on tablet */
+    align-self: center;
+    margin-top: 0;
   }
 }
 
@@ -54,14 +54,26 @@
     display: grid;
     grid-template-columns: 1.15fr 0.85fr;
     text-align: left;
-    gap: 80px;
+    gap: 40px;
     margin-top: 0;
   }
   
   .hero-text-pro {
-    align-self: start;
-    margin-top: -30px; /* Sit text closer to header on desktop */
+    align-self: center;
+    margin-top: 0;
     transform: none;
+    padding-left: 0;
+  }
+}
+
+@media (min-width: 1200px) {
+  .hero-container-pro {
+    gap: 80px;
+  }
+  
+  .hero-text-pro {
+    align-self: start;
+    margin-top: -30px;
     padding-left: 40px;
   }
 }
@@ -114,6 +126,7 @@
   margin-bottom: 24px;
   color: #008ad1;
   letter-spacing: -0.03em;
+  text-wrap: balance;
 }
 
 .text-gradient-pro {
@@ -136,6 +149,7 @@
   max-width: 580px;
   margin: 0 auto 40px;
   line-height: 1.7;
+  text-wrap: balance;
 }
 
 @media (min-width: 1024px) {

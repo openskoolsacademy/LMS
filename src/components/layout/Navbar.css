@@ -72,7 +72,7 @@
 }
 
 /* Desktop View */
-@media (min-width: 1024px) {
+@media (min-width: 1200px) {
   .navbar__inner { height: 72px; }
   .brand-logo { height: 40px; }
   
@@ -88,7 +88,7 @@
 }
 
 /* Mobile Drawer (Refined) */
-@media (max-width: 1023px) {
+@media (max-width: 1199px) {
   .navbar__nav {
     display: flex;
     position: fixed;
